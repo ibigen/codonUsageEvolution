@@ -25,7 +25,7 @@ def count_codons(gene_records):
         element = record.description.split(" ") 
         gene = element[1][6:-1]
         genes.append(gene)
-    #print (genes)
+    print (genes)
     
 
     dic_genes={}
