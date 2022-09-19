@@ -17,7 +17,16 @@ class Test(unittest.TestCase):
     def tearDown(self):
         pass
 
-
+    def sum(self, a, b):
+        """ sum two numbers, only for example"""
+        return a + b
+    
+    def test_sum(self, a, b):
+        
+        self.assertEqual(5, sum(3, 2))
+        self.assertNotEqual(6, sum(3, 2))
+    
+    
     def test_read_fasta(self):
         ecoli_fasta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "files/references/ecoli.fasta")
         self.assertTrue(os.path.exists(ecoli_fasta))
