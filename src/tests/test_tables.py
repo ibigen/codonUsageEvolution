@@ -21,10 +21,10 @@ class Test(unittest.TestCase):
         """ sum two numbers, only for example"""
         return a + b
     
-    def test_sum(self, a, b):
+    def test_sum(self):
         
-        self.assertEqual(5, sum(3, 2))
-        self.assertNotEqual(6, sum(3, 2))
+        self.assertEqual(5, self.sum(3, 2))
+        self.assertNotEqual(6, self.sum(3, 2))
     
     
     def test_read_fasta(self):
@@ -32,7 +32,7 @@ class Test(unittest.TestCase):
         self.assertTrue(os.path.exists(ecoli_fasta))
 
         vect_genome = read_genome(ecoli_fasta)
-        self.assertEqual(5, len(vect_genome))
+        self.assertEqual(12, len(vect_genome))
         
         
     def test_tables(self):

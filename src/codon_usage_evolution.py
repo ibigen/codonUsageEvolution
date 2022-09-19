@@ -13,11 +13,13 @@ from utils.utils import Utils
 from Bio import SeqIO
 from CAI import RSCU, relative_adaptiveness, CAI
 
+utils = Utils()
+
 def read_genome(file_name):
     """ read genome """
-    with gzip.open(file_name, 'rt') as file:
+    with (gzip.open(file_name, mode='rt') if utils.is_gzip(file_name) else open(file_name, mode='r')) as handle_read:
         gene_records = [] 
-        for record in SeqIO.parse(file, "fasta"):
+        for record in SeqIO.parse(handle_read, "fasta"):
             #print(record.description)
             #print(record.id)
             #print(str(record.seq))
@@ -100,6 +102,12 @@ def calculate_CAI(records):
     dataframe_CAI = pd.DataFrame([dic_CAI])
     return dataframe_CAI
             
+def make_tables(file_name):
+    """ create three dataframes with: 1) 2) 3)"""
+    pass
+
+
+
 
 def save_table(dataframe_genome, file_out):
     dataframe_genome.to_csv(file_out)
@@ -125,12 +133,12 @@ if __name__ == '__main__':
     utils.test_exist_file(file_name_in)
     
     # get dataframes
-    dataframe_genome = count_codons(read_genome(file_name_in))
-    dataframe_RSCU = calculate_RSCU(read_genome(file_name_in))
-    dataframe_CAI = calculate_CAI(read_genome(file_name_in))
+    dataframe_count_codons_in_genes, dataframe_RSCU, dataframe_CAI = make_tables(file_name_in)
     
     ## save
-    save_table(dataframe_genome, os.path.join(base_path, file_name_out_counts))
+    save_table(dataframe_count_codons_in_genes, os.path.join(base_path, file_name_out_counts))
     save_table(dataframe_RSCU, os.path.join(base_path, file_name_out_RSCU))
     save_table(dataframe_CAI, os.path.join(base_path, file_name_out_CAI))
+    
+    ## make expression in genes 
     print("finished")
