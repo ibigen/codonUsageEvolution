@@ -7,7 +7,7 @@ import gzip
 import os
 import pandas as pd
 import socket
-import constants.constants as constants
+import constants as constants
 
 from utils.utils import Utils
 from Bio import SeqIO
@@ -18,30 +18,8 @@ utils = Utils()
 def read_genome(file_name):
     """ read genome """
     with (gzip.open(file_name, mode='rt') if utils.is_gzip(file_name) else open(file_name, mode='r')) as handle_read:
-        gene_records = [] 
-        for record in SeqIO.parse(handle_read, "fasta"):
-            #print(record.description)
-            #print(record.id)
-            #print(str(record.seq))
-            gene_records.append(record)
-    return gene_records
-
-def count_codons(gene_records):
-    genes=[]
-    for record in gene_records:
-        ## FAIL, it is not working for other organisms
-        element = record.description.split(" ") 
-        gene = element[1][6:-1]
-        genes.append(gene)
-    print (genes)
-
-    dic_genes={}
-    ## TO SLOW
-    for gene in genes:
-        for record in gene_records:
-            if gene in record.description:
-                dic_genes[gene]=record.seq
-    #print(dic_genes)
+        record_dict = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
+        dic_genes={key:record_dict[key].seq for key in record_dict}
 
     #create a dictionary with the counts for each codon per gene
     codons={}
@@ -66,7 +44,7 @@ def count_codons(gene_records):
                     counts[key]=[x]
                 else:
                     counts[key].append(x)
-    #print(counts)
+    print(counts)
 
     
     #creat a dataframe with counts
@@ -104,7 +82,8 @@ def calculate_CAI(records):
             
 def make_tables(file_name):
     """ create three dataframes with: 1) 2) 3)"""
-    pass
+    read_genome(file_name)
+    
 
 
 

@@ -1,0 +1,5 @@
+#1 configurar as classes
+#2 ficheiros testes 
+#3 em vez da description usar o id 
+#4 ler ficheiros não zipados e zipados 
+#5 melhorar a velocidade 
