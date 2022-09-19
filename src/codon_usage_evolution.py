@@ -3,32 +3,38 @@ Created on 09/09/2022
 
 @author: mmp
 '''
-import os
 import gzip
+import os
 import pandas as pd
+import socket
+import constants.constants as constants
+
+from utils.utils import Utils
 from Bio import SeqIO
 from CAI import RSCU, relative_adaptiveness, CAI
 
 def read_genome(file_name):
+    """ read genome """
     with gzip.open(file_name, 'rt') as file:
         gene_records = [] 
         for record in SeqIO.parse(file, "fasta"):
             #print(record.description)
-            #print( (record.seq))
-            #print(len(record))
+            #print(record.id)
+            #print(str(record.seq))
             gene_records.append(record)
     return gene_records
 
 def count_codons(gene_records):
     genes=[]
     for record in gene_records:
+        ## FAIL, it is not working for other organisms
         element = record.description.split(" ") 
         gene = element[1][6:-1]
         genes.append(gene)
     print (genes)
-    
 
     dic_genes={}
+    ## TO SLOW
     for gene in genes:
         for record in gene_records:
             if gene in record.description:
@@ -41,18 +47,9 @@ def count_codons(gene_records):
     for key,value in dic_genes.items():
         codons[key]=[value[i:i + 3] for i in range(0, len(value), 3)]
 
-    #print(codons)
-
-    total_codons=["UUU", "UUC", "UUA", "UUG", "UCU", "UCC", "UCA", "UCG", "UAU", "UAC","UAA", 
-           "UAG", "UGU", "UGC", "UGA", "UGG", "CUU", "CUC", "CUA", "CUG", "CCU", "CCC", "CCA",
-          "CCG", "CAU", "CAC", "CAA", "CAG", "CGU", "CGC", "CGA", "CGG", "AUU", "AUC", "AUA",
-         "AUG", "ACU", "ACC", "ACA", "ACG", "AAU", "AAC", "AAA", "AAG", "AGU", "AGC", "AGA", 
-         "AGG", "GUU", "GUC", "GUA", "GUG", "GCU", "GCC", "GCA", "GCG", "GAU", "GAC", "GAA", 
-         "GAG", "GGU", "GGC", "GGA", "GGG"]
-
     #obtain couts 
     counts={}
-    for i in total_codons:
+    for i in constants.TOTAL_CODONS:
         for key,value in codons.items():
             if i not in value: 
                 x=0
@@ -72,7 +69,7 @@ def count_codons(gene_records):
     
     #creat a dataframe with counts
     data = [[key]+ i for key, i in counts.items()]
-    column_labels = ["Gene\Codon"] + [i for i in total_codons]
+    column_labels = ["Gene\Codon"] + constants.TOTAL_CODONS
     dataframe_counts = pd.DataFrame(data, columns=column_labels)
     #print(dataframe_counts)
     return dataframe_counts
@@ -109,20 +106,28 @@ def save_table(dataframe_genome, file_out):
    
 
 if __name__ == '__main__':
-
-    ## set file name in and out
-    #base_path = "/home/project/master/codon_usage"
-    base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
     
-    file_name_in = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"
+    ### several utilities
+    utils = Utils()
+    
+    ## set file name in and out
+    if (socket.gethostname() == "cs-nb0008"): ## test computer name
+        base_path = "/home/projects/master/codon_usage"
+    else:
+        base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
+    
+    file_name_in = os.path.join(base_path, "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz")
     file_name_out_counts = "table_counts.csv"
     file_name_out_RSCU = "table_RSCU.csv"
     file_name_out_CAI ="table_CAI.csv"
 
-    # get dataframes 
-    dataframe_genome = count_codons(read_genome(os.path.join(base_path, file_name_in)))
-    dataframe_RSCU = calculate_RSCU(read_genome(os.path.join(base_path, file_name_in)))
-    dataframe_CAI = calculate_CAI(read_genome( os.path.join(base_path, file_name_in)))
+    ## testing existing files
+    utils.test_exist_file(file_name_in)
+    
+    # get dataframes
+    dataframe_genome = count_codons(read_genome(file_name_in))
+    dataframe_RSCU = calculate_RSCU(read_genome(file_name_in))
+    dataframe_CAI = calculate_CAI(read_genome(file_name_in))
     
     ## save
     save_table(dataframe_genome, os.path.join(base_path, file_name_out_counts))
