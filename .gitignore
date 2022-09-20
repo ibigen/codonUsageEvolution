@@ -134,4 +134,4 @@ dmypy.json
 .pydevproject
 
 #VisualStudio
-.vs 
+.vs/ 
