@@ -7,6 +7,8 @@ import unittest
 import os
 from codon_usage_evolution import read_genome
 
+genome = read_genome()
+
 class Test(unittest.TestCase):
 
 

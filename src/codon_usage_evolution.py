@@ -16,7 +16,7 @@ from CAI import RSCU, relative_adaptiveness, CAI
 utils = Utils()
 constants = Constants()
 
-def read_genome(file_name):
+def read_genome( file_name):
     """ read genome """
     with (gzip.open(file_name, mode='rt') if utils.is_gzip(file_name) else open(file_name, mode='r')) as handle_read:
         record_dict = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
@@ -45,52 +45,30 @@ def read_genome(file_name):
                     counts[key]=[x]
                 else:
                     counts[key].append(x)
-    print(counts)
+    #print(counts)
 
     
     #creat a dataframe with counts
     data = [[key]+ i for key, i in counts.items()]
     column_labels = ["Gene\Codon"] + constants.TOTAL_CODONS
     dataframe_counts = pd.DataFrame(data, columns=column_labels)
-    #print(dataframe_counts)
-    return dataframe_counts
-    
 
-def calculate_RSCU(records): 
-    sequences =[] #To calculate RSCU and CAI
-    for record in records:
-            sequences.append(record.seq)
-    #calculate RSCU for each codon 
+    #RSCU
+    sequences = [value for value in dic_genes.values()]
     dic_RSCU = RSCU(sequences)
     dataframe_RSCU = pd.DataFrame([dic_RSCU])
-    return dataframe_RSCU
 
-
-def calculate_CAI(records):
-    genes=[]
-    for record in records:
-        element = record.description.split(" ") 
-        gene = element[1][6:-1]
-        genes.append(gene)
-    sequences =[] #To calculate RSCU and CAI
-    for record in records:
-            sequences.append(record.seq)
+    #CAI
     weights = relative_adaptiveness(sequences)
     list_CAI = [CAI(sequence, weights=weights) for sequence in sequences]
-    dic_CAI={gene:cai for gene in genes for cai in list_CAI}
+    dic_CAI={gene:cai for gene in dic_genes.keys() for cai in list_CAI}
     dataframe_CAI = pd.DataFrame([dic_CAI])
-    return dataframe_CAI
 
-
-def make_tables(file_name_in):
-    """ create three dataframes with: 1) 2) 3)"""
-    read_genome(file_name_in)
+    print(dataframe_counts)
+    return dataframe_counts, dataframe_RSCU, dataframe_CAI
     
-    pass
 
-
-
-def save_table(dataframe_genome, file_out):
+def save_table( dataframe_genome, file_out):
     """ save a data frame to a CSV file """
     dataframe_genome.to_csv(file_out)
    
@@ -115,8 +93,9 @@ if __name__ == '__main__':
     utils.test_exist_file(file_name_in)
     
     # get dataframes
-    dataframe_count_codons_in_genes, dataframe_RSCU, dataframe_CAI = make_tables(file_name_in)
+    dataframe_count_codons_in_genes, dataframe_RSCU, dataframe_CAI = read_genome(file_name_in)
     
+
     ## save
     save_table(dataframe_count_codons_in_genes, os.path.join(base_path, file_name_out_counts))
     save_table(dataframe_RSCU, os.path.join(base_path, file_name_out_RSCU))
