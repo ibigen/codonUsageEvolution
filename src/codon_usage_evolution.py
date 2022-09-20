@@ -7,13 +7,14 @@ import gzip
 import os
 import pandas as pd
 import socket
-import constants.constants as constants
+from constants.constants import Constants
 
 from utils.utils import Utils
 from Bio import SeqIO
 from CAI import RSCU, relative_adaptiveness, CAI
 
 utils = Utils()
+constants = Constants()
 
 def read_genome(file_name):
     """ read genome """
@@ -101,8 +102,9 @@ def calculate_CAI(records):
     dic_CAI={gene:cai for gene in genes for cai in list_CAI}
     dataframe_CAI = pd.DataFrame([dic_CAI])
     return dataframe_CAI
-            
-def make_tables(file_name):
+
+
+def make_tables(file_name_in):
     """ create three dataframes with: 1) 2) 3)"""
     pass
 
@@ -110,6 +112,7 @@ def make_tables(file_name):
 
 
 def save_table(dataframe_genome, file_out):
+    """ save a data frame to a CSV file """
     dataframe_genome.to_csv(file_out)
    
 
