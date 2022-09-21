@@ -73,11 +73,12 @@ def read_genome( file_name):
         dataframe_counts = pd.DataFrame(data, columns=column_labels)
     
         #RSCU
-        sequences = [seq_record.seq for seq_record in record_dict.values()]
-        dic_RSCU = RSCU(sequences)
+        dic_RSCU = {key:RSCU([record_dict[key].seq]) for key in record_dict.keys()}
         dataframe_RSCU = pd.DataFrame([dic_RSCU])
-    
+        #print(dic_RSCU)
+
         #CAI
+        sequences = [seq_record.seq for seq_record in record_dict.values()]
         weights = relative_adaptiveness(sequences)
         list_CAI = [CAI(sequence, weights=weights) for sequence in sequences]
         dic_CAI={gene:cai for gene in record_dict.keys() for cai in list_CAI}
