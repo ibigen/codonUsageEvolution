@@ -69,11 +69,14 @@ def read_genome( file_name):
         
         #creat a dataframe with counts
 #        data = [[key]+ i for key, i in counts.items()]
+        print("Create codon data frame counts")
         column_labels = ["Gene\Codon"] + constants.TOTAL_CODONS
         dataframe_counts = pd.DataFrame(data, columns=column_labels)
     
         #RSCU
+        print("Create RSCUs")
         dic_RSCU = {key:RSCU([record_dict[key].seq]) for key in record_dict.keys()}
+        ### create table order by amino. Add CAI value at the end.
         dataframe_RSCU = pd.DataFrame([dic_RSCU])
         #print(dic_RSCU)
 

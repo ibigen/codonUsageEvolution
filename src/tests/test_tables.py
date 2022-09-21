@@ -7,7 +7,7 @@ import unittest
 import os
 from codon_usage_evolution import read_genome
 
-genome = read_genome()
+
 
 class Test(unittest.TestCase):
 
@@ -32,10 +32,14 @@ class Test(unittest.TestCase):
     def test_read_fasta(self):
         ecoli_fasta = os.path.join(os.path.dirname(os.path.abspath(__file__)), "files/references/ecoli.fasta")
         self.assertTrue(os.path.exists(ecoli_fasta))
-
-        vect_genome = read_genome(ecoli_fasta)
-        self.assertEqual(12, len(vect_genome))
         
+        ## call method
+        dataframe_counts, dataframe_RSCU, dataframe_CAI = read_genome(ecoli_fasta)
+
+        ## not finished, test if this gene is inside data frame
+        self.assertTrue(dataframe_counts['lcl|NC_000913.3_cds_NP_414542.1_1'])
+        
+        self.assertEqual(1, dataframe_counts['lcl|NC_000913.3_cds_NP_414542.1_1']['AAA'])
         
     def test_tables(self):
         expected_result = os.path.join(os.path.dirname(os.path.abspath(__file__)), "files/tables/result_temp.csv")
