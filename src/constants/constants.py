@@ -21,7 +21,7 @@ class Constants(object):
     # to order them by amino acid
 
     TOTAL_CODONS = [str(key).upper().replace('U', 'T') for key in codons_per_aminoacid]
-    print(len(TOTAL_CODONS))
+
 
 
 

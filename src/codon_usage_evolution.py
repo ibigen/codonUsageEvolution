@@ -15,7 +15,7 @@ from utils.utils import Utils
 from Bio import SeqIO
 from CAI import RSCU, relative_adaptiveness, CAI
 
-# instanciate two objects
+### instanciate two objects
 utils = Utils()
 constants = Constants()
 
@@ -53,6 +53,10 @@ def read_genome(file_name):
 
         # RSCU
         print("Create RSCUs")
+        for seq in record_dict.values():
+            print(len(seq.seq)%3 == 0)
+            while len(seq.seq) % 3 != 0:
+               list(seq.seq).pop(-1)
 
         # Try to eliminate bases that do not form a codon
         initial_dic_RSCU = {key: RSCU([record_dict[key].seq]) for key in record_dict.keys()}
@@ -100,10 +104,10 @@ def save_table(dataframe_genome, file_out):
 
 if __name__ == '__main__':
 
-    # several utilities
+    ### several utilities
     utils = Utils()
 
-    # set file name in and out
+    ## set file name in and out
     if (socket.gethostname() == "cs-nb0008"):  ## test computer name
         base_path = "/home/projects/ua/master/codon_usage"
     else:
@@ -125,5 +129,5 @@ if __name__ == '__main__':
     save_table(dataframe_RSCU_CAI, os.path.join(base_path, file_name_out_RSCU_CAI))
     save_table(dataframe_CAI, os.path.join(base_path, file_name_out_CAI))
 
-    # make expression in genes
+    # make expression in genes 
     print("finished")
