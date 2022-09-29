@@ -26,6 +26,7 @@ def read_genome(file_name):
         for key in record_dict_1:
             if len(record_dict_1[key].seq) % 3 == 0:
                 record_dict[key] = record_dict_1[key]
+        #print(record_dict)
 
         ## i can interact directly with record_dict
         data = {}  ## { gene : { condon1: 2, codon2 : 4, codon3 : 5 } }
@@ -73,21 +74,25 @@ def read_genome(file_name):
         dataframe_RSCU = pd.DataFrame(columns_RSCU,
                                       index=[key for key in sorted_by_aminoacid.keys()],
                                       columns=[key for key in initial_dic_RSCU.keys()])
+        dataframe_RSCU = dataframe_RSCU.T
 
         # Add CAI value at the end.
         # CAI
 
-        sequences = [str(record_dict[key].seq) for key in record_dict]
+        sequences = [record_dict[key].seq for key in record_dict]
         weights = relative_adaptiveness(sequences)
         list_CAI = [CAI(sequence, weights=weights) for sequence in sequences]
         dic_CAI = {gene: cai for gene in record_dict.keys() for cai in list_CAI}
-        dataframe_CAI = pd.DataFrame([dic_CAI], index=[key for key in dic_CAI])
+        dataframe_CAI = pd.DataFrame([dic_CAI])
 
-        cai_row = pd.Series(dic_CAI)
+        #dataframe_RSCU.join(list_CAI)
+        #cai_column = pd.Series(dic_CAI)
         print("Creating dataframe ")
-        dataframe_RSCU_CAI = pd.concat([dataframe_RSCU, cai_row.to_frame().T], keys=["RSCU", "CAI"], axis=0)
+        dataframe_RSCU_and_CAI = pd.concat([dataframe_RSCU, dataframe_CAI.T])
+        dataframe_RSCU_and_CAI.rename(columns={0: 'CAI'}, inplace=True)
 
-    return dataframe_counts, dataframe_RSCU_CAI, dataframe_CAI
+
+    return dataframe_counts, dataframe_RSCU_and_CAI, dataframe_CAI
 
 
 def save_table(dataframe_genome, file_out):
