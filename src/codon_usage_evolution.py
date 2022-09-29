@@ -7,15 +7,12 @@ import gzip
 import os
 import pandas as pd
 import socket
-
-from pandas import unique
-
 from constants.constants import Constants
 from utils.utils import Utils
 from Bio import SeqIO
 from CAI import RSCU, relative_adaptiveness, CAI
 
-### instanciate two objects
+### instantiate two objects
 utils = Utils()
 constants = Constants()
 
@@ -24,7 +21,11 @@ def read_genome(file_name):
     """ read genome """
     print("Genome reading: " + file_name)
     with (gzip.open(file_name, mode='rt') if utils.is_gzip(file_name) else open(file_name, mode='r')) as handle_read:
-        record_dict = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
+        record_dict_1 = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
+        record_dict = {}
+        for key in record_dict_1:
+            if len(record_dict_1[key].seq) % 3 == 0:
+                record_dict[key] = record_dict_1[key]
 
         ## i can interact directly with record_dict
         data = {}  ## { gene : { condon1: 2, codon2 : 4, codon3 : 5 } }
@@ -41,7 +42,6 @@ def read_genome(file_name):
             codon_count = [0] * len(constants.TOTAL_CODONS)
             for indexes, codon in enumerate(constants.TOTAL_CODONS):
                 if codon in counts_gene: codon_count[indexes] = counts_gene[codon]
-
             ## add gene with count codon
             data[key] = codon_count
 
@@ -53,11 +53,6 @@ def read_genome(file_name):
 
         # RSCU
         print("Create RSCUs")
-        for seq in record_dict.values():
-            print(len(seq.seq)%3 == 0)
-            while len(seq.seq) % 3 != 0:
-               list(seq.seq).pop(-1)
-
         # Try to eliminate bases that do not form a codon
         initial_dic_RSCU = {key: RSCU([record_dict[key].seq]) for key in record_dict.keys()}
 
@@ -78,13 +73,12 @@ def read_genome(file_name):
         dataframe_RSCU = pd.DataFrame(columns_RSCU,
                                       index=[key for key in sorted_by_aminoacid.keys()],
                                       columns=[key for key in initial_dic_RSCU.keys()])
-        # Add column names
-
 
         # Add CAI value at the end.
         # CAI
 
-        sequences = [seq_record.seq for seq_record in record_dict.values()]
+        sequences = [str(record_dict[key].seq) for key in record_dict]
+        print(sequences)
         weights = relative_adaptiveness(sequences)
         list_CAI = [CAI(sequence, weights=weights) for sequence in sequences]
         dic_CAI = {gene: cai for gene in record_dict.keys() for cai in list_CAI}
