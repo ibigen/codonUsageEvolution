@@ -78,7 +78,6 @@ def read_genome(file_name):
         # CAI
 
         sequences = [str(record_dict[key].seq) for key in record_dict]
-        print(sequences)
         weights = relative_adaptiveness(sequences)
         list_CAI = [CAI(sequence, weights=weights) for sequence in sequences]
         dic_CAI = {gene: cai for gene in record_dict.keys() for cai in list_CAI}
