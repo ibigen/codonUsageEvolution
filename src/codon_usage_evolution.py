@@ -11,6 +11,7 @@ from constants.constants import Constants
 from utils.utils import Utils
 from Bio import SeqIO
 from CAI import RSCU, relative_adaptiveness, CAI
+from count_sequences import CountSequences
 
 ### instantiate two objects
 utils = Utils()
@@ -19,18 +20,22 @@ constants = Constants()
 
 def read_genome(file_name):
     """ read genome """
+    counts = CountSequences()
     print("Genome reading: " + file_name)
-    with (gzip.open(file_name, mode='rt') if utils.is_gzip(file_name) else open(file_name, mode='r')) as handle_read:
-        record_dict_1 = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
-        record_dict = {}
-        for key in record_dict_1:
-            if len(record_dict_1[key].seq) % 3 == 0:
-                record_dict[key] = record_dict_1[key]
-        #print(record_dict)
+    with (gzip.open(file_name, mode='rt') if utils.is_gzip(file_name) else open(file_name,
+                                                                                mode='r')) as handle_read:
+        record_dict = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
 
         ## i can interact directly with record_dict
         data = {}  ## { gene : { condon1: 2, codon2 : 4, codon3 : 5 } }
+        initial_dic_RSCU = {}
+        dic_CAI = {}
         for key in record_dict:
+            if len(record_dict[key].seq) % 3 != 0:
+                counts.add_divisible_3()
+                continue
+
+            counts.add_pass()
             counts_gene = {}
             for i in range(0, len(record_dict[key].seq), 3):
                 codon = str(record_dict[key].seq)[i:i + 3].upper().replace('T', 'U')
@@ -46,16 +51,20 @@ def read_genome(file_name):
             ## add gene with count codon
             data[key] = codon_count
 
+            # RSCU
+            initial_dic_RSCU[key] = RSCU([record_dict[key].seq])
+
+            # CAI
+            dic_CAI[key] = float(CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[key]))
+
         # creat a dataframe with counts
-        rows = [[key] + i for key, i in data.items()]
+        rows = [i for key, i in data.items()]
         print("Create codon data frame counts")
-        column_labels = ["Gene\Codon"] + constants.TOTAL_CODONS
-        dataframe_counts = pd.DataFrame(rows, columns=column_labels)
+        column_labels = constants.TOTAL_CODONS
+        dataframe_counts = pd.DataFrame(rows, columns=column_labels, index=[key for key in data.keys()])
 
         # RSCU
-        print("Create RSCUs")
-        # Try to eliminate bases that do not form a codon
-        initial_dic_RSCU = {key: RSCU([record_dict[key].seq]) for key in record_dict.keys()}
+
 
         # Create table sorted by amino acid.
 
@@ -65,9 +74,9 @@ def read_genome(file_name):
             for value in range(0, len(dic_values)):
                 if str(codon).upper() in dic_values[value]:
                     if codon in sorted_by_aminoacid:
-                        sorted_by_aminoacid[codon].append(dic_values[value][codon])
+                        sorted_by_aminoacid[codon].append(float(dic_values[value][codon]))
                     else:
-                        sorted_by_aminoacid[codon] = [dic_values[value][codon]]
+                        sorted_by_aminoacid[codon] = [float(dic_values[value][codon])]
 
         data_RSCU = [n for key, n in sorted_by_aminoacid.items()]
         columns_RSCU = [list(value) for value in data_RSCU]
@@ -76,22 +85,13 @@ def read_genome(file_name):
                                       columns=[key for key in initial_dic_RSCU.keys()])
         dataframe_RSCU = dataframe_RSCU.T
 
-        # Add CAI value at the end.
         # CAI
-
-        sequences = [record_dict[key].seq for key in record_dict]
-        weights = relative_adaptiveness(sequences)
-        list_CAI = [CAI(sequence, weights=weights) for sequence in sequences]
-        dic_CAI = {gene: cai for gene in record_dict.keys() for cai in list_CAI}
         dataframe_CAI = pd.DataFrame([dic_CAI])
 
-        #dataframe_RSCU.join(list_CAI)
-        #cai_column = pd.Series(dic_CAI)
-        print("Creating dataframe ")
+        print("Create data frame with RSCU and CAI values ")
         dataframe_RSCU_and_CAI = pd.concat([dataframe_RSCU, dataframe_CAI.T])
         dataframe_RSCU_and_CAI.rename(columns={0: 'CAI'}, inplace=True)
-
-
+    print(counts)
     return dataframe_counts, dataframe_RSCU_and_CAI, dataframe_CAI
 
 
