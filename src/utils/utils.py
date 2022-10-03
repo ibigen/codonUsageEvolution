@@ -126,10 +126,13 @@ class Utils(object):
 		if (sz_file_name == None): return False
 
 		if os.path.exists(sz_file_name) and len(sz_file_name) > 0:
-			cmd = "rm " + sz_file_name
-			exist_status = os.system(cmd)
-			if (exist_status != 0):
-				raise Exception("Fail to remove a file")
+			if os.name == 'nt':
+				os.unlink(sz_file_name)
+			else:
+				cmd = "rm " + sz_file_name
+				exist_status = os.system(cmd)
+				if (exist_status != 0):
+					raise Exception("Fail to remove a file")
 			return True
 		return False
 
