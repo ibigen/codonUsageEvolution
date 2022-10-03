@@ -86,11 +86,13 @@ def read_genome(file_name):
         dataframe_RSCU = dataframe_RSCU.T
 
         # CAI
+        dataframe_RSCU["CAI"] = dic_CAI.values()
         dataframe_CAI = pd.DataFrame([dic_CAI])
 
         print("Create data frame with RSCU and CAI values ")
-        dataframe_RSCU_and_CAI = pd.concat([dataframe_RSCU, dataframe_CAI.T])
-        dataframe_RSCU_and_CAI.rename(columns={0: 'CAI'}, inplace=True)
+        #dataframe_RSCU_and_CAI = pd.concat([dataframe_RSCU, dataframe_CAI.T])
+        #dataframe_RSCU_and_CAI.rename(columns={0: 'CAI'}, inplace=True)
+        dataframe_RSCU_and_CAI = dataframe_RSCU
     print(counts)
     return dataframe_counts, dataframe_RSCU_and_CAI, dataframe_CAI
 
@@ -113,13 +115,9 @@ if __name__ == '__main__':
     #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
     name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
     file_name_in = os.path.join(base_path, name)
-    if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
-        organism = "mouse"
-    elif name =="GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
-        organism = "ecoli"
-    file_name_out_counts = f"table_counts_{organism}.csv"
-    file_name_out_RSCU_CAI = f"table_RSCU_CAI_{organism}.csv"
-    file_name_out_CAI = f"table_CAI_{organism}.csv"
+    file_name_out_counts = f"table_counts.csv"
+    file_name_out_RSCU_CAI = f"table_RSCU_CAI.csv"
+    file_name_out_CAI = f"table_CAI.csv"
 
     # testing existing files
     utils.test_exist_file(file_name_in)
