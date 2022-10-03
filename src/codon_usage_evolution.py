@@ -87,7 +87,8 @@ def read_genome(file_name):
 
         # CAI
         dataframe_RSCU["CAI"] = dic_CAI.values()
-        dataframe_CAI = pd.DataFrame([dic_CAI])
+        dataframe_CAI = pd.DataFrame([dic_CAI], )
+        dataframe_CAI.reset_index(drop=True, inplace=True)
 
         print("Create data frame with RSCU and CAI values ")
         #dataframe_RSCU_and_CAI = pd.concat([dataframe_RSCU, dataframe_CAI.T])
@@ -114,10 +115,11 @@ if __name__ == '__main__':
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
     #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
     name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+    #name = "ecoli.fasta"  #to create tables for test
     file_name_in = os.path.join(base_path, name)
-    file_name_out_counts = f"table_counts.csv"
-    file_name_out_RSCU_CAI = f"table_RSCU_CAI.csv"
-    file_name_out_CAI = f"table_CAI.csv"
+    file_name_out_counts = "table_counts.csv"
+    file_name_out_RSCU_CAI = "table_RSCU_CAI.csv"
+    file_name_out_CAI = "table_CAI.csv"
 
     # testing existing files
     utils.test_exist_file(file_name_in)
