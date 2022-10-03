@@ -38,6 +38,8 @@ class Test(unittest.TestCase):
         # test if this gene is inside data frame
         self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_counts.index)
         self.assertEqual(1, dataframe_counts['AAA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
+        self.assertTrue((0.8295403880420882 == dataframe_CAI["lcl|NC_000913.3_cds_NP_414542.1_1"]).all())
+        self.assertTrue((1.3333333333333333 == dataframe_RSCU_CAI["AAA"]["lcl|NC_000913.3_cds_NP_414542.1_1"]).any())
 
     def test_tables(self):
         ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
@@ -52,6 +54,12 @@ class Test(unittest.TestCase):
         csv_result_counts = self.utils.get_temp_file("counts_to_test", ".csv")
         save_table(dataframe_counts, csv_result_counts)
         self.assertTrue(filecmp.cmp(expected_result_counts, csv_result_counts))
+
+        expected_result_CAI = os.path.join(self.baseDirectory, "files/tables/table_CAI_ecoli.csv")
+        csv_result_CAI = self.utils.get_temp_file("CAI_to_test", ".csv")
+        save_table(dataframe_CAI, csv_result_CAI)
+        self.assertTrue(filecmp.cmp(expected_result_CAI, csv_result_CAI))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.test_read_fasta']
