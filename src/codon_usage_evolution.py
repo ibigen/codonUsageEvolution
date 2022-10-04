@@ -91,8 +91,6 @@ def read_genome(file_name):
         dataframe_CAI.reset_index(drop=True, inplace=True)
 
         print("Create data frame with RSCU and CAI values ")
-        #dataframe_RSCU_and_CAI = pd.concat([dataframe_RSCU, dataframe_CAI.T])
-        #dataframe_RSCU_and_CAI.rename(columns={0: 'CAI'}, inplace=True)
         dataframe_RSCU_and_CAI = dataframe_RSCU
     print(counts)
     return dataframe_counts, dataframe_RSCU_and_CAI, dataframe_CAI
@@ -113,13 +111,19 @@ if __name__ == '__main__':
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-    #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-    name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+    name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+    #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
     #name = "ecoli.fasta"  #to create tables for test
+    if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
+        animal = "mouse"
+    elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
+        animal = "ecoli"
+    elif name == "ecoli.fasta":
+        animal = "test"
     file_name_in = os.path.join(base_path, name)
-    file_name_out_counts = "table_counts.csv"
-    file_name_out_RSCU_CAI = "table_RSCU_CAI.csv"
-    file_name_out_CAI = "table_CAI.csv"
+    file_name_out_counts = f"table_counts_{animal}.csv"
+    file_name_out_RSCU_CAI = f"table_RSCU_CAI_{animal}.csv"
+    file_name_out_CAI = f"table_CAI_{animal}.csv"
 
     # testing existing files
     utils.test_exist_file(file_name_in)

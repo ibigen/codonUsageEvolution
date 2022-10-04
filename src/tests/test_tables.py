@@ -8,6 +8,7 @@ import os
 from codon_usage_evolution import read_genome, save_table
 import filecmp
 from utils.utils import Utils
+from count_sequences import CountSequences
 
 
 class Test(unittest.TestCase):
@@ -28,6 +29,7 @@ class Test(unittest.TestCase):
 		self.assertNotEqual(6, self.sum(3, 2))
 
 	def test_read_fasta(self):
+		counts = CountSequences()
 		ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
 		self.assertTrue(os.path.exists(ecoli_fasta))
 
@@ -39,7 +41,9 @@ class Test(unittest.TestCase):
 		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_counts.index)
 		self.assertEqual(1, dataframe_counts['AAA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
 		self.assertTrue(1.3333333333333333 == dataframe_RSCU_CAI['AAA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
-		self.assertTrue((0.8295403880420882 == dataframe_CAI['lcl|NC_000913.3_cds_NP_414542.1_1']).any())
+		self.assertTrue((0.8295403880420882 == dataframe_CAI['lcl|NC_000913.3_cds_NP_414542.1_1'][0]))
+
+
 
 	def test_tables(self):
 		ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
