@@ -89,8 +89,10 @@ def read_genome(file_name):
 
         # CAI
         dataframe_RSCU["CAI"] = dic_CAI.values()
-        dataframe_CAI = pd.DataFrame([dic_CAI], )
-        dataframe_CAI.reset_index(drop=True, inplace=True)
+        dataframe_CAI_1 = pd.DataFrame([dic_CAI], )
+        dataframe_CAI_1.reset_index(drop=True, inplace=True)
+        dataframe_CAI = dataframe_CAI_1.T
+
 
         print("Create data frame with RSCU and CAI values ")
         dataframe_RSCU_and_CAI = dataframe_RSCU
