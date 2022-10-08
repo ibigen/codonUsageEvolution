@@ -39,8 +39,16 @@ class Test(unittest.TestCase):
 
 		# test if this gene is inside data frame
 		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_counts.index)
-		self.assertEqual(1, dataframe_counts['AAA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
+		self.assertIn("lcl|NC_000913.3_cds_YP_009518733.1_12", dataframe_counts.index)
+		self.assertIn('lcl|NC_000913.3_cds_NP_414550.1_9', dataframe_counts.index)
+		self.assertIn('lcl|NC_000913.3_cds_NP_414546.1_5', dataframe_counts.index)
+		self.assertEqual(1, dataframe_counts['TGA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
+		self.assertEqual(5, dataframe_counts['GTT']['lcl|NC_000913.3_cds_NP_414545.1_4'])
+		self.assertEqual(3, dataframe_counts['ACT']['lcl|NC_000913.3_cds_NP_414550.1_9'])
+		self.assertEqual(1, dataframe_counts['GTG']['lcl|NC_000913.3_cds_NP_414546.1_5'])
 		self.assertTrue(1.3333333333333333 == dataframe_RSCU_CAI['AAA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
+		self.assertTrue(2.0 == dataframe_RSCU_CAI['GGT']['lcl|NC_000913.3_cds_NP_414542.1_1'])
+		self.assertTrue(0.6666666666666666 == dataframe_RSCU_CAI['GAG']['lcl|NC_000913.3_cds_YP_009518733.1_12'])
 		self.assertTrue((0.8295403880420882 == dataframe_CAI['lcl|NC_000913.3_cds_NP_414542.1_1'][0]))
 
 
@@ -66,8 +74,8 @@ class Test(unittest.TestCase):
 		self.assertTrue(filecmp.cmp(expected_result_CAI, csv_result_CAI))
 
 		## remove temp files
-		#self.utils.remove_file(csv_result_RSCU_CAI)
-		#self.utils.remove_file(csv_result_counts)
+		self.utils.remove_file(csv_result_RSCU_CAI)
+		self.utils.remove_file(csv_result_counts)
 		
 if __name__ == "__main__":
 	# import sys;sys.argv = ['', 'Test.test_read_fasta']

@@ -13,7 +13,7 @@ from Bio import SeqIO
 from CAI import RSCU, relative_adaptiveness, CAI
 from count_sequences import CountSequences
 
-### instantiate two objects
+# instantiate two objects
 utils = Utils()
 constants = Constants()
 
@@ -24,10 +24,11 @@ def read_genome(file_name):
     print("Genome reading: " + file_name)
     with (gzip.open(file_name, mode='rt') if utils.is_gzip(file_name) else open(file_name,
                                                                                 mode='r')) as handle_read:
+
         record_dict = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
 
-        ## i can interact directly with record_dict
-        data = {}  ## { gene : { condon1: 2, codon2 : 4, codon3 : 5 } }
+        # i can interact directly with record_dict
+        data = {}  # { gene : { condon1: 2, codon2 : 4, codon3 : 5 } }
         initial_dic_RSCU = {}
         dic_CAI = {}
         for key in record_dict:
@@ -37,25 +38,27 @@ def read_genome(file_name):
 
             counts.add_pass()
             counts_gene = {}
-            for i in range(0, len(record_dict[key].seq), 3):
-                codon = str(record_dict[key].seq)[i:i + 3].upper().replace('T', 'U')
+            for i in range(0, len(record_dict[key].seq)+1, 3):
+                codon = str(record_dict[key].seq)[i:i + 3].upper().replace('U', 'T')
+
                 if codon in counts_gene:
                     counts_gene[codon] += 1
                 else:
                     counts_gene[codon] = 1
 
-            ### add gene counts
+            # add gene counts
             codon_count = [0] * len(constants.TOTAL_CODONS)
             for indexes, codon in enumerate(constants.TOTAL_CODONS):
                 if codon in counts_gene: codon_count[indexes] = counts_gene[codon]
-            ## add gene with count codon
+            # add gene with count codon
             data[key] = codon_count
 
             # RSCU
-            initial_dic_RSCU[key] = RSCU([record_dict[key].seq])
+            initial_dic_RSCU[key] = RSCU([record_dict[key].seq])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+
 
             # CAI
-            dic_CAI[key] = float(CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[key]))
+            dic_CAI[key] = float(CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[key]))   # {gene1: CAI1} {GENE2: CAI2}
 
         # creat a dataframe with counts
         rows = [i for key, i in data.items()]
@@ -68,7 +71,7 @@ def read_genome(file_name):
 
         # Create table sorted by amino acid.
 
-        dic_values = list(initial_dic_RSCU.values())
+        dic_values = list(initial_dic_RSCU.values())  # [{codon1: 1, codon2:0, codon3: 1 ...}, {codon1: 1, codon2: 0, codon3: 1...}, {...}, {...}]
         sorted_by_aminoacid = {}
         for codon in constants.TOTAL_CODONS:
             for value in range(0, len(dic_values)):
@@ -76,8 +79,7 @@ def read_genome(file_name):
                     if codon in sorted_by_aminoacid:
                         sorted_by_aminoacid[codon].append(float(dic_values[value][codon]))
                     else:
-                        sorted_by_aminoacid[codon] = [float(dic_values[value][codon])]
-
+                        sorted_by_aminoacid[codon] = [float(dic_values[value][codon])]  # {codon1: [1,2,0,...], codon2: [1,0,0,2,0,...]}
         data_RSCU = [n for key, n in sorted_by_aminoacid.items()]
         columns_RSCU = [list(value) for value in data_RSCU]
         dataframe_RSCU = pd.DataFrame(columns_RSCU,
@@ -111,9 +113,9 @@ if __name__ == '__main__':
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-    name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+    #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
     #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-    #name = "ecoli.fasta"  #to create tables for test
+    name = "ecoli.fasta"  #to create tables for test
     if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
         animal = "mouse"
     elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
