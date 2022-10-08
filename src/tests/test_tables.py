@@ -39,9 +39,17 @@ class Test(unittest.TestCase):
 
 		# test if this gene is inside data frame
 		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_counts.index)
+		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_CAI)
+		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_RSCU_CAI.index)
 		self.assertIn("lcl|NC_000913.3_cds_YP_009518733.1_12", dataframe_counts.index)
+		self.assertIn("lcl|NC_000913.3_cds_YP_009518733.1_12", dataframe_CAI)
+		self.assertIn("lcl|NC_000913.3_cds_YP_009518733.1_12", dataframe_RSCU_CAI.index)
 		self.assertIn('lcl|NC_000913.3_cds_NP_414550.1_9', dataframe_counts.index)
+		self.assertIn('lcl|NC_000913.3_cds_NP_414550.1_9', dataframe_CAI)
+		self.assertIn('lcl|NC_000913.3_cds_NP_414550.1_9', dataframe_RSCU_CAI.index)
 		self.assertIn('lcl|NC_000913.3_cds_NP_414546.1_5', dataframe_counts.index)
+		self.assertIn('lcl|NC_000913.3_cds_NP_414546.1_5', dataframe_CAI)
+		self.assertIn('lcl|NC_000913.3_cds_NP_414546.1_5', dataframe_RSCU_CAI.index)
 		self.assertEqual(1, dataframe_counts['TGA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
 		self.assertEqual(5, dataframe_counts['GTT']['lcl|NC_000913.3_cds_NP_414545.1_4'])
 		self.assertEqual(3, dataframe_counts['ACT']['lcl|NC_000913.3_cds_NP_414550.1_9'])

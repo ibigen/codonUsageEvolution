@@ -62,7 +62,7 @@ def read_genome(file_name):
 
         # creat a dataframe with counts
         rows = [i for key, i in data.items()]
-        print("Create codon data frame counts")
+        print("Create codon counts data frame")
         column_labels = constants.TOTAL_CODONS
         dataframe_counts = pd.DataFrame(rows, columns=column_labels, index=[key for key in data.keys()])
 
