@@ -8,7 +8,6 @@ import os
 from codon_usage_evolution import read_genome, save_table
 import filecmp
 from utils.utils import Utils
-from count_sequences import CountSequences
 
 
 class Test(unittest.TestCase):
@@ -29,14 +28,16 @@ class Test(unittest.TestCase):
 		self.assertNotEqual(6, self.sum(3, 2))
 
 	def test_read_fasta(self):
-		counts = CountSequences()
 		ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
 		self.assertTrue(os.path.exists(ecoli_fasta))
 
 		# call method
-		dataframe_counts, dataframe_RSCU_CAI, dataframe_CAI = read_genome(ecoli_fasta)
+		dataframe_counts, dataframe_RSCU_CAI, dataframe_CAI, stats = read_genome(ecoli_fasta)
 
-
+		### stats
+		self.assertEqual(1, stats.count_divisible_3)
+		self.assertEqual(12, stats.count_pass)
+		
 		# test if this gene is inside data frame
 		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_counts.index)
 		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_CAI.index)
@@ -68,10 +69,9 @@ class Test(unittest.TestCase):
 		ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
 		expected_result_RSCU_CAI = os.path.join(self.baseDirectory, "files/tables/table_RSCU_CAI_test.csv")
 		self.assertTrue(os.path.exists(expected_result_RSCU_CAI))
-		dataframe_counts, dataframe_RSCU_CAI, dataframe_CAI = read_genome(ecoli_fasta)
+		dataframe_counts, dataframe_RSCU_CAI, dataframe_CAI, stats = read_genome(ecoli_fasta)
 		csv_result_RSCU_CAI = self.utils.get_temp_file("RSCU_and_CAI_to_test", ".csv")
 		save_table(dataframe_RSCU_CAI, csv_result_RSCU_CAI)
-		print(expected_result_RSCU_CAI, csv_result_RSCU_CAI)
 		self.assertTrue(filecmp.cmp(expected_result_RSCU_CAI, csv_result_RSCU_CAI))
 
 		expected_result_counts = os.path.join(self.baseDirectory, "files/tables/table_counts_test.csv")

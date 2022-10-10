@@ -14,4 +14,4 @@ class CountSequences:
         self.count_pass += 1
 
     def __str__(self):
-        return f"Divible 3: {self.count_divisible_3}\nPass: {self.count_pass}"
+        return f"Fail Divisible 3: {self.count_divisible_3}\nPass: {self.count_pass}"
