@@ -30,7 +30,8 @@ def read_genome(file_name):
 		# i can interact directly with record_dict
 		data = {}  # { gene : { condon1: 2, codon2 : 4, codon3 : 5 } }
 		initial_dic_RSCU = {}
-		dic_CAI = {}
+		dic_CAI, dic_genome_CAI = {}, {}
+		codon_count_total = [0] * len(constants.TOTAL_CODONS)
 		for key in record_dict:
 			if len(record_dict[key].seq) % 3 != 0:
 				counts_stats.add_divisible_3()
@@ -49,17 +50,31 @@ def read_genome(file_name):
 			# add gene counts
 			codon_count = [0] * len(constants.TOTAL_CODONS)
 			for indexes, codon in enumerate(constants.TOTAL_CODONS):
-				if codon in counts_gene: codon_count[indexes] = counts_gene[codon]
+				if codon in counts_gene: 
+					codon_count[indexes] = counts_gene[codon]
+					codon_count_total[indexes] += counts_gene[codon]
+					
 			# add gene with count codon
 			data[key] = codon_count
 
 			# RSCU
 			initial_dic_RSCU[key] = RSCU([record_dict[key].seq])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
 
-
 			# CAI
 			dic_CAI[key] = float(CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[key]))   # {gene1: CAI1} {GENE2: CAI2}
 
+		# count of all codons
+		data[Constants.GENOME_KEY] = codon_count_total
+		# Global RSCU
+		initial_dic_RSCU[Constants.GENOME_KEY] = RSCU([record_dict[key].seq for key in initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+		# Global CAI, from RSCU from all genome
+		for key in dic_CAI:
+			dic_genome_CAI[key] = float(CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))    # {gene1: CAI1} {GENE2: CAI2}
+		dic_genome_CAI[Constants.GENOME_KEY] = 1
+		
+		# Global CAI, doesn't matter in this case
+		dic_CAI[Constants.GENOME_KEY] = 1
+		
 		# creat a dataframe with counts
 		rows = [i for key, i in data.items()]
 		print("Create codon counts data frame")
@@ -84,14 +99,10 @@ def read_genome(file_name):
 		dataframe_RSCU = dataframe_RSCU.T
 
 		# CAI
-		dataframe_RSCU["CAI"] = dic_CAI.values()
-		dataframe_CAI_1 = pd.DataFrame([dic_CAI], )
-		dataframe_CAI_1.reset_index(drop=True, inplace=True)
-		dataframe_CAI = dataframe_CAI_1.T
+		dataframe_RSCU[Constants.GENE_CAI] = dic_CAI.values()
+		dataframe_RSCU[Constants.GENOME_CAI] = dic_genome_CAI.values()
 
-		print("Create data frame with RSCU and CAI values ")
-		dataframe_RSCU_and_CAI = dataframe_RSCU
-	return dataframe_counts, dataframe_RSCU_and_CAI, dataframe_CAI, counts_stats
+	return dataframe_counts, dataframe_RSCU, counts_stats
 
 
 def save_table(dataframe_genome, file_out):
@@ -110,8 +121,8 @@ if __name__ == '__main__':
 	else:
 		base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
 	#name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-	#name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-	name = "ecoli.fasta"  #to create tables for test
+	name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+	#name = "ecoli.fasta"  #to create tables for test
 	if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
 		animal = "mouse"
 	elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
@@ -127,7 +138,7 @@ if __name__ == '__main__':
 	utils.test_exist_file(file_name_in)
 
 	# get dataframes
-	dataframe_count_codons_in_genes, dataframe_RSCU_CAI, dataframe_CAI, counts_stats = read_genome(file_name_in)
+	dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
 	## show stats
 	print(counts_stats)
@@ -135,7 +146,6 @@ if __name__ == '__main__':
 	# save
 	save_table(dataframe_count_codons_in_genes, os.path.join(base_path, file_name_out_counts))
 	save_table(dataframe_RSCU_CAI, os.path.join(base_path, file_name_out_RSCU_CAI))
-	save_table(dataframe_CAI, os.path.join(base_path, file_name_out_CAI))
 
 	# make expression in genes 
 	print("finished")
