@@ -19,8 +19,7 @@ utils = Utils()
 constants = Constants()
 expression = Expression()
 
-expression.samples_information()
-expression.expression_values()
+
 def read_genome(file_name):
 	""" read genome """
 	counts_stats = CountSequences()
