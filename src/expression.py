@@ -1,4 +1,4 @@
-"Open of files with information of samples and expression values"
+"""Open of files with information of samples and expression values"""
 import os
 import socket
 
