@@ -3,6 +3,7 @@ Created on 09/09/2022
 
 @author: mmp
 '''
+from expression import Expression
 import gzip
 import os
 import pandas as pd
@@ -16,6 +17,7 @@ from count_sequences import CountSequences
 # instantiate two objects
 utils = Utils()
 constants = Constants()
+expression = Expression()
 
 
 def read_genome(file_name):
@@ -121,8 +123,8 @@ if __name__ == '__main__':
 	else:
 		base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
 	#name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-	name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-	#name = "ecoli.fasta"  #to create tables for test
+	#name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+	name = "ecoli.fasta"  #to create tables for test
 	if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
 		animal = "mouse"
 	elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
@@ -149,3 +151,5 @@ if __name__ == '__main__':
 
 	# make expression in genes 
 	print("finished")
+
+
