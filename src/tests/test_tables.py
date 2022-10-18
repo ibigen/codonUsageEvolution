@@ -15,6 +15,7 @@ class Test(unittest.TestCase):
 
 	def setUp(self):
 		self.baseDirectory = os.path.dirname(os.path.abspath(__file__))
+		print(self.baseDirectory)
 
 	def tearDown(self):
 		pass

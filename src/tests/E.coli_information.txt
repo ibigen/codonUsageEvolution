@@ -1,0 +1,7 @@
+	Sample	Tissue	Age	Sex
+A9_384Bulk_Plate1_S9	A9_384Bulk_Plate1_S9	Brain	3	Male
+A20_384Bulk_Plate2_S20	A20_384Bulk_Plate2_S20	Brain	12	Male
+E20_384Bulk_Plate1_S116	E20_384Bulk_Plate1_S116	Brain	21	Male
+F11_384Bulk_Plate2_S131	F11_384Bulk_Plate2_S131	Brain	3	Female
+L19_384Bulk_Plate2_S283	L19_384Bulk_Plate2_S283	Brain	15	Female
+A18_384Bulk_Plate1_S18	A18_384Bulk_Plate1_S18	Brain	21	Female

@@ -7,18 +7,14 @@ class Expression(object):
 
     def __init__(self):
         # set the names of the files
-        file_information = "E.coli_information.txt"
-        file_expression = "E.coli_expression.txt"
-        if (socket.gethostname() == "cs-nb0008"):  # test computer name
-            self.base_path = "/home/projects/ua/master/codon_usage"
-        else:
-            self.base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
+        self.baseDirectory = os.path.dirname(os.path.abspath(__file__))
+        self.file_information = os.path.join(self.baseDirectory, "files/E.coli_information.txt")
+        self.file_expression = os.path.join(self.baseDirectory, "files/E.coli_expression.txt")
 
-        self.file_information = os.path.join(self.base_path, file_information)
-        self.file_expression = os.path.join(self.base_path, file_expression)
 
     def samples_information(self):
         """Open, read and save information from samples"""
+
         information = []
         with open(self.file_information, 'r') as information_file:
             for line in information_file:
