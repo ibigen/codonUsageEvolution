@@ -8,7 +8,7 @@ import os
 from codon_usage_evolution import read_genome, save_table
 import filecmp
 from utils.utils import Utils
-
+from expression import Expression
 
 class Test(unittest.TestCase):
 	utils = Utils()
@@ -81,6 +81,17 @@ class Test(unittest.TestCase):
 		## remove temp files
 		self.utils.remove_file(csv_result_RSCU_CAI)
 		self.utils.remove_file(csv_result_counts)
+		
+		
+	def test_expression(self):
+		
+		self.baseDirectory = os.path.dirname(os.path.abspath(__file__))
+		file_information = os.path.join(self.baseDirectory, "files/expression/E.coli_information.txt")
+		file_expression = os.path.join(self.baseDirectory, "files/expression/E.coli_expression.txt")
+		self.assertTrue(os.path.exists(file_information))
+		
+		expression = Expression(file_information, file_expression)
+		
 		
 if __name__ == "__main__":
 	# import sys;sys.argv = ['', 'Test.test_read_fasta']

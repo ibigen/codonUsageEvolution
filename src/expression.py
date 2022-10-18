@@ -1,35 +1,104 @@
 """Open of files with information of samples and expression values"""
-import os
-import socket
+import os, sys
+from utils.utils import Utils
+
+class Tissue(object):
+
+	def __init__(self, tissue, age, sex):
+		
+		self.tissue = tissue
+		self.age = age
+		self.sex = sex
+		self.dt_gene = {}
+
+	def add_value(self, gene, value):
+		
+		if not gene in self.dt_gene:
+			self.dt_gene[gene] = value
+		else: sys.exit("Gene already in dictonary: " + gene)
+
+class Sample(object):
+	
+	def __init__(self):
+		"""
+		:parm sample_name 
+		"""
+		self.dt_sample = { }  ## { sample_name : tissue, sample_name1 : tissue, sample_name2 : tissue, ...
+		
+	def add_sample(self, sample_name, tissue, age, sex):		
+		
+		if not sample_name in self.dt_sample: self.dt_sample[sample_name] = Tissue(tissue, age, sex)
+		else: sys.exit("Sample already exist: " + sample_name)
+
+	def add_gene(self, sample_name, gene, value):
+		if not sample_name in self.dt_sample: sys.exit("Sample does not exist: " + sample_name)
+		self.dt_sample[sample_name].add_value(gene, value)
+		
+	def get_number_sample(self):
+		return len(self.dt_sample)
 
 
 class Expression(object):
 
-    def __init__(self):
-        # set the names of the files
-        self.baseDirectory = os.path.dirname(os.path.abspath(__file__))
-        self.file_information = os.path.join(self.baseDirectory, "files/E.coli_information.txt")
-        self.file_expression = os.path.join(self.baseDirectory, "files/E.coli_expression.txt")
+	utils = Utils()
+	
+	def __init__(self, sample_info, sample_expression):
+		"""
+		:param sample_info			info to the samples
+		:param sample_expression   file with expression values
+		"""
+		self.sample = Sample()
+		
+		# set the names of the files
+		self.file_information = sample_info
+		self.file_expression = sample_expression
+		
+		## test if files exists
+		self.utils.test_exist_file(self.file_information)
+		self.utils.test_exist_file(self.file_expression)
+		
+		## read files
+		self.samples_information()
+		self.expression_values()
 
 
-    def samples_information(self):
-        """Open, read and save information from samples"""
+	def samples_information(self):
+		"""Open, read and save information from samples
+		File:
+			Sample	Tissue	Age	Sex
+		A9_384Bulk_Plate1_S9	A9_384Bulk_Plate1_S9	Brain	3	Male
+		A20_384Bulk_Plate2_S20	A20_384Bulk_Plate2_S20	Brain	12	Male
+		E20_384Bulk_Plate1_S116	E20_384Bulk_Plate1_S116	Brain	21	Male
+		
+		"""
 
-        information = []
-        with open(self.file_information, 'r') as information_file:
-            for line in information_file:
-                line = line.strip()
-                line = line.split('\t')
-                information.append(line)
+		with open(self.file_information, 'r') as information_file:
+			for line in information_file:
+				line = line.strip()
+				if len(line) == 0: continue
+				
+				lst_line = line.split('\t')
+				if len(lst_line) != 5:
+					sys.exit("Wrong line: " + line)
+				self.sample.add_sample(lst_line[0], lst_line[2], lst_line[3], lst_line[4])
 
-    def expression_values(self):
-        """Open, read and save values of expression from the different samples"""
-        expression = []
-        with open(self.file_expression, 'r') as expression_file:
-            for line in expression_file:
-                line = line.strip()
-                line = line.split('\t')
-                expression.append(line)
+		print("Number of samples: {}".format(self.sample.get_number_sample()))
+		
+	def expression_values(self):
+		"""Open, read and save values of expression from the different samples
+		
+		File:
+		  A9_384Bulk_Plate1_S9  A20_384Bulk_Plate2_S20 E20_384Bulk_Plate1_S116 F11_384Bulk_Plate2_S131 L19_384Bulk_Plate2_S283 A18_384Bulk_Plate1_S18
+		lcl|NC_000913.3_cds_NP_414542.1_1 2109.15514707196	2347.99870835941	1745.26561494942	1901.93328159018	2160.2317805036	2359.80082045078
 
+		"""
+		expression = []
+		with open(self.file_expression, 'r') as expression_file:
+			for line in expression_file:
+				line = line.strip()
+				if len(line) == 0: continue
+				
+				line = line.split('\t')
+				expression.append(line)
 
 
