@@ -3,7 +3,7 @@ Created on 09/09/2022
 
 @author: mmp
 '''
-from expression import Expression
+from utils.expression import Expression
 import gzip
 import os
 import pandas as pd
@@ -12,13 +12,12 @@ from constants.constants import Constants
 from utils.utils import Utils
 from Bio import SeqIO
 from CAI import RSCU, CAI
-from count_sequences import CountSequences
+from utils.count_sequences import CountSequences
 
 # instantiate two objects
 utils = Utils()
 constants = Constants()
 expression = Expression()
-
 
 def read_genome(file_name):
 	""" read genome """

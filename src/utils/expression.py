@@ -1,6 +1,7 @@
 """Open of files with information of samples and expression values"""
-import os, sys
-from utils.utils import Utils
+from utils import Utils
+import sys
+
 
 class Tissue(object):
 
@@ -53,14 +54,13 @@ class Expression(object):
 		self.file_information = sample_info
 		self.file_expression = sample_expression
 		
-		## test if files exists
+		# test if files exists
 		self.utils.test_exist_file(self.file_information)
 		self.utils.test_exist_file(self.file_expression)
 		
-		## read files
+		# read files
 		self.samples_information()
 		self.expression_values()
-
 
 	def samples_information(self):
 		"""Open, read and save information from samples
@@ -73,7 +73,9 @@ class Expression(object):
 		"""
 
 		with open(self.file_information, 'r') as information_file:
-			for line in information_file:
+			lines = information_file.readlines()[1:]
+			for line in lines:
+
 				line = line.strip()
 				if len(line) == 0: continue
 				
@@ -83,6 +85,7 @@ class Expression(object):
 				self.sample.add_sample(lst_line[0], lst_line[2], lst_line[3], lst_line[4])
 
 		print("Number of samples: {}".format(self.sample.get_number_sample()))
+		return self.sample.get_number_sample()
 		
 	def expression_values(self):
 		"""Open, read and save values of expression from the different samples
@@ -92,13 +95,16 @@ class Expression(object):
 		lcl|NC_000913.3_cds_NP_414542.1_1 2109.15514707196	2347.99870835941	1745.26561494942	1901.93328159018	2160.2317805036	2359.80082045078
 
 		"""
-		expression = []
+
 		with open(self.file_expression, 'r') as expression_file:
-			for line in expression_file:
+			samples = expression_file.readlines()[0].strip()
+			for line in expression_file[1:]:
 				line = line.strip()
 				if len(line) == 0: continue
-				
-				line = line.split('\t')
-				expression.append(line)
+				lst_line = line.split('\t')
+				if len(lst_line) < 6:
+					sys.exit("Wrong line: " + line)
+			for n in range(len(samples)):
+				self.sample.add_sample(samples[n], lst_line[0], lst_line[n+1])
 
 
