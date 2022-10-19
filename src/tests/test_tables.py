@@ -78,15 +78,17 @@ class Test(unittest.TestCase):
 		self.utils.remove_file(csv_result_RSCU_CAI)
 		self.utils.remove_file(csv_result_counts)
 
-	def expression_tests(self):
-		exp = Expression()
-		self.baseDirectory = os.path.dirname(os.path.abspath(__file__))
-		file_information = os.path.join(self.baseDirectory, "files/expression/E.coli_information.txt")
-		file_expression = os.path.join(self.baseDirectory, "files/expression/E.coli_expression.txt")
+	def expression_test(self):
+		print("expression test")
+		self.expressionDirectory = os.path.dirname(os.path.abspath(__file__))
+		file_information = os.path.join(self.expressionDirectory, "files/expression/E.coli_information.txt")
+		file_expression = os.path.join(self.expressionDirectory, "files/expression/E.coli_expression.txt")
 		self.assertTrue(os.path.exists(file_information))
 		self.assertTrue(os.path.exists(file_expression))
+		# Call method
 		expression = Expression(file_information, file_expression)
-		self.assertEqual(6, exp.samples_information())
+		self.assertEqual(6, expression.samples_information())
+
 
 		
 		
