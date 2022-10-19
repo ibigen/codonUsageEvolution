@@ -60,9 +60,6 @@ class Test(unittest.TestCase):
 		self.assertEqual(13, len(dataframe_counts))
 		self.assertEqual(13, len(dataframe_RSCU_CAI))
 
-
-
-
 	def test_tables(self):
 		ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
 		expected_result_RSCU_CAI = os.path.join(self.baseDirectory, "files/tables/table_RSCU_CAI_test.csv")
@@ -76,8 +73,6 @@ class Test(unittest.TestCase):
 		csv_result_counts = self.utils.get_temp_file("counts_to_test", ".csv")
 		save_table(dataframe_counts, csv_result_counts)
 		self.assertTrue(filecmp.cmp(expected_result_counts, csv_result_counts))
-
-
 
 		# remove temp files
 		self.utils.remove_file(csv_result_RSCU_CAI)

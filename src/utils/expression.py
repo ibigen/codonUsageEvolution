@@ -109,4 +109,5 @@ class Expression(object):
                     sys.exit("Wrong line: " + line)
             for n in range(len(samples)):
                 self.sample.add_sample(samples[n], lst_line[0], lst_line[n + 1])
-			return len(samples)
+
+        return len(samples)

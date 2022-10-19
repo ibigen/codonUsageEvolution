@@ -17,7 +17,7 @@ from utils.count_sequences import CountSequences
 # instantiate two objects
 utils = Utils()
 constants = Constants()
-expression = Expression()
+
 
 def read_genome(file_name):
 	""" read genome """
