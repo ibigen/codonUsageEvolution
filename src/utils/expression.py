@@ -1,5 +1,5 @@
 """Open of files with information of samples and expression values"""
-from utils.utils import Utils
+from utils import Utils
 import sys
 
 
