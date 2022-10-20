@@ -1,4 +1,4 @@
-"""Open of files with information of samples and expression values"""
+"""Open files with information of samples and expression values"""
 from utils.utils import Utils
 import sys
 
@@ -76,7 +76,8 @@ class Expression(object):
         """
 
         with open(self.file_information, 'r') as information_file:
-            lines = information_file.readlines()[1:]
+            file = information_file.readlines()
+            lines = file[1:]
             for line in lines:
 
                 line = line.strip()
@@ -100,8 +101,9 @@ class Expression(object):
         """
 
         with open(self.file_expression, 'r') as expression_file:
-            samples = expression_file.readlines()[0].strip()
-            for line in expression_file[1:]:
+            file = expression_file.readlines()
+            samples = file[0].strip()
+            for line in file[1:]:
                 line = line.strip()
                 if len(line) == 0: continue
                 lst_line = line.split('\t')

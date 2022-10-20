@@ -78,7 +78,7 @@ class Test(unittest.TestCase):
 		self.utils.remove_file(csv_result_RSCU_CAI)
 		self.utils.remove_file(csv_result_counts)
 
-	def expression_test(self):
+	def test_expression(self):
 		self.expressionDirectory = os.path.dirname(os.path.abspath(__file__))
 		file_information = os.path.join(self.expressionDirectory, "files/expression/E.coli_information.txt")
 		file_expression = os.path.join(self.expressionDirectory, "files/expression/E.coli_expression.txt")
