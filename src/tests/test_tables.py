@@ -8,7 +8,7 @@ import os
 from codon_usage_evolution import read_genome, save_table
 import filecmp
 from utils.utils import Utils
-from utils.expression import Expression
+from utils.expression import *
 
 
 class Test(unittest.TestCase):
@@ -39,7 +39,7 @@ class Test(unittest.TestCase):
 		### stats
 		self.assertEqual(1, stats.count_divisible_3)
 		self.assertEqual(12, stats.count_pass)
-		
+
 		# test if this gene is inside data frame
 		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_counts.index)
 		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_RSCU_CAI.index)
@@ -78,8 +78,7 @@ class Test(unittest.TestCase):
 		self.utils.remove_file(csv_result_RSCU_CAI)
 		self.utils.remove_file(csv_result_counts)
 
-	def expression_test(self):
-		print("expression test")
+	def test_expression(self):
 		self.expressionDirectory = os.path.dirname(os.path.abspath(__file__))
 		file_information = os.path.join(self.expressionDirectory, "files/expression/E.coli_information.txt")
 		file_expression = os.path.join(self.expressionDirectory, "files/expression/E.coli_expression.txt")
@@ -87,9 +86,10 @@ class Test(unittest.TestCase):
 		self.assertTrue(os.path.exists(file_expression))
 		# Call method
 		expression = Expression(file_information, file_expression)
+		sample = Sample()
 		self.assertEqual(6, expression.samples_information())
-
-
+		self.assertEqual(6, expression.expression_values())
+		self.assertEqual(6, expression.sample.get_number_sample())
 		
 		
 if __name__ == "__main__":
