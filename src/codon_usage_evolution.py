@@ -3,16 +3,16 @@ Created on 09/09/2022
 
 @author: mmp
 '''
-from utils.expression import Expression
 import gzip
 import os
 import pandas as pd
 import socket
 from constants.constants import Constants
-from utils.utils import Utils
 from Bio import SeqIO
 from CAI import RSCU, CAI
+from utils.utils import Utils
 from utils.count_sequences import CountSequences
+from utils.expression import Expression
 
 # instantiate two objects
 utils = Utils()
@@ -119,17 +119,20 @@ if __name__ == '__main__':
 	## set file name in and out
 	if (socket.gethostname() == "cs-nb0008"):  ## test computer name
 		base_path = "/home/projects/ua/master/codon_usage"
+		name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
 	else:
 		base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-	#name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-	#name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-	name = "ecoli.fasta"  #to create tables for test
+		#name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+		#name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+		name = "ecoli.fasta"  #to create tables for test
+		
 	if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
 		animal = "mouse"
 	elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
 		animal = "ecoli"
 	elif name == "ecoli.fasta":
 		animal = "test"
+		
 	file_name_in = os.path.join(base_path, name)
 	file_name_out_counts = f"table_counts_{animal}.csv"
 	file_name_out_RSCU_CAI = f"table_RSCU_CAI_{animal}.csv"
