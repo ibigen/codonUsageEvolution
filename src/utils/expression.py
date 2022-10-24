@@ -2,6 +2,7 @@
 """Open files with information of samples and expression values"""
 from utils.utils import Utils
 import sys
+import pandas as pd
 
 
 class Tissue(object):
@@ -11,14 +12,9 @@ class Tissue(object):
         self.tissue = tissue
         self.age = age
         self.sex = sex
-        self.dt_gene = {}
 
-    def add_value(self, gene, value):
 
-        if not gene in self.dt_gene:
-            self.dt_gene[gene] = value
-        else:
-            sys.exit("Gene already in dictonary: " + gene)
+
 
 
 class Sample(object):
@@ -28,6 +24,7 @@ class Sample(object):
         :parm sample_name
         """
         self.dt_sample = {}  ## { sample_name : tissue, sample_name1 : tissue, sample_name2 : tissue, ...
+        self.dt_gene = {}
 
     def add_sample(self, sample_name, tissue, age, sex):
 
@@ -39,6 +36,13 @@ class Sample(object):
     def add_gene(self, sample_name, gene, value):
         if not sample_name in self.dt_sample: sys.exit("Sample does not exist: " + sample_name)
         self.dt_sample[sample_name].add_value(gene, value)
+
+    def add_value(self, gene, value):
+
+        if not gene in self.dt_gene:
+            self.dt_gene[gene] = value
+        else:
+            sys.exit("Gene already in dictonary: " + gene)
 
     def get_number_sample(self):
         return len(self.dt_sample)
@@ -53,6 +57,7 @@ class Expression(object):
         :param sample_expression   file with expression values
         """
         self.sample = Sample()
+
 
         # set the names of the files
         self.file_information = sample_info
@@ -104,13 +109,14 @@ class Expression(object):
         with open(self.file_expression, 'r') as expression_file:
             file = expression_file.readlines()
             samples = file[0].strip()
+            print(samples)
             for line in file[1:]:
                 line = line.strip()
                 if len(line) == 0: continue
                 lst_line = line.split('\t')
                 if len(lst_line) < 6:
                     sys.exit("Wrong line: " + line)
-            for n in range(len(samples)):
-                self.sample.add_sample(samples[n], lst_line[0], lst_line[n + 1])
+            for n in range(len(samples)-1):
+                self.sample.add_value(samples[n], lst_line[n])
 
         return len(samples)
