@@ -8,7 +8,7 @@ import os
 from codon_usage_evolution import read_genome, save_table
 import filecmp
 from utils.utils import Utils
-from utils.expression import *
+from utils.expression import Expression, Sample, Tissue
 
 
 class Test(unittest.TestCase):
@@ -84,12 +84,14 @@ class Test(unittest.TestCase):
 		file_expression = os.path.join(self.expressionDirectory, "files/expression/E.coli_expression.txt")
 		self.assertTrue(os.path.exists(file_information))
 		self.assertTrue(os.path.exists(file_expression))
+		
 		# Call method
 		expression = Expression(file_information, file_expression)
-		sample = Sample()
-		self.assertEqual(6, expression.samples_information())
-		#self.assertEqual(6, expression.expression_values())
+		
 		self.assertEqual(6, expression.sample.get_number_sample())
+		self.assertEqual(6, expression.get_number_sample())
+		#self.assertEqual(6, expression.expression_values())
+		#self.assertEqual(6, expression.sample.get_number_sample())
 		
 		
 if __name__ == "__main__":
