@@ -112,13 +112,6 @@ def save_table(dataframe_genome, file_out):
 	dataframe_genome.to_csv(file_out)
 
 
-def expression(info, express):
-	expression = Expression(info, expression)
-	return expression.sample.dt_sample, expression.sample.dt_gene
-
-
-
-
 if __name__ == '__main__':
 
 	# several utilities
@@ -133,6 +126,8 @@ if __name__ == '__main__':
 		#name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
 		#name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
 		name = "ecoli.fasta"  #to create tables for test
+		information_file = os.path.join(base_path, "E.coli_information_file.txt")
+		expression_file = os.path.join(base_path, "E.coli_expression_values.txt")
 		
 	if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
 		animal = "mouse"
@@ -159,10 +154,9 @@ if __name__ == '__main__':
 	save_table(dataframe_count_codons_in_genes, os.path.join(base_path, file_name_out_counts))
 	save_table(dataframe_RSCU_CAI, os.path.join(base_path, file_name_out_RSCU_CAI))
 
-	information = "./tests/files/expression/E.coli_information.txt"
-	expression_file = "./tests/files/expression/E.coli_expression.txt"
-	print(expression(information, expression_file))
 
+	expression = Expression(information_file, expression_file)
+	print(expression)
 	# make expression in genes 
 	print("finished")
 
