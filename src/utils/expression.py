@@ -53,10 +53,7 @@ class Sample(object):
         return self.dt_gene
 
     def get_number_gene(self):
-        count = 0
-        for i in self.dt_gene:
-            count += 1
-        return count
+        return len(self.dt_gene)
     def add_gene(self, sample_name, gene, value):
         if sample_name not in self.dt_sample: sys.exit("Sample does not exist: " + sample_name)
         self.dt_sample[sample_name].add_value(gene, value)
@@ -88,6 +85,9 @@ class Expression(object):
         # read files
         self.__samples_information()
         self.__expression_values()
+
+    def __str__(self):
+        return f"samples: {self.sample.get_number_sample()} genes: {self.sample.get_number_gene()}"
 
     def get_number_sample(self):
         return self.sample.get_number_sample()
@@ -126,11 +126,11 @@ class Expression(object):
                 if len(line) == 0: continue
 
                 lst_line = line.split('\t')
-                if len(lst_line) != 5:
+                if len(lst_line) != len(lst_data) + 1:
                     sys.exit("Wrong line: " + line)
                 self.sample.add_sample(lst_line[0], lst_line[2], lst_line[3], lst_line[4])
 
-        print("Number of samples: {}".format(self.sample.get_number_sample()))
+
 
     def __expression_values(self):
         """Open, read and save values of expression from the different samples
@@ -167,5 +167,3 @@ class Expression(object):
                             self.sample.add_value(gene, value)
 
                     genes += 1
-
-        print("Number of genes: {}".format(genes))
