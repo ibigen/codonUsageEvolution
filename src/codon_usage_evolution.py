@@ -130,8 +130,10 @@ if __name__ == '__main__':
         # name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
         # name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         name = "ecoli.fasta"  # to create tables for test
-        information_file = os.path.join(base_path, "E.coli_information_file.txt")
-        expression_file = os.path.join(base_path, "E.coli_expression_values.txt")
+    
+    ### expression file
+    information_file = os.path.join(base_path, "E.coli_information_file.txt")
+    expression_file = os.path.join(base_path, "E.coli_expression_values.txt")
 
     if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
         animal = "mouse"
@@ -147,6 +149,8 @@ if __name__ == '__main__':
 
     # testing existing files
     utils.test_exist_file(file_name_in)
+    utils.test_exist_file(information_file)
+    utils.test_exist_file(expression_file)
 
     # get dataframes
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
@@ -158,7 +162,15 @@ if __name__ == '__main__':
     save_table(dataframe_count_codons_in_genes, os.path.join(base_path, file_name_out_counts))
     save_table(dataframe_RSCU_CAI, os.path.join(base_path, file_name_out_RSCU_CAI))
 
+    print("Loading expression and samples")
     expression = Expression(information_file, expression_file)
     print(expression)
+    
+    ## Task 1
+    ### get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and E20_384Bulk_Plate1_S116 
+    
+    ## Task 2
+    ### Is there any codons unbalanced between the two groups identified in the task1?
+    
     # make expression in genes
     print("finished")
