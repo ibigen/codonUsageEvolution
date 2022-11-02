@@ -90,24 +90,21 @@ class Test(unittest.TestCase):
 		
 		self.assertEqual(6, expression.sample.get_number_sample())
 		self.assertEqual(6, expression.get_number_sample())
-		self.assertEqual(12, expression.get_number_gene())
-		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", expression.sample.dt_gene)
-		self.assertIn("lcl|NC_000913.3_cds_NP_414551.1_10", expression.sample.dt_gene)
-		self.assertIn(1901.93328159018, expression.sample.dt_gene['lcl|NC_000913.3_cds_NP_414542.1_1'])
-		self.assertEqual(2109.15514707196, expression.sample.dt_gene['lcl|NC_000913.3_cds_NP_414542.1_1'][0])
-		self.assertEqual(13.8749030600905, expression.sample.dt_gene['lcl|NC_000913.3_cds_NP_414552.1_11'][5])
+		self.assertEqual(12, expression.get_number_gene("A18_384Bulk_Plate1_S18"))
 		self.assertIn("A18_384Bulk_Plate1_S18", expression.sample.dt_sample)
 		self.assertEqual('Male', expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].sex)
 		self.assertEqual(3, float(expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].age))
 		self.assertEqual('Female', expression.sample.dt_sample["A18_384Bulk_Plate1_S18"].sex)
 		self.assertEqual('Brain', expression.sample.dt_sample["A18_384Bulk_Plate1_S18"].tissue)
 
+		self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].dt_gene)
+		self.assertIn("lcl|NC_000913.3_cds_NP_414551.1_10", expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].dt_gene)
+		self.assertEqual(2109.15514707196, expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].dt_gene['lcl|NC_000913.3_cds_NP_414542.1_1'])
+		self.assertEqual(13.8749030600905, expression.sample.dt_sample['A18_384Bulk_Plate1_S18'].dt_gene['lcl|NC_000913.3_cds_NP_414552.1_11'])
+		self.assertEqual(0.845691718954275, expression.sample.dt_sample['A9_384Bulk_Plate1_S9'].dt_gene['lcl|NC_000913.3_cds_YP_009518733.1_12'])
+		self.assertEqual(8.53840188313262, expression.sample.dt_sample['A18_384Bulk_Plate1_S18'].dt_gene['lcl|NC_000913.3_cds_YP_009518733.1_12'])
 
 
-
-
-		
-		
 if __name__ == "__main__":
 	# import sys;sys.argv = ['', 'Test.test_read_fasta']
 	unittest.main()

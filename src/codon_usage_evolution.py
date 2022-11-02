@@ -13,6 +13,8 @@ from CAI import RSCU, CAI
 from utils.utils import Utils
 from utils.count_sequences import CountSequences
 from utils.expression import Expression
+import itertools
+
 
 # instantiate two objects
 utils = Utils()
@@ -164,13 +166,23 @@ if __name__ == '__main__':
 
     print("Loading expression and samples")
     expression = Expression(information_file, expression_file)
-    print(expression)
-    
+    print(expression.sample.dt_sample)
+    #print(expression.sample.dt_gene)
+
     ## Task 1
     ### get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and E20_384Bulk_Plate1_S116 
-    
+    def most_differentially_expressed_genes():
+        dif_expression = sorted([abs(expression.sample.dt_gene[key][1]-expression.sample.dt_gene[key][0]) for key in expression.sample.dt_gene.keys()],reverse=True)
+        dif_expression_dict = {}
+        for n in dif_expression:
+            for key in expression.sample.dt_gene.keys():
+                if n == abs(expression.sample.dt_gene[key][1]-expression.sample.dt_gene[key][0]):
+                    dif_expression_dict[key] = n
+        most_differentially_expressed_genes = dict(itertools.islice(dif_expression_dict.items(), 100))
+        #print(most_differentially_expressed_genes)
+
     ## Task 2
     ### Is there any codons unbalanced between the two groups identified in the task1?
-    
+    most_differentially_expressed_genes()
     # make expression in genes
     print("finished")

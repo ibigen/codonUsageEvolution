@@ -12,17 +12,15 @@ class Tissue(object):
     def add_value(self, gene, value):
 
         if gene not in self.dt_gene:
-            self.dt_gene[gene] = [float(value)]
+            self.dt_gene[gene] = float(value)
         else:
+            sys.exit(f"Error gene {gene} already exists.")
             self.dt_gene[gene].append(float(value))
 
         return self.dt_gene
 
     def get_number_gene(self):
-        count = 0
-        for i in self.dt_gene:
-            count += 1
-        return count
+        return len(self.dt_gene)
 
 
 class Sample(object):
@@ -32,7 +30,7 @@ class Sample(object):
 		:parm sample_name
 		"""
         self.dt_sample = {}  ## { sample_name : tissue, sample_name1 : tissue, sample_name2 : tissue, ...
-        self.dt_gene = {}
+
 
     def add_sample(self, sample_name, tissue, age, sex):
 
@@ -43,17 +41,9 @@ class Sample(object):
 
         return self.dt_sample
 
-    def add_value(self, gene, value):
 
-        if gene not in self.dt_gene:
-            self.dt_gene[gene] = [float(value)]
-        else:
-            self.dt_gene[gene].append(float(value))
-
-        return self.dt_gene
-
-    def get_number_gene(self):
-        return len(self.dt_gene)
+    def get_number_gene(self, sample_name):
+        return self.dt_sample[sample_name].get_number_gene()
     def add_gene(self, sample_name, gene, value):
         if sample_name not in self.dt_sample: sys.exit("Sample does not exist: " + sample_name)
         self.dt_sample[sample_name].add_value(gene, value)
@@ -92,8 +82,8 @@ class Expression(object):
     def get_number_sample(self):
         return self.sample.get_number_sample()
 
-    def get_number_gene(self):
-        return self.sample.get_number_gene()
+    def get_number_gene(self, sample_name):
+        return self.sample.get_number_gene(sample_name)
 
     def __samples_information(self):
         """Open, read and save information from samples
@@ -164,6 +154,6 @@ class Expression(object):
                             gene = value
                         else:
                             self.sample.add_gene(dict_header[index - 1], gene, value)
-                            self.sample.add_value(gene, value)
+
 
                     genes += 1

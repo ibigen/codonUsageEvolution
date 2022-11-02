@@ -1,2 +1,0 @@
-#1 configurar as classes
-#2 ficheiros testes 
