@@ -1,6 +1,7 @@
 """Open files with information of samples and expression values"""
 from utils.utils import Utils
 import sys
+import itertools
 
 
 class Tissue(object):
@@ -61,6 +62,7 @@ class Expression(object):
 		:param sample_info			info to the samples
 		:param sample_expression   file with expression values
 		"""
+        self.most_dif_expressed = {}
         self.sample = Sample()
 
 
@@ -84,6 +86,21 @@ class Expression(object):
 
     def get_number_gene(self, sample_name):
         return self.sample.get_number_gene(sample_name)
+
+    def most_differentially_expressed_genes(self, sample_name1, sample_name2):
+        dif_expression = sorted([abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key]) 
+                                 for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
+        dif_expression_dict = {}
+
+        for dif in dif_expression:
+            for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
+                if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key]):
+                    dif_expression_dict[key] = dif
+        self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
+        return self.most_dif_expressed
+                    
+            
+
 
     def __samples_information(self):
         """Open, read and save information from samples
