@@ -166,13 +166,13 @@ if __name__ == '__main__':
 
     print("Loading expression and samples")
     expression = Expression(information_file, expression_file)
-    sample_1 = 'A9_384Bulk_Plate1_S9'
-    sample_2 = 'E20_384Bulk_Plate1_S116'
-    print(expression.most_differentially_expressed_genes(sample_1, sample_2))
-
+    
     ## Task 1
     ### get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and E20_384Bulk_Plate1_S116 
-
+    sample_1 = 'A9_384Bulk_Plate1_S9'
+    sample_2 = 'E20_384Bulk_Plate1_S116'
+    dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
+    
     ## Task 2
     ### Is there any codons unbalanced between the two groups identified in the task1?
 

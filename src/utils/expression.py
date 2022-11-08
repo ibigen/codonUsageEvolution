@@ -87,7 +87,12 @@ class Expression(object):
     def get_number_gene(self, sample_name):
         return self.sample.get_number_gene(sample_name)
 
-    def most_differentially_expressed_genes(self, sample_name1, sample_name2):
+    def most_differentially_expressed_genes(self, sample_name1, sample_name2, most_expressed_genes = 100):
+        """
+        :param sample_name sample names to compare 
+        :param
+        :param most_expressed_genes - number of most different expressed genes 
+        """
         dif_expression = sorted([abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key]) 
                                  for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
         dif_expression_dict = {}
@@ -96,7 +101,7 @@ class Expression(object):
             for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
                 if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key]):
                     dif_expression_dict[key] = dif
-        self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
+        self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), most_expressed_genes))
         return self.most_dif_expressed
                     
             
