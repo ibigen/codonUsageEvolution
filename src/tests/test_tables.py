@@ -116,7 +116,7 @@ class Test(unittest.TestCase):
                          expression.most_differentially_expressed_genes('A20_384Bulk_Plate2_S20',
                                                                         'A9_384Bulk_Plate1_S9')
                          ['lcl|NC_000913.3_cds_NP_414551.1_10'])
-        
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.test_read_fasta']
