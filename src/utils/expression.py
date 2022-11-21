@@ -1,4 +1,6 @@
 """Open files with information of samples and expression values"""
+
+from constants.constants import Constants
 from utils.utils import Utils
 import sys
 import itertools
@@ -9,6 +11,7 @@ class Tissue(object):
     def __init__(self, *args):
         self.tissue, self.age, self.sex = args
         self.dt_gene = {}
+        self.count_codon_expression = {}
 
     def add_value(self, gene, value):
 
@@ -16,7 +19,6 @@ class Tissue(object):
             self.dt_gene[gene] = float(value)
         else:
             sys.exit(f"Error gene {gene} already exists.")
-            self.dt_gene[gene].append(float(value))
 
         return self.dt_gene
 
@@ -32,7 +34,6 @@ class Sample(object):
 		"""
         self.dt_sample = {}  ## { sample_name : tissue, sample_name1 : tissue, sample_name2 : tissue, ...
 
-
     def add_sample(self, sample_name, tissue, age, sex):
 
         if sample_name not in self.dt_sample:
@@ -42,13 +43,12 @@ class Sample(object):
 
         return self.dt_sample
 
-
     def get_number_gene(self, sample_name):
         return self.dt_sample[sample_name].get_number_gene()
+
     def add_gene(self, sample_name, gene, value):
         if sample_name not in self.dt_sample: sys.exit("Sample does not exist: " + sample_name)
         self.dt_sample[sample_name].add_value(gene, value)
-
 
     def get_number_sample(self):
         return len(self.dt_sample)
@@ -64,7 +64,6 @@ class Expression(object):
 		"""
         self.most_dif_expressed = {}
         self.sample = Sample()
-
 
         # set the names of the files
         self.file_information = sample_info
@@ -88,19 +87,30 @@ class Expression(object):
         return self.sample.get_number_gene(sample_name)
 
     def most_differentially_expressed_genes(self, sample_name1, sample_name2):
-        dif_expression = sorted([abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key]) 
-                                 for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
+        dif_expression = sorted(
+            [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
+             for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
         dif_expression_dict = {}
 
         for dif in dif_expression:
             for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
-                if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key]):
+                if dif == abs(
+                        self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[
+                            key]):
                     dif_expression_dict[key] = dif
         self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
-        return self.most_dif_expressed
-                    
-            
 
+        return self.most_dif_expressed
+
+    def counts_with_expression(self, sample_name2, sample_name1, counts):
+        most_expressed_counts = {}
+
+        for sample in sample_name1, sample_name2:
+            most_expressed_counts[sample] = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
+                                                    for codon in list(counts[gene].keys())}
+                                             for gene in self.most_differentially_expressed_genes(sample_name1, sample_name2)}
+        print(most_expressed_counts)
+        return most_expressed_counts
 
     def __samples_information(self):
         """Open, read and save information from samples
@@ -137,8 +147,6 @@ class Expression(object):
                     sys.exit("Wrong line: " + line)
                 self.sample.add_sample(lst_line[0], lst_line[2], lst_line[3], lst_line[4])
 
-
-
     def __expression_values(self):
         """Open, read and save values of expression from the different samples
 
@@ -171,6 +179,5 @@ class Expression(object):
                             gene = value
                         else:
                             self.sample.add_gene(dict_header[index - 1], gene, value)
-
 
                     genes += 1

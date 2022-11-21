@@ -16,6 +16,7 @@ from utils.expression import Expression
 
 
 
+
 # instantiate two objects
 utils = Utils()
 constants = Constants()
@@ -74,6 +75,8 @@ def read_genome(file_name):
             [record_dict[key].seq for key in initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
         # Global CAI, from RSCU from all genome
         for key in dic_CAI:
+
+
             dic_genome_CAI[key] = float(
                 CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
         dic_genome_CAI[Constants.GENOME_KEY] = 1
@@ -130,8 +133,8 @@ if __name__ == '__main__':
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         # name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        # name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        name = "ecoli.fasta"  # to create tables for test
+        name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        #name = "ecoli.fasta"  # to create tables for test
     
     ### expression file
     information_file = os.path.join(base_path, "E.coli_information_file.txt")
@@ -158,6 +161,7 @@ if __name__ == '__main__':
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
     # show stats
+    #print(dataframe_count_codons_in_genes.to_dict(orient='index'))
     print(counts_stats)
 
     # save
@@ -166,13 +170,15 @@ if __name__ == '__main__':
 
     print("Loading expression and samples")
     expression = Expression(information_file, expression_file)
-    
+
+
     ## Task 1
     ### get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and E20_384Bulk_Plate1_S116 
     sample_1 = 'A9_384Bulk_Plate1_S9'
     sample_2 = 'E20_384Bulk_Plate1_S116'
+    print(expression.counts_with_expression(sample_1,sample_2,dataframe_count_codons_in_genes.to_dict(orient='index')))
     dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
-    
+
     ## Task 2
     ### Is there any codons unbalanced between the two groups identified in the task1?
 
