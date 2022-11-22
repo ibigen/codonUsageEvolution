@@ -159,7 +159,7 @@ if __name__ == '__main__':
 
     # get dataframes
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
-    print(dataframe_count_codons_in_genes['AAG']['lcl|NC_000913.3_cds_NP_417351.1_2825'])
+
 
     # show stats
     #print(dataframe_count_codons_in_genes.to_dict(orient='index'))
@@ -177,9 +177,23 @@ if __name__ == '__main__':
     ### get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and E20_384Bulk_Plate1_S116 
     sample_1 = 'A9_384Bulk_Plate1_S9'
     sample_2 = 'E20_384Bulk_Plate1_S116'
-    print(expression.counts_with_expression(sample_1, sample_2, dataframe_count_codons_in_genes.to_dict(orient='index')))
     dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
 
+    print("Calculating counts with expression values")
+    counts_expression = expression.counts_with_expression(sample_1, sample_2, dataframe_count_codons_in_genes.to_dict(orient='index'))
+
+    reformed_dict = {}
+    for sampleKey, innerDict in counts_expression.items():
+        for geneKey, values in innerDict.items():
+            for codonKey, value in values.items():
+                reformed_dict[(sampleKey, codonKey)] = value
+
+    multiIndex_df = pd.DataFrame(reformed_dict, index=[key for key in counts_expression['E20_384Bulk_Plate1_S116'].keys()])
+    save_table(multiIndex_df, f'{sample_1}_{sample_2}_couts-with-expression.csv')
+
+    dataframe_counts_expression = pd.DataFrame.from_dict(counts_expression)
+    #print(dataframe_counts_expression)
+    #save_table()
     ## Task 2
     ### Is there any codons unbalanced between the two groups identified in the task1?
 
