@@ -159,6 +159,7 @@ if __name__ == '__main__':
 
     # get dataframes
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
+    print(dataframe_count_codons_in_genes['AAG']['lcl|NC_000913.3_cds_NP_417351.1_2825'])
 
     # show stats
     #print(dataframe_count_codons_in_genes.to_dict(orient='index'))
@@ -176,7 +177,7 @@ if __name__ == '__main__':
     ### get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and E20_384Bulk_Plate1_S116 
     sample_1 = 'A9_384Bulk_Plate1_S9'
     sample_2 = 'E20_384Bulk_Plate1_S116'
-    print(expression.counts_with_expression(sample_1,sample_2,dataframe_count_codons_in_genes.to_dict(orient='index')))
+    print(expression.counts_with_expression(sample_1, sample_2, dataframe_count_codons_in_genes.to_dict(orient='index')))
     dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
 
     ## Task 2

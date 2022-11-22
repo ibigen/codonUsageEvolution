@@ -65,6 +65,8 @@ class Expression(object):
         self.most_dif_expressed = {}
         self.sample = Sample()
 
+
+
         # set the names of the files
         self.file_information = sample_info
         self.file_expression = sample_expression
@@ -76,6 +78,7 @@ class Expression(object):
         # read files
         self.__samples_information()
         self.__expression_values()
+
 
     def __str__(self):
         return f"samples: {self.sample.get_number_sample()} genes: {self.sample.get_number_gene()}"
@@ -106,10 +109,8 @@ class Expression(object):
         most_expressed_counts = {}
 
         for sample in sample_name1, sample_name2:
-            most_expressed_counts[sample] = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
-                                                    for codon in list(counts[gene].keys())}
-                                             for gene in self.most_differentially_expressed_genes(sample_name1, sample_name2)}
-        print(most_expressed_counts)
+            most_expressed_counts[sample] = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon] for codon in list(counts[gene].keys())} for gene in self.most_differentially_expressed_genes(sample_name1, sample_name2)}
+
         return most_expressed_counts
 
     def __samples_information(self):
