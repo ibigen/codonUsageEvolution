@@ -132,7 +132,7 @@ if __name__ == '__main__':
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        # name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         #name = "ecoli.fasta"  # to create tables for test
     
@@ -161,6 +161,7 @@ if __name__ == '__main__':
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
 
+
     # show stats
     #print(dataframe_count_codons_in_genes.to_dict(orient='index'))
     print(counts_stats)
@@ -169,6 +170,7 @@ if __name__ == '__main__':
     save_table(dataframe_count_codons_in_genes, os.path.join(base_path, file_name_out_counts))
     save_table(dataframe_RSCU_CAI, os.path.join(base_path, file_name_out_RSCU_CAI))
 
+    # make expression in genes
     print("Loading expression and samples")
     expression = Expression(information_file, expression_file)
 
@@ -180,22 +182,17 @@ if __name__ == '__main__':
     dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
 
     print("Calculating counts with expression values")
-    counts_expression = expression.counts_with_expression(sample_1, sample_2, dataframe_count_codons_in_genes.to_dict(orient='index'))
+    counts_expression_T0 = expression.counts_with_expression(sample_1, dataframe_count_codons_in_genes.to_dict(orient='index'))
+    counts_expression_T1 = expression.counts_with_expression(sample_2, dataframe_count_codons_in_genes.to_dict(orient='index'))
 
-    reformed_dict = {}
-    for sampleKey, innerDict in counts_expression.items():
-        for geneKey, values in innerDict.items():
-            for codonKey, value in values.items():
-                reformed_dict[(sampleKey, codonKey)] = value
+    save_table(counts_expression_T0, f'Counts-with-expression-{sample_1}')
+    save_table(counts_expression_T1, f'Counts-with-expression-{sample_2}')
 
-    multiIndex_df = pd.DataFrame(reformed_dict, index=[key for key in counts_expression['E20_384Bulk_Plate1_S116'].keys()])
-    save_table(multiIndex_df, f'{sample_1}_{sample_2}_couts-with-expression.csv')
-
-    dataframe_counts_expression = pd.DataFrame.from_dict(counts_expression)
-    #print(dataframe_counts_expression)
-    #save_table()
-    ## Task 2
+            ## Task 2
     ### Is there any codons unbalanced between the two groups identified in the task1?
+    dif = expression.compare_T0_T1(counts_expression_T0, counts_expression_T1)
+    save_table(dif.T, f'Differences_{sample_1}_{sample_2}')
+    print(dif)
 
-    # make expression in genes
+
     print("finished")

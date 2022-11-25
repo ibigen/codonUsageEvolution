@@ -4,6 +4,8 @@ from constants.constants import Constants
 from utils.utils import Utils
 import sys
 import itertools
+import pandas as pd
+from constants.constants import Constants
 
 
 class Tissue(object):
@@ -56,6 +58,7 @@ class Sample(object):
 
 class Expression(object):
     utils = Utils()
+    constants = Constants()
 
     def __init__(self, sample_info, sample_expression):
         """
@@ -105,13 +108,29 @@ class Expression(object):
 
         return self.most_dif_expressed
 
-    def counts_with_expression(self, sample_name2, sample_name1, counts):
+    def counts_with_expression(self, sample, counts):
         most_expressed_counts = {}
+        most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon] for codon in list(counts[gene].keys())} for gene in self.sample.dt_sample['E20_384Bulk_Plate1_S116'].dt_gene.keys()}
 
-        for sample in sample_name1, sample_name2:
-            most_expressed_counts[sample] = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon] for codon in list(counts[gene].keys())} for gene in self.most_differentially_expressed_genes(sample_name1, sample_name2)}
+        dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
+        totals = dataframe_counts_expression.sum(axis=0).T
+        dataframe_counts_expression.loc['Total'] =totals
 
-        return most_expressed_counts
+        return dataframe_counts_expression
+
+    def compare_T0_T1(self, dataframe1, dataframe2):
+        row1 = []
+        for codon in dataframe1:
+            row1.append(dataframe1[codon]['Total'])
+        row2 = []
+        for codon in dataframe2:
+            row2.append(dataframe2[codon]['Total'])
+        dif = []
+        for n in range(0, len(row1)):
+            dif.append(row2[n]-row1[n])
+
+        dataframe_dif = pd.DataFrame(dif, columns=['Total'], index=Constants.TOTAL_CODONS)
+        return dataframe_dif
 
     def __samples_information(self):
         """Open, read and save information from samples
