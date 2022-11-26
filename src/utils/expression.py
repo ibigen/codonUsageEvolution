@@ -110,11 +110,11 @@ class Expression(object):
 
     def counts_with_expression(self, sample, counts):
         most_expressed_counts = {}
-        most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon] for codon in list(counts[gene].keys())} for gene in self.sample.dt_sample['E20_384Bulk_Plate1_S116'].dt_gene.keys()}
+        most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon] for codon in list(counts[gene].keys())} for gene in counts.keys() if gene != 'genome'}
 
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
-        dataframe_counts_expression.loc['Total'] =totals
+        dataframe_counts_expression.loc['Total'] = totals
 
         return dataframe_counts_expression
 
