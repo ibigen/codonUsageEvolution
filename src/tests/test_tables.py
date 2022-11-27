@@ -120,6 +120,7 @@ class Test(unittest.TestCase):
 
         ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
         dataframe_counts, dataframe_RSCU_CAI, stats = read_genome(ecoli_fasta)
+        
         self.assertEqual(2109.15514707196, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                                                                              dataframe_counts.to_dict(orient='index'))['AAA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
         self.assertEqual(34.15360753253048, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
@@ -146,8 +147,8 @@ class Test(unittest.TestCase):
             'TTT']['Total'])
 
         self.assertEqual(-843.8532858486651, expression.compare_T0_T1(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                             dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                                                                              dataframe_counts.to_dict(orient='index')))['Total']['TTT'])
+                dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+                dataframe_counts.to_dict(orient='index')))['Total']['TTT'])
         self.assertEqual(843.8532858486651,
                          expression.compare_T0_T1(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                                                                                     dataframe_counts.to_dict(

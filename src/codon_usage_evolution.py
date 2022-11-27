@@ -160,8 +160,6 @@ if __name__ == '__main__':
     # get dataframes
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
-
-
     # show stats
     #print(dataframe_count_codons_in_genes.to_dict(orient='index'))
     print(counts_stats)

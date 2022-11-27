@@ -109,7 +109,6 @@ class Expression(object):
         return self.most_dif_expressed
 
     def counts_with_expression(self, sample, counts):
-        most_expressed_counts = {}
         most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon] for codon in list(counts[gene].keys())} for gene in counts.keys() if gene != 'genome'}
 
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
@@ -119,15 +118,9 @@ class Expression(object):
         return dataframe_counts_expression
 
     def compare_T0_T1(self, dataframe1, dataframe2):
-        row1 = []
-        for codon in dataframe1:
-            row1.append(dataframe1[codon]['Total'])
-        row2 = []
-        for codon in dataframe2:
-            row2.append(dataframe2[codon]['Total'])
         dif = []
-        for n in range(0, len(row1)):
-            dif.append(row2[n]-row1[n])
+        for codon in dataframe1:
+            dif.append(dataframe2[codon]['Total'] - dataframe1[codon]['Total'])
 
         dataframe_dif = pd.DataFrame(dif, columns=['Total'], index=Constants.TOTAL_CODONS)
         return dataframe_dif
