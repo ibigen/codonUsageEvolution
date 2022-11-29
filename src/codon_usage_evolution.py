@@ -15,8 +15,6 @@ from utils.count_sequences import CountSequences
 from utils.expression import Expression
 
 
-
-
 # instantiate two objects
 utils = Utils()
 constants = Constants()
@@ -176,20 +174,21 @@ if __name__ == '__main__':
     ## Task 1
     ### get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and E20_384Bulk_Plate1_S116 
     sample_1 = 'A9_384Bulk_Plate1_S9'
-    sample_2 = 'E20_384Bulk_Plate1_S116'
+    sample_2 = 'A18_384Bulk_Plate1_S18'
+
     dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
 
     print("Calculating counts with expression values")
     counts_expression_T0 = expression.counts_with_expression(sample_1, dataframe_count_codons_in_genes.to_dict(orient='index'))
     counts_expression_T1 = expression.counts_with_expression(sample_2, dataframe_count_codons_in_genes.to_dict(orient='index'))
 
-    save_table(counts_expression_T0, f'Counts-with-expression-{sample_1}')
-    save_table(counts_expression_T1, f'Counts-with-expression-{sample_2}')
+    save_table(counts_expression_T0, os.path.join(base_path, f'Counts-with-expression-{sample_1}.csv'))
+    save_table(counts_expression_T1, os.path.join(base_path, f'Counts-with-expression-{sample_2}.csv'))
 
             ## Task 2
     ### Is there any codons unbalanced between the two groups identified in the task1?
     dif = expression.compare_T0_T1(counts_expression_T0, counts_expression_T1)
-    save_table(dif.T, f'Differences_{sample_1}_{sample_2}')
+    save_table(dif.T, os.path.join(base_path, f'Differences_{sample_1}_{sample_2}.csv'))
     print(dif)
 
 

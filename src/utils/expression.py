@@ -125,6 +125,8 @@ class Expression(object):
         dataframe_dif = pd.DataFrame(dif, columns=['Total'], index=Constants.TOTAL_CODONS)
         return dataframe_dif
 
+
+
     def __samples_information(self):
         """Open, read and save information from samples
 		File:
