@@ -1,12 +1,12 @@
 """Open files with information of samples and expression values"""
 
-from constants.constants import Constants
+
 from utils.utils import Utils
 import sys
 import itertools
 import pandas as pd
 from constants.constants import Constants
-
+import csv
 
 class Tissue(object):
 
@@ -68,8 +68,6 @@ class Expression(object):
         self.most_dif_expressed = {}
         self.sample = Sample()
 
-
-
         # set the names of the files
         self.file_information = sample_info
         self.file_expression = sample_expression
@@ -82,7 +80,6 @@ class Expression(object):
         self.__samples_information()
         self.__expression_values()
 
-
     def __str__(self):
         return f"samples: {self.sample.get_number_sample()} genes: {self.sample.get_number_gene()}"
 
@@ -92,24 +89,26 @@ class Expression(object):
     def get_number_gene(self, sample_name):
         return self.sample.get_number_gene(sample_name)
 
-    def most_differentially_expressed_genes(self, sample_name1, sample_name2):
-        dif_expression = sorted(
-            [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
-             for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
-        dif_expression_dict = {}
+    #def most_differentially_expressed_genes(self, sample_name1, sample_name2):
+    #    dif_expression = sorted(
+    #        [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
+    #         for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
+    #    dif_expression_dict = {}
 
-        for dif in dif_expression:
-            for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
-                if dif == abs(
-                        self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[
-                            key]):
-                    dif_expression_dict[key] = dif
-        self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
+    #   for dif in dif_expression:
+    #       for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
+    #           if dif == abs(
+    #                   self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[
+    #                       key]):
+    #                dif_expression_dict[key] = dif
+    #    self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
 
-        return self.most_dif_expressed
+    #    return self.most_dif_expressed
 
     def counts_with_expression(self, sample, counts):
-        most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon] for codon in list(counts[gene].keys())} for gene in counts.keys() if gene != 'genome'}
+        most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
+                                        for codon in list(counts[gene].keys())} for gene in counts.keys() if
+                                 gene != 'genome'}
 
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
@@ -125,6 +124,17 @@ class Expression(object):
         dataframe_dif = pd.DataFrame(dif, columns=['Total'], index=Constants.TOTAL_CODONS)
         return dataframe_dif
 
+
+    def compare_counts(self, file1, file2):
+        df1 = pd.read_csv(file1)
+        df2 = pd.read_csv(file2)
+        print(df1['AAA'][0])
+        for codon in df1:
+            if df1[codon][0] != 'Total':
+                if (float(df1[codon][0]) > 0 and float(df2[codon][0] < 0)):
+                    print(codon, 'Decrease', df1[codon][0], df2[codon][0])
+                elif(float(df1[codon][0]) < 0 and float(df2[codon][0] > 0)):
+                    print(codon, 'Increase', df1[codon][0], df2[codon][0])
 
 
     def __samples_information(self):

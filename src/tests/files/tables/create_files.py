@@ -23,9 +23,12 @@ for n in genes:
     y = random.uniform(0, 200)
     z = random.uniform(0, 200)
     w = random.uniform(0, 200)
-    data.append([x, y, z, w])
+    v = random.uniform(0, 200)
+    u = random.uniform(0, 200)
+    data.append([x, y, z, w, v, u])
 
-col_names = ['A9_384Bulk_Plate1_S9', 'E20_384Bulk_Plate1_S116',  'F11_384Bulk_Plate2_S131', 'A18_384Bulk_Plate1_S18']
+col_names = ['A9_384Bulk_Plate1_S9','A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',  'F11_384Bulk_Plate2_S131',
+             'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
 
 dataframe = pd.DataFrame(data, columns=col_names, index=genes)
 
