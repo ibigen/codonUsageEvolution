@@ -14,7 +14,6 @@ from utils.utils import Utils
 from utils.count_sequences import CountSequences
 from utils.expression import Expression
 
-
 # instantiate two objects
 utils = Utils()
 constants = Constants()
@@ -35,6 +34,7 @@ def read_genome(file_name):
         initial_dic_RSCU = {}
         dic_CAI, dic_genome_CAI = {}, {}
         codon_count_total = [0] * len(constants.TOTAL_CODONS)
+        print("Calculating RSCU and CAI")
         for key in record_dict:
             if len(record_dict[key].seq) % 3 != 0:
                 counts_stats.add_divisible_3()
@@ -65,16 +65,15 @@ def read_genome(file_name):
 
             # CAI
             dic_CAI[key] = float(CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[key]))  # {gene1: CAI1} {GENE2: CAI2}
-
+        print("Calculating counts of all codons")
         # count of all codons
         data[Constants.GENOME_KEY] = codon_count_total
         # Global RSCU
         initial_dic_RSCU[Constants.GENOME_KEY] = RSCU(
             [record_dict[key].seq for key in initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+
         # Global CAI, from RSCU from all genome
         for key in dic_CAI:
-
-
             dic_genome_CAI[key] = float(
                 CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
         dic_genome_CAI[Constants.GENOME_KEY] = 1
@@ -92,6 +91,7 @@ def read_genome(file_name):
         dic_values = list(initial_dic_RSCU.values())  # [{codon1: 1, codon2:0, codon3: 1 ...}, {codon1: 1, codon2: 0,
         # codon3: 1...}, {...}, {...}]
         sorted_by_aminoacid = {}
+        print("Creating dataframes to RSCU and CAI values")
         for codon in constants.TOTAL_CODONS:
             for value in range(0, len(dic_values)):
                 if str(codon).upper() in dic_values[value]:
@@ -123,32 +123,36 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-
+    b_ecoli = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
         base_path = "/home/projects/ua/master/codon_usage"
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        #name = "ecoli.fasta"  # to create tables for test
-    
-    ### expression file
-    information_file = os.path.join(base_path, "E.coli_information_file.txt")
-    expression_file = os.path.join(base_path, "E.coli_expression_values.txt")
+        name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        # name = "ecoli.fasta"  # to create tables for test
+
+    # expression file
+    if b_ecoli:
+        information_file = os.path.join(base_path, "E.coli_information_file.txt")
+        expression_file = os.path.join(base_path, "E.coli_expression_values.txt")
+    else:
+        information_file = os.path.join(base_path, "coldata_brain.txt")
+        expression_file = os.path.join(base_path, "norm_brain_counts.txt")
 
     if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
         animal = "mouse"
     elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
         animal = "ecoli"
-    elif name == "ecoli.fasta":
+    elif name == "coli.fasta":
         animal = "test"
 
     file_name_in = os.path.join(base_path, name)
-    file_name_out_counts = f"table_counts_{animal}.csv"
-    file_name_out_RSCU_CAI = f"table_RSCU_CAI_{animal}.csv"
-    file_name_out_CAI = f"table_CAI_{animal}.csv"
+    file_name_out_counts = f"{animal}/table_counts_{animal}.csv"
+    file_name_out_RSCU_CAI = f"{animal}/table_RSCU_CAI_{animal}.csv"
+    file_name_out_CAI = f"{animal}/table_CAI_{animal}.csv"
 
     # testing existing files
     utils.test_exist_file(file_name_in)
@@ -159,7 +163,6 @@ if __name__ == '__main__':
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
     # show stats
-    #print(dataframe_count_codons_in_genes.to_dict(orient='index'))
     print(counts_stats)
 
     # save
@@ -170,27 +173,39 @@ if __name__ == '__main__':
     print("Loading expression and samples")
     expression = Expression(information_file, expression_file)
 
+    # analyse the different samples
+    if b_ecoli:
+        sample_1 = 'A9_384Bulk_Plate1_S9'
+        sample_2 = 'A20_384Bulk_Plate2_S20'
+        sample_3 = 'E20_384Bulk_Plate1_S116'
+    else:
+        sample_1 = 'F11_384Bulk_Plate2_S131'
+        sample_2 = 'L19_384Bulk_Plate2_S283'
+        sample_3 = 'A18_384Bulk_Plate1_S18'
 
-    ## Task 1
-    ### get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and E20_384Bulk_Plate1_S116 
-    sample_1 = 'L19_384Bulk_Plate2_S283'
-    sample_2 = 'A18_384Bulk_Plate1_S18'
 
-    ### get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and E20_384Bulk_Plate1_S116
-    #dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
+    # get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and
+    # E20_384Bulk_Plate1_S116
+    # dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
 
     print("Calculating counts with expression values")
     counts_expression_T0 = expression.counts_with_expression(sample_1, dataframe_count_codons_in_genes.to_dict(orient='index'))
     counts_expression_T1 = expression.counts_with_expression(sample_2, dataframe_count_codons_in_genes.to_dict(orient='index'))
+    counts_expression_T2 = expression.counts_with_expression(sample_3, dataframe_count_codons_in_genes.to_dict(orient='index'))
 
     save_table(counts_expression_T0, os.path.join(base_path, f'Counts-with-expression-{sample_1}.csv'))
     save_table(counts_expression_T1, os.path.join(base_path, f'Counts-with-expression-{sample_2}.csv'))
+    save_table(counts_expression_T2, os.path.join(base_path, f'Counts-with-expression-{sample_3}.csv'))
 
-            ## Task 2
-    ### Is there any codons unbalanced between the two groups identified in the task1?
-    dif = expression.compare_T0_T1(counts_expression_T0, counts_expression_T1)
-    save_table(dif.T, os.path.join(base_path, f'Differences_{sample_1}_{sample_2}.csv'))
-    expression.compare_counts(os.path.join(base_path, 'Differences_A9_384Bulk_Plate1_S9_A20_384Bulk_Plate2_S20.csv'), os.path.join(base_path, 'Differences_A20_384Bulk_Plate2_S20_E20_384Bulk_Plate1_S116.csv'))
-
+    # Task 2
+    # Is there any codons unbalanced between the two groups identified in the task1?
+    print("Comparing different time points")
+    dif1 = expression.compare_T0_T1(counts_expression_T0, counts_expression_T1)
+    dif2 = expression.compare_T0_T1(counts_expression_T1, counts_expression_T2)
+    save_table(dif1.T, os.path.join(base_path, f'Differences_{sample_1}_{sample_2}.csv'))
+    save_table(dif2.T, os.path.join(base_path, f'Differences_{sample_2}_{sample_3}.csv'))
+    patterns = expression.compare_counts(os.path.join(base_path, f'Differences_{sample_1}_{sample_2}.csv'),
+                                         os.path.join(base_path, f'Differences_{sample_2}_{sample_3}.csv'))
+    save_table(patterns, os.path.join(base_path, f'Patterns_{sample_1}_{sample_2}_{sample_3}.csv'))
 
     print("finished")

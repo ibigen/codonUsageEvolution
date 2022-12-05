@@ -1,6 +1,5 @@
 """Open files with information of samples and expression values"""
-
-
+import constants.constants
 from utils.utils import Utils
 import sys
 import itertools
@@ -106,9 +105,15 @@ class Expression(object):
     #    return self.most_dif_expressed
 
     def counts_with_expression(self, sample, counts):
-        most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
-                                        for codon in list(counts[gene].keys())} for gene in counts.keys() if
-                                 gene != 'genome'}
+        print(counts)
+        try:
+            most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
+                                            for codon in list(counts[gene].keys())} for gene in counts.keys() if
+                                    gene != 'genome'}
+        except KeyError as e:
+            print(str(e))
+            sys.exit("Error")
+
 
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
@@ -128,13 +133,23 @@ class Expression(object):
     def compare_counts(self, file1, file2):
         df1 = pd.read_csv(file1)
         df2 = pd.read_csv(file2)
-        print(df1['AAA'][0])
+        not_patterns = dict()
+        patterns = dict()
         for codon in df1:
             if df1[codon][0] != 'Total':
                 if (float(df1[codon][0]) > 0 and float(df2[codon][0] < 0)):
-                    print(codon, 'Decrease', df1[codon][0], df2[codon][0])
+                    not_patterns[codon] =  ('Decrease', df1[codon][0], df2[codon][0])
                 elif(float(df1[codon][0]) < 0 and float(df2[codon][0] > 0)):
-                    print(codon, 'Increase', df1[codon][0], df2[codon][0])
+                    not_patterns[codon] = ('Increase', df1[codon][0], df2[codon][0])
+                else:
+                    if float(df1[codon][0]) > 0:
+                        patterns[codon] = ('Increase', Constants.codons_per_aminoacid[codon.upper().replace('T', 'U')])
+                    else:
+                        patterns[codon] = ('Decrease', Constants.codons_per_aminoacid[codon.upper().replace('T', 'U')])
+        patterns_df = pd.DataFrame(patterns)
+        print(patterns_df)
+        return patterns_df
+
 
 
     def __samples_information(self):
