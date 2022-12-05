@@ -143,8 +143,8 @@ if __name__ == '__main__':
     b_ecoli = True
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
-        base_path = "/home/projects/ua/master/codon_usage"
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome

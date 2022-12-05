@@ -1,12 +1,16 @@
 import gzip
-import os
+import os, socket
 import pandas as pd
 from Bio import SeqIO
 from utils.utils import Utils
 import random
 utils = Utils()
 
-base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
+if socket.gethostname() == "cs-nb0008":  # test computer name
+    base_path = "/home/projects/ua/master/codon_usage"
+else:
+    base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
+    
 name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"
 file = os.path.join(base_path, name)
 
@@ -16,6 +20,7 @@ with (gzip.open(file, mode='rt') if utils.is_gzip(file) else open(file, mode='r'
     for key in record_dict:
         gene_name = record_dict[key].description.\
                             split("[gene=")[1].split(" ")[0].replace("]", "")
+        if gene_name in genes: continue
         genes.append(gene_name)
 
 
@@ -35,6 +40,5 @@ col_names = ['A9_384Bulk_Plate1_S9','A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate
 dataframe = pd.DataFrame(data, columns=col_names, index=genes)
 
 
-dataframe.to_csv(r"C:\Users\Francisca\Desktop\TeseDeMestrado\E.coli_expression_values.csv")
-
-print(dataframe)
+dataframe.to_csv(os.path.join(base_path, "E.coli_expression_values.txt"), sep ='\t')
+print("Saved file: " + os.path.join(base_path, "E.coli_expression_values.txt"))

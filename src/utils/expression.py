@@ -105,7 +105,6 @@ class Expression(object):
     #    return self.most_dif_expressed
 
     def counts_with_expression(self, sample, counts):
-        print(counts)
         try:
             most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
                                             for codon in list(counts[gene].keys())} for gene in counts.keys() if
@@ -211,6 +210,7 @@ class Expression(object):
                 elif (len(lst_data) > 0):  ## body
                     ### test number of samples
                     if (len(lst_data) - 1 != self.sample.get_number_sample()):
+                        print(self.sample.get_number_sample())
                         sys.exit("Error: line doesn't have values for all samples - " + line)
 
                     gene = None
