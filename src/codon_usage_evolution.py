@@ -29,13 +29,30 @@ def read_genome(file_name):
 
         record_dict = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
 
+        dt_gene_name = {}  ### {gene_name : [id, len(seq)], gene_name1 : [id1, len(seq)], ....]
+        ### normalize gene IDs
+        for key in record_dict:
+            if record_dict[key].description.find("[gene=") > 0:
+                ### get gene name
+                gene_name = record_dict[key].description.\
+                            split("[gene=")[1].split(" ")[0].replace("]", "")
+                if gene_name in dt_gene_name:
+                    
+                    if len(str(record_dict[key].seq)) > dt_gene_name[gene_name][1]:
+                        dt_gene_name[gene_name] = [key, len(str(record_dict[key].seq))]
+                else:
+                    dt_gene_name[gene_name] = [key, len(str(record_dict[key].seq))]
+            else:
+                dt_gene_name[key] = [key, len(str(record_dict[key].seq))]
+
         # i can interact directly with record_dict
         data = {}  # { gene : { condon1: 2, codon2 : 4, codon3 : 5 } }
         initial_dic_RSCU = {}
         dic_CAI, dic_genome_CAI = {}, {}
         codon_count_total = [0] * len(constants.TOTAL_CODONS)
         print("Calculating RSCU and CAI")
-        for key in record_dict:
+        for gene_name in dt_gene_name:
+            key = dt_gene_name[gene_name][0]
             if len(record_dict[key].seq) % 3 != 0:
                 counts_stats.add_divisible_3()
                 continue
@@ -123,7 +140,7 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = False
+    b_ecoli = True
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
         base_path = "/home/projects/ua/master/codon_usage"

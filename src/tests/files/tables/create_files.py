@@ -13,8 +13,10 @@ file = os.path.join(base_path, name)
 with (gzip.open(file, mode='rt') if utils.is_gzip(file) else open(file, mode='r')) as handle_read:
     genes = []
     record_dict = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
-    for record in record_dict:
-        genes.append(record)
+    for key in record_dict:
+        gene_name = record_dict[key].description.\
+                            split("[gene=")[1].split(" ")[0].replace("]", "")
+        genes.append(gene_name)
 
 
 data = []
