@@ -16,7 +16,6 @@ class Test(unittest.TestCase):
 
     def setUp(self):
         self.baseDirectory = os.path.dirname(os.path.abspath(__file__))
-        print(self.baseDirectory)
 
     def tearDown(self):
         pass
@@ -41,22 +40,22 @@ class Test(unittest.TestCase):
         self.assertEqual(12, stats.count_pass)
 
         # test if this gene is inside data frame
-        self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_counts.index)
-        self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", dataframe_RSCU_CAI.index)
-        self.assertIn("lcl|NC_000913.3_cds_YP_009518733.1_12", dataframe_counts.index)
-        self.assertIn("lcl|NC_000913.3_cds_YP_009518733.1_12", dataframe_RSCU_CAI.index)
-        self.assertIn('lcl|NC_000913.3_cds_NP_414550.1_9', dataframe_counts.index)
-        self.assertIn('lcl|NC_000913.3_cds_NP_414550.1_9', dataframe_RSCU_CAI.index)
-        self.assertIn('lcl|NC_000913.3_cds_NP_414546.1_5', dataframe_counts.index)
-        self.assertIn('lcl|NC_000913.3_cds_NP_414546.1_5', dataframe_RSCU_CAI.index)
-        self.assertEqual(1, dataframe_counts['TGA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
-        self.assertEqual(5, dataframe_counts['GTT']['lcl|NC_000913.3_cds_NP_414545.1_4'])
-        self.assertEqual(3, dataframe_counts['ACT']['lcl|NC_000913.3_cds_NP_414550.1_9'])
-        self.assertEqual(1, dataframe_counts['GTG']['lcl|NC_000913.3_cds_NP_414546.1_5'])
-        self.assertTrue(2.0 == dataframe_RSCU_CAI['GGT']['lcl|NC_000913.3_cds_NP_414542.1_1'])
-        self.assertEqual(1.22, round(dataframe_RSCU_CAI['TTC']['lcl|NC_000913.3_cds_NP_414551.1_10'], 2))
-        self.assertTrue(1.6 == dataframe_RSCU_CAI['TTT']['lcl|NC_000913.3_cds_NP_414550.1_9'])
-        self.assertEqual(0.4, dataframe_RSCU_CAI['TTC']['lcl|NC_000913.3_cds_NP_414550.1_9'])
+        self.assertIn("thrL", dataframe_counts.index)
+        self.assertIn("thrL", dataframe_RSCU_CAI.index)
+        self.assertIn("mbiA", dataframe_counts.index)
+        self.assertIn("mbiA", dataframe_RSCU_CAI.index)
+        self.assertIn('mog', dataframe_counts.index)
+        self.assertIn('mog', dataframe_RSCU_CAI.index)
+        self.assertIn('yaaX', dataframe_counts.index)
+        self.assertIn('yaaX', dataframe_RSCU_CAI.index)
+        self.assertEqual(1, dataframe_counts['TGA']['thrL'])
+        self.assertEqual(5, dataframe_counts['GTT']['thrC'])
+        self.assertEqual(3, dataframe_counts['ACT']['mog'])
+        self.assertEqual(1, dataframe_counts['GTG']['yaaX'])
+        self.assertTrue(2.0 == dataframe_RSCU_CAI['GGT']['thrL'])
+        self.assertEqual(1.22, round(dataframe_RSCU_CAI['TTC']['satP'], 2))
+        self.assertTrue(1.6 == dataframe_RSCU_CAI['TTT']['mog'])
+        self.assertEqual(0.4, dataframe_RSCU_CAI['TTC']['mog'])
         self.assertEqual(13, len(dataframe_counts))
         self.assertEqual(13, len(dataframe_RSCU_CAI))
 
@@ -97,83 +96,62 @@ class Test(unittest.TestCase):
         self.assertEqual('Female', expression.sample.dt_sample["A18_384Bulk_Plate1_S18"].sex)
         self.assertEqual('Brain', expression.sample.dt_sample["A18_384Bulk_Plate1_S18"].tissue)
 
-        self.assertIn("lcl|NC_000913.3_cds_NP_414542.1_1", expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].dt_gene)
-        self.assertIn("lcl|NC_000913.3_cds_NP_414551.1_10", expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].dt_gene)
+        self.assertIn("thrL", expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].dt_gene)
+        self.assertIn("satP", expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].dt_gene)
         self.assertEqual(2109.15514707196, expression.sample.dt_sample["A9_384Bulk_Plate1_S9"].dt_gene[
-            'lcl|NC_000913.3_cds_NP_414542.1_1'])
+            'thrL'])
         self.assertEqual(13.8749030600905, expression.sample.dt_sample['A18_384Bulk_Plate1_S18'].dt_gene[
-            'lcl|NC_000913.3_cds_NP_414552.1_11'])
+            'yaaW'])
         self.assertEqual(0.845691718954275, expression.sample.dt_sample['A9_384Bulk_Plate1_S9'].dt_gene[
-            'lcl|NC_000913.3_cds_YP_009518733.1_12'])
+            'mbiA'])
         self.assertEqual(8.53840188313262, expression.sample.dt_sample['A18_384Bulk_Plate1_S18'].dt_gene[
-            'lcl|NC_000913.3_cds_YP_009518733.1_12'])
+            'mbiA'])
 
         self.assertEqual(12, len(expression.most_differentially_expressed_genes('E20_384Bulk_Plate1_S116',
                                                                                 'A9_384Bulk_Plate1_S9')))
-        self.assertEqual(363.88953212254, expression.most_dif_expressed['lcl|NC_000913.3_cds_NP_414542.1_1'])
-        self.assertEqual(0.115760470543813, expression.most_dif_expressed['lcl|NC_000913.3_cds_NP_414551.1_10'])
-        self.assertEqual(12.602181753894525,
-                         expression.most_differentially_expressed_genes('A20_384Bulk_Plate2_S20',
-                                                                        'A9_384Bulk_Plate1_S9')
-                         ['lcl|NC_000913.3_cds_NP_414551.1_10'])
+        self.assertEqual(363.88953212254, expression.most_dif_expressed['thrL'])
+        self.assertEqual(0.115760470543813, expression.most_dif_expressed['satP'])
+        self.assertEqual(12.602181753894525, expression.most_differentially_expressed_genes(\
+			'A20_384Bulk_Plate2_S20', 'A9_384Bulk_Plate1_S9')['satP'])
 
 
         ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
         dataframe_counts, dataframe_RSCU_CAI, stats = read_genome(ecoli_fasta)
         
         self.assertEqual(2109.15514707196, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                             dataframe_counts.to_dict(orient='index'))['AAA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
+                dataframe_counts.to_dict(orient='index'))['AAA']['thrL'])
         self.assertEqual(34.15360753253048, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                                                                              dataframe_counts.to_dict(orient='index'))['TTT']['lcl|NC_000913.3_cds_YP_009518733.1_12'])
+                dataframe_counts.to_dict(orient='index'))['TTT']['mbiA'])
         self.assertEqual(3.3827668758171, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                              dataframe_counts.to_dict(orient='index'))[
-            'TTT']['lcl|NC_000913.3_cds_YP_009518733.1_12'])
+                dataframe_counts.to_dict(orient='index'))['TTT']['mbiA'])
         self.assertEqual(2359.80082045078, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                                                                              dataframe_counts.to_dict(orient='index'))[
-            'AAA']['lcl|NC_000913.3_cds_NP_414542.1_1'])
+                dataframe_counts.to_dict(orient='index'))['AAA']['thrL'])
         self.assertEqual(13215.624492098465, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                             dataframe_counts.to_dict(orient='index'))[
-            'AAA']['Total'])
+                dataframe_counts.to_dict(orient='index'))['AAA']['Total'])
         self.assertEqual(11088.182145483095, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                                                                               dataframe_counts.to_dict(
-                                                                                   orient='index'))[
-            'AAA']['Total'])
+                dataframe_counts.to_dict(orient='index'))['AAA']['Total'])
         self.assertEqual(11181.037265962166, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                                                                              dataframe_counts.to_dict(orient='index'))[
-            'TTT']['Total'])
+                dataframe_counts.to_dict(orient='index'))['TTT']['Total'])
         self.assertEqual(12024.890551810831, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                               dataframe_counts.to_dict(
-                                                                                   orient='index'))[
-            'TTT']['Total'])
+                dataframe_counts.to_dict(orient='index'))['TTT']['Total'])
 
         self.assertEqual(-843.8532858486651, expression.compare_T0_T1(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                 dataframe_counts.to_dict(orient='index')))['Total']['TTT'])
         self.assertEqual(843.8532858486651,
-                         expression.compare_T0_T1(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                                                                                    dataframe_counts.to_dict(
-                                                                                        orient='index')),
-                                                  expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                                    dataframe_counts.to_dict(
-                                                                                        orient='index')))['Total']['TTT'])
+                expression.compare_T0_T1(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+                dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                dataframe_counts.to_dict(orient='index')))['Total']['TTT'])
         self.assertEqual(-2127.4423466153694,
-                         expression.compare_T0_T1(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                                    dataframe_counts.to_dict(
-                                                                                        orient='index')),
-                                                  expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                                                                                    dataframe_counts.to_dict(
-                                                                                        orient='index')))['Total'][
-                             'AAA'])
+                expression.compare_T0_T1(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                dataframe_counts.to_dict(orient='index')),
+                expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+                dataframe_counts.to_dict(orient='index')))['Total']['AAA'])
         self.assertEqual(2127.4423466153694,
-                         expression.compare_T0_T1(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                                                                                    dataframe_counts.to_dict(
-                                                                                        orient='index')),
-                                                  expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                                    dataframe_counts.to_dict(
-                                                                                        orient='index')))['Total'][
-                             'AAA'])
-
-
+                expression.compare_T0_T1(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+                dataframe_counts.to_dict(orient='index')),
+                expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                dataframe_counts.to_dict(orient='index')))['Total']['AAA'])
 
 
 if __name__ == "__main__":

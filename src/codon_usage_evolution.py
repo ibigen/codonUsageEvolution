@@ -75,24 +75,24 @@ def read_genome(file_name):
                     codon_count_total[indexes] += counts_gene[codon]
 
             # add gene with count codon
-            data[key] = codon_count
+            data[gene_name] = codon_count
 
             # RSCU
-            initial_dic_RSCU[key] = RSCU([record_dict[key].seq])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+            initial_dic_RSCU[gene_name] = RSCU([record_dict[key].seq])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
 
             # CAI
-            dic_CAI[key] = float(CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[key]))  # {gene1: CAI1} {GENE2: CAI2}
+            dic_CAI[gene_name] = float(CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[gene_name]))  # {gene1: CAI1} {GENE2: CAI2}
         print("Calculating counts of all codons")
         # count of all codons
         data[Constants.GENOME_KEY] = codon_count_total
         # Global RSCU
         initial_dic_RSCU[Constants.GENOME_KEY] = RSCU(
-            [record_dict[key].seq for key in initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+            [record_dict[dt_gene_name[key][0]].seq for key in initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
 
         # Global CAI, from RSCU from all genome
         for key in dic_CAI:
-            dic_genome_CAI[key] = float(
-                CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
+            dic_genome_CAI[dt_gene_name[key][0]] = float(
+                CAI(record_dict[dt_gene_name[key][0]].seq, RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
         dic_genome_CAI[Constants.GENOME_KEY] = 1
 
         # Global CAI, doesn't matter in this case
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
     # show stats
-    print(counts_stats)
+    #print(counts_stats)
 
     # save
     save_table(dataframe_count_codons_in_genes, os.path.join(base_path, file_name_out_counts))

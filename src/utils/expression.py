@@ -88,21 +88,19 @@ class Expression(object):
     def get_number_gene(self, sample_name):
         return self.sample.get_number_gene(sample_name)
 
-    #def most_differentially_expressed_genes(self, sample_name1, sample_name2):
-    #    dif_expression = sorted(
-    #        [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
-    #         for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
-    #    dif_expression_dict = {}
-
-    #   for dif in dif_expression:
-    #       for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
-    #           if dif == abs(
-    #                   self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[
-    #                       key]):
-    #                dif_expression_dict[key] = dif
-    #    self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
-
-    #    return self.most_dif_expressed
+    def most_differentially_expressed_genes(self, sample_name1, sample_name2):
+        dif_expression = sorted(
+            [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
+            for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
+        dif_expression_dict = {}
+    
+        for dif in dif_expression:
+            for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
+                if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] - \
+						self.sample.dt_sample[sample_name1].dt_gene[key]):
+                    dif_expression_dict[key] = dif
+                self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
+        return self.most_dif_expressed
 
     def counts_with_expression(self, sample, counts):
         try:
