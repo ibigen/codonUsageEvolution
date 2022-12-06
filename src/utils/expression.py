@@ -105,8 +105,8 @@ class Expression(object):
     def counts_with_expression(self, sample, counts):
         try:
             most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
-                                            for codon in list(counts[gene].keys())} for gene in counts.keys() if
-                                    gene != 'genome'}
+                                for codon in list(counts[gene].keys())} for gene in counts.keys() if
+                                gene != 'genome' and gene in self.sample.dt_sample[sample].dt_gene }
         except KeyError as e:
             print(str(e))
             sys.exit("Error")
