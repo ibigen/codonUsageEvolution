@@ -147,9 +147,9 @@ if __name__ == '__main__':
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        # name = "ecoli.fasta"  # to create tables for test
+        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        # name = "ecoli.fasta"  # to create tables for tes
 
     # expression file
     if b_ecoli:
@@ -224,5 +224,5 @@ if __name__ == '__main__':
     patterns = expression.compare_counts(os.path.join(base_path, f'Differences_{sample_1}_{sample_2}.csv'),
                                          os.path.join(base_path, f'Differences_{sample_2}_{sample_3}.csv'))
     save_table(patterns, os.path.join(base_path, f'Patterns_{sample_1}_{sample_2}_{sample_3}.csv'))
-
+    expression.ilustrate_patterns(patterns)
     print("finished")

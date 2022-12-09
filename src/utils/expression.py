@@ -18,9 +18,9 @@ class Tissue(object):
 
         if gene not in self.dt_gene:
             self.dt_gene[gene] = float(value)
+        ##compor repetição dos genes
         else:
             sys.exit(f"Error gene {gene} already exists.")
-
         return self.dt_gene
 
     def get_number_gene(self):
@@ -115,7 +115,7 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-
+        #print(dataframe_counts_expression)
         return dataframe_counts_expression
 
     def compare_T0_T1(self, dataframe1, dataframe2):
@@ -124,6 +124,7 @@ class Expression(object):
             dif.append(dataframe2[codon]['Total'] - dataframe1[codon]['Total'])
 
         dataframe_dif = pd.DataFrame(dif, columns=['Total'], index=Constants.TOTAL_CODONS)
+
         return dataframe_dif
 
 
@@ -133,6 +134,7 @@ class Expression(object):
         not_patterns = dict()
         patterns = dict()
         for codon in df1:
+
             if df1[codon][0] != 'Total':
                 if (float(df1[codon][0]) > 0 and float(df2[codon][0] < 0)):
                     not_patterns[codon] =  ('Decrease', df1[codon][0], df2[codon][0])
@@ -144,9 +146,19 @@ class Expression(object):
                     else:
                         patterns[codon] = ('Decrease', Constants.codons_per_aminoacid[codon.upper().replace('T', 'U')])
         patterns_df = pd.DataFrame(patterns)
+        print(patterns)
         print(patterns_df)
         return patterns_df
 
+    def ilustrate_patterns(self, dataframe):
+        direction = dict()
+        for codon in dataframe:
+            if dataframe[codon][0] == 'Increase':
+                direction[codon].append('↗')
+            else:
+                direction[codon].append('↘')
+        print(direction)
+        return direction
 
 
     def __samples_information(self):
