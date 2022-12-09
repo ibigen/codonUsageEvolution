@@ -134,17 +134,12 @@ class Expression(object):
         not_patterns = dict()
         patterns = dict()
         for codon in df1:
-
             if df1[codon][0] != 'Total':
-                if (float(df1[codon][0]) > 0 and float(df2[codon][0] < 0)):
-                    not_patterns[codon] =  ('Decrease', df1[codon][0], df2[codon][0])
-                elif(float(df1[codon][0]) < 0 and float(df2[codon][0] > 0)):
-                    not_patterns[codon] = ('Increase', df1[codon][0], df2[codon][0])
+                if float(df1[codon][0]) < float(df2[codon][0]):
+                    patterns[codon] =  ('Increase', df1[codon][0], df2[codon][0])
                 else:
-                    if float(df1[codon][0]) > 0:
-                        patterns[codon] = ('Increase', Constants.codons_per_aminoacid[codon.upper().replace('T', 'U')])
-                    else:
-                        patterns[codon] = ('Decrease', Constants.codons_per_aminoacid[codon.upper().replace('T', 'U')])
+                    patterns[codon] = ('Decrease', df1[codon][0], df2[codon][0])
+
         patterns_df = pd.DataFrame(patterns)
         print(patterns)
         print(patterns_df)
