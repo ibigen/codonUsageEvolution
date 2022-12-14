@@ -1,11 +1,13 @@
 """Open files with information of samples and expression values"""
-import constants.constants
+
 from utils.utils import Utils
 import sys
 import itertools
 import pandas as pd
 from constants.constants import Constants
-import csv
+import glob, os
+import matplotlib.pyplot as plt
+
 
 class Tissue(object):
 
@@ -91,13 +93,13 @@ class Expression(object):
     def most_differentially_expressed_genes(self, sample_name1, sample_name2):
         dif_expression = sorted(
             [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
-            for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
+             for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
         dif_expression_dict = {}
-    
+
         for dif in dif_expression:
             for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
                 if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] - \
-						self.sample.dt_sample[sample_name1].dt_gene[key]):
+                              self.sample.dt_sample[sample_name1].dt_gene[key]):
                     dif_expression_dict[key] = dif
                 self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
         return self.most_dif_expressed
@@ -105,56 +107,86 @@ class Expression(object):
     def counts_with_expression(self, sample, counts):
         try:
             most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
-                                for codon in list(counts[gene].keys())} for gene in counts.keys() if
-                                gene != 'genome' and gene in self.sample.dt_sample[sample].dt_gene }
+                                            for codon in list(counts[gene].keys())} for gene in counts.keys() if
+                                     gene != 'genome' and gene in self.sample.dt_sample[sample].dt_gene}
         except KeyError as e:
             print(str(e))
             sys.exit("Error")
 
-
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        #print(dataframe_counts_expression)
+        # print(dataframe_counts_expression)
         return dataframe_counts_expression
 
-    def compare_T0_T1(self, dataframe1, dataframe2):
-        dif = []
-        for codon in dataframe1:
-            dif.append(dataframe2[codon]['Total'] - dataframe1[codon]['Total'])
+    def compare_timepoints(self, df1, df2, samples):
 
-        dataframe_dif = pd.DataFrame(dif, columns=['Total'], index=Constants.TOTAL_CODONS)
+        dif = {}
+        for codon in df1:
+            if codon not in dif:
+
+                dif[codon] = df1[codon]['Total'] - df2[codon]['Total']
+                # print(df1[codon]['Total'], df2[codon]['Total'])
+                # print(dif[f'{samples[n-1]}-{sample}'][codon])
+
+            else:
+                dif[codon] += df1[codon]['Total'] - df2[codon]['Total']
+        # print(dif)
+        dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
+
 
         return dataframe_dif
 
+    def compare_counts(self, folder, samples):
+        files_lst = []
+        for file in glob.glob(os.path.join(folder, "Differences_*.csv")):
+            file_df = pd.read_csv(file, index_col=0, sep=',')  # , index_col=0
+            # file_df = file_df.split('\n')
+            files_lst.append(file_df)
+        patterns = {}
+        for n, dataframe in enumerate(files_lst):
+            for value in dataframe:
+                if files_lst[n - 1][value][0] < dataframe[value][0]:
 
-    def compare_counts(self, file1, file2):
-        df1 = pd.read_csv(file1)
-        df2 = pd.read_csv(file2)
-        not_patterns = dict()
-        patterns = dict()
-        for codon in df1:
-            if df1[codon][0] != 'Total':
-                if float(df1[codon][0]) < float(df2[codon][0]):
-                    patterns[codon] =  ('Increase', df1[codon][0], df2[codon][0])
+
+                    if value not in patterns:
+                        patterns[value] = ['Increase']
+                    else:
+                        patterns[value] += ['Increase']
                 else:
-                    patterns[codon] = ('Decrease', df1[codon][0], df2[codon][0])
+                    if value not in patterns:
+                        patterns[value] = ['Decrease']
+                    else:
+                        patterns[value] += ['Decrease']
+        columns = [f'{samples[n-1]}_{sample}' for n, sample in enumerate(samples)]
 
-        patterns_df = pd.DataFrame(patterns)
-        print(patterns)
-        print(patterns_df)
-        return patterns_df
+        data = [n for key, n in patterns.items()]
+        final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
+        return final_dataframe
 
-    def ilustrate_patterns(self, dataframe):
-        direction = dict()
-        for codon in dataframe:
-            if dataframe[codon][0] == 'Increase':
-                direction[codon].append('↗')
-            else:
-                direction[codon].append('↘')
-        print(direction)
-        return direction
+    def ilustrate_patterns(self, patterns_lst):
+        direction = {}
+        for sample in patterns_lst:
+            for codon in patterns_lst[sample]:
+                if codon == 'Increase':
+                    if sample not in direction:
+                        direction[sample] = ['↗']
+                    else:
+                        direction[sample] += ['↗']
+                else:
+                    if sample not in direction:
+                        direction[sample] = ['↘']
+                    else:
+                        direction[sample] += ['↘']
+        dataframe_direction = pd.DataFrame(direction, columns=[key for key in direction.keys()], index=Constants.TOTAL_CODONS)
+        #print(dataframe_direction)
+        return dataframe_direction
 
+
+    def make_histogram(self, dataframe):
+        print(dataframe)
+        plt.hist(dataframe)
+        plt.show()
 
     def __samples_information(self):
         """Open, read and save information from samples

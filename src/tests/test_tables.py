@@ -135,22 +135,22 @@ class Test(unittest.TestCase):
         self.assertEqual(12024.890551810831, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index'))['TTT']['Total'])
 
-        self.assertEqual(-843.8532858486651, expression.compare_T0_T1(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+        self.assertEqual(-843.8532858486651, expression.compare_timepoints(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                                                                                                             dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                 dataframe_counts.to_dict(orient='index')))['Total']['TTT'])
         self.assertEqual(843.8532858486651,
-                expression.compare_T0_T1(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+                                                                                dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index')))['Total']['TTT'])
         self.assertEqual(-2127.4423466153694,
-                expression.compare_T0_T1(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index')),
-                expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+                expression.compare_timepoints(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                                                                                dataframe_counts.to_dict(orient='index')),
+                                              expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                 dataframe_counts.to_dict(orient='index')))['Total']['AAA'])
         self.assertEqual(2127.4423466153694,
-                expression.compare_T0_T1(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index')),
-                expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+                                                                                dataframe_counts.to_dict(orient='index')),
+                                              expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index')))['Total']['AAA'])
 
 

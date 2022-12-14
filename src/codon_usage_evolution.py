@@ -5,6 +5,8 @@ Created on 09/09/2022
 '''
 import gzip
 import os
+import glob
+import expression as expression
 import pandas as pd
 import socket
 from constants.constants import Constants
@@ -13,6 +15,7 @@ from CAI import RSCU, CAI
 from utils.utils import Utils
 from utils.count_sequences import CountSequences
 from utils.expression import Expression
+
 
 # instantiate two objects
 utils = Utils()
@@ -192,37 +195,37 @@ if __name__ == '__main__':
 
     # analyse the different samples
     if b_ecoli:
-        sample_1 = 'A9_384Bulk_Plate1_S9'
-        sample_2 = 'A20_384Bulk_Plate2_S20'
-        sample_3 = 'E20_384Bulk_Plate1_S116'
-    else:
-        sample_1 = 'F11_384Bulk_Plate2_S131'
-        sample_2 = 'L19_384Bulk_Plate2_S283'
-        sample_3 = 'A18_384Bulk_Plate1_S18'
+        samples = ['A9_384Bulk_Plate1_S9', 'F11_384Bulk_Plate2_S131', 'A20_384Bulk_Plate2_S20', 'L19_384Bulk_Plate2_S283', 'E20_384Bulk_Plate1_S116']
 
+    else:
+        samples = ['A9_384Bulk_Plate1_S9', 'B12_384Bulk_Plate2_S36', 'A9_384Bulk_Plate2_S9', 'A20_384Bulk_Plate2_S20', 'A10_384Bulk_Plate1_S10', 'E20_384Bulk_Plate1_S116', 'I20_384Bulk_Plate1_S212', 'P15_384Bulk_Plate2_S375']
 
     # get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and
     # E20_384Bulk_Plate1_S116
     # dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
 
     print("Calculating counts with expression values")
-    counts_expression_T0 = expression.counts_with_expression(sample_1, dataframe_count_codons_in_genes.to_dict(orient='index'))
-    counts_expression_T1 = expression.counts_with_expression(sample_2, dataframe_count_codons_in_genes.to_dict(orient='index'))
-    counts_expression_T2 = expression.counts_with_expression(sample_3, dataframe_count_codons_in_genes.to_dict(orient='index'))
+    counts = []
+    for n, sample in enumerate(samples):
+        counts.append(expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index')))
+        save_table(counts[n], os.path.join(base_path, f'Counts-with-expression-{sample}.csv'))
 
-    save_table(counts_expression_T0, os.path.join(base_path, f'Counts-with-expression-{sample_1}.csv'))
-    save_table(counts_expression_T1, os.path.join(base_path, f'Counts-with-expression-{sample_2}.csv'))
-    save_table(counts_expression_T2, os.path.join(base_path, f'Counts-with-expression-{sample_3}.csv'))
+
 
     # Task 2
     # Is there any codons unbalanced between the two groups identified in the task1?
     print("Comparing different time points")
-    dif1 = expression.compare_T0_T1(counts_expression_T0, counts_expression_T1)
-    dif2 = expression.compare_T0_T1(counts_expression_T1, counts_expression_T2)
-    save_table(dif1.T, os.path.join(base_path, f'Differences_{sample_1}_{sample_2}.csv'))
-    save_table(dif2.T, os.path.join(base_path, f'Differences_{sample_2}_{sample_3}.csv'))
-    patterns = expression.compare_counts(os.path.join(base_path, f'Differences_{sample_1}_{sample_2}.csv'),
-                                         os.path.join(base_path, f'Differences_{sample_2}_{sample_3}.csv'))
-    save_table(patterns, os.path.join(base_path, f'Patterns_{sample_1}_{sample_2}_{sample_3}.csv'))
-    expression.ilustrate_patterns(patterns)
+    for n, dataframe in enumerate(counts):
+        dif = expression.compare_timepoints(dataframe, counts[n-1], samples)
+        hist = expression.make_histogram(dataframe)
+
+        save_table(dif.T, os.path.join(base_path, f'Differences_{samples[n-1]}_{samples[n]}.csv'))
+
+    folder = base_path
+    patterns = expression.compare_counts(folder, samples)
+    save_table(patterns, os.path.join(base_path, f'Patterns_between_{samples}.csv' ))
+
+
+    table_direction = expression.ilustrate_patterns(patterns)
+    save_table(table_direction, os.path.join(base_path, f'Table_directions_from_{samples}.csv'))
     print("finished")
