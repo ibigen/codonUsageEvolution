@@ -183,10 +183,32 @@ class Expression(object):
         return dataframe_direction
 
 
-    def make_histogram(self, dataframe):
-        print(dataframe)
-        plt.hist(dataframe)
-        plt.show()
+    def make_histogram(self, lst_counts, samples):
+        dic_codons = {}
+        for n, dataframe in enumerate(lst_counts):
+            for codon in dataframe:
+                if codon not in dic_codons:
+                    dic_codons[codon] = [dataframe[codon]['Total']]
+                else:
+                    dic_codons[codon].append(dataframe[codon]['Total'])
+
+
+        for codon in dic_codons:
+            if codon == 'AAA':
+                data = dic_codons[codon]
+                dd = pd.DataFrame(data, index=[sample for sample in samples])
+                dd.plot(kind="bar", stacked=True, edgecolor="k", color='mediumpurple')
+            #plt.xticks(range(0, len(dd.index)), dd.index)
+            #plt.bar(data, 12, bottom=samples, edgecolor="k")
+            #plt.hist(data)
+                plt.yticks(range(0, round(max(data))+100, 7))
+                plt.title(f'Counts of {codon} in different time points')
+                plt.xticks(rotation=360, horizontalalignment="center")
+                plt.xlabel("Time point")
+                plt.ylabel("Counts")
+                plt.show()
+
+
 
     def __samples_information(self):
         """Open, read and save information from samples
