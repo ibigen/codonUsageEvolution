@@ -151,13 +151,17 @@ if __name__ == '__main__':
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        # name = "ecoli.fasta"  # to create tables for tes
+        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        name = "ecoli.fasta"  # to create tables for tes
 
     # expression file
     if b_ecoli:
-        information_file = os.path.join(base_path, "E.coli_information_file.txt")
-        expression_file = os.path.join(base_path, "E.coli_expression_values.txt")
+        if name == 'ecoli.fasta':
+            information_file = os.path.join(base_path, "E.coli_information_file.txt")
+            expression_file = os.path.join(base_path, "E.coli_expression_values_test.txt")
+        else:
+            information_file = os.path.join(base_path, "E.coli_information_file.txt")
+            expression_file = os.path.join(base_path, "E.coli_expression_values.txt")
     else:
         information_file = os.path.join(base_path, "coldata_brain.txt")
         expression_file = os.path.join(base_path, "norm_brain_counts.txt")
@@ -166,7 +170,7 @@ if __name__ == '__main__':
         animal = "mouse"
     elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
         animal = "ecoli"
-    elif name == "coli.fasta":
+    elif name == "ecoli.fasta":
         animal = "test"
 
     file_name_in = os.path.join(base_path, name)
@@ -195,10 +199,17 @@ if __name__ == '__main__':
 
     # analyse the different samples
     if b_ecoli:
-        samples = ['A9_384Bulk_Plate1_S9', 'F11_384Bulk_Plate2_S131', 'A20_384Bulk_Plate2_S20', 'L19_384Bulk_Plate2_S283', 'E20_384Bulk_Plate1_S116']
+        if name == 'ecoli.fasta':
+            samples = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',
+                       'F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
+        else:
+            samples = ['A9_384Bulk_Plate1_S9', 'F11_384Bulk_Plate2_S131', 'A20_384Bulk_Plate2_S20',
+                       'L19_384Bulk_Plate2_S283', 'E20_384Bulk_Plate1_S116']
 
     else:
-        samples = ['A9_384Bulk_Plate1_S9', 'B12_384Bulk_Plate2_S36', 'A9_384Bulk_Plate2_S9', 'A20_384Bulk_Plate2_S20', 'A10_384Bulk_Plate1_S10', 'E20_384Bulk_Plate1_S116', 'I20_384Bulk_Plate1_S212', 'P15_384Bulk_Plate2_S375']
+        samples = ['A9_384Bulk_Plate1_S9', 'B12_384Bulk_Plate2_S36', 'A9_384Bulk_Plate2_S9',
+                   'A20_384Bulk_Plate2_S20', 'A10_384Bulk_Plate1_S10', 'E20_384Bulk_Plate1_S116', 'I20_384Bulk_Plate1_S212',
+                   'P15_384Bulk_Plate2_S375']
 
     # get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and
     # E20_384Bulk_Plate1_S116
