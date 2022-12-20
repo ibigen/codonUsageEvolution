@@ -219,7 +219,7 @@ if __name__ == '__main__':
     counts = []
     for n, sample in enumerate(samples):
         counts.append(expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index')))
-        save_table(counts[n], os.path.join(base_path, f'Counts-with-expression-{sample}.csv'))
+        save_table(counts[n], os.path.join(base_path, f'{animal}/Counts-with-expression-{sample}.csv'))
 
 
 
@@ -228,15 +228,16 @@ if __name__ == '__main__':
     print("Comparing different time points")
     for n, dataframe in enumerate(counts):
         dif = expression.compare_timepoints(dataframe, counts[n-1], samples)
-        save_table(dif.T, os.path.join(base_path, f'Differences_{samples[n-1]}_{samples[n]}.csv'))
+        save_table(dif.T, os.path.join(base_path, f'{animal}/Differences_{samples[n-1]}_{samples[n]}.csv'))
 
     print('Searching for patterns')
-    folder = base_path
+    folder = os.path.join(base_path, f'{animal}')
+
     patterns = expression.compare_counts(folder, samples)
-    save_table(patterns, os.path.join(base_path, f'Patterns_between_{samples}.csv'))
+    save_table(patterns, os.path.join(base_path, f'{animal}/Patterns_between_{samples}.csv'))
 
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
-    save_table(table_direction, os.path.join(base_path, f'Table_directions_from_{samples}.csv'))
-    hist = expression.make_histogram(counts, samples)
+    save_table(table_direction, os.path.join(base_path, f'{animal}/Table_directions_from_{samples}.csv'))
+    #hist = expression.make_histogram(counts, samples)
     print("Finished")
