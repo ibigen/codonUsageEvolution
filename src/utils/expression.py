@@ -200,16 +200,12 @@ class Expression(object):
             data = dic_codons[codon]
             dd = pd.DataFrame(data, index=[sample for sample in samples])
             dd.plot(kind="bar", stacked=True, edgecolor="k", color='mediumpurple')
-            #plt.xticks(range(0, len(dd.index)), dd.index)
-            #plt.bar(data, 12, bottom=samples, edgecolor="k")
-            #plt.hist(data)
-            #plt.yticks(range(0, round(max(data))+100, 5))
-            #plt.yscale('log')
+            plt.yscale('log')
             plt.title(f'Counts of {codon} in different time points')
             plt.xticks(rotation=360, horizontalalignment="center")
             plt.xlabel("Time point")
             plt.ylabel("Counts")
-            #plt.show()
+            plt.show()
 
 
 

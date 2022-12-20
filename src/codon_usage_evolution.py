@@ -143,16 +143,16 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = True
+    b_ecoli = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
         #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        name = "ecoli.fasta"  # to create tables for tes
+        #name = "ecoli.fasta"  # to create tables for tes
 
     # expression file
     if b_ecoli:
@@ -239,5 +239,5 @@ if __name__ == '__main__':
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(base_path, f'{animal}/Table_directions_from_{samples}.csv'))
-    #hist = expression.make_histogram(counts, samples)
+    hist = expression.make_histogram(counts, samples)
     print("Finished")
