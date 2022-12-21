@@ -6,7 +6,6 @@ Created on 09/09/2022
 import gzip
 import os
 import glob
-import expression as expression
 import pandas as pd
 import socket
 from constants.constants import Constants
