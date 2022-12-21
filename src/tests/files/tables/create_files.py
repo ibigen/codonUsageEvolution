@@ -11,7 +11,7 @@ if socket.gethostname() == "cs-nb0008":  # test computer name
 else:
     base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
     
-name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"
+name = "ecoli.fasta"
 file = os.path.join(base_path, name)
 
 with (gzip.open(file, mode='rt') if utils.is_gzip(file) else open(file, mode='r')) as handle_read:
@@ -34,11 +34,11 @@ for n in genes:
     u = random.uniform(0, 200)
     data.append([x, y, z, w, v, u])
 
-col_names = ['A9_384Bulk_Plate1_S9','A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',  'F11_384Bulk_Plate2_S131',
-             'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
-
+#col_names = ['A9_384Bulk_Plate1_S9','A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',  'F11_384Bulk_Plate2_S131',
+             #'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
+col_names = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116','F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
 dataframe = pd.DataFrame(data, columns=col_names, index=genes)
 
 
-dataframe.to_csv(os.path.join(base_path, "E.coli_expression_values.txt"), sep ='\t')
-print("Saved file: " + os.path.join(base_path, "E.coli_expression_values.txt"))
+dataframe.to_csv(os.path.join(base_path, "E.coli_expression_values_test.txt"), sep ='\t')
+print("Saved file: " + os.path.join(base_path, "E.coli_expression_values_test.txt"))

@@ -17,6 +17,7 @@ class Test(unittest.TestCase):
     def setUp(self):
         self.baseDirectory = os.path.dirname(os.path.abspath(__file__))
 
+
     def tearDown(self):
         pass
 
@@ -111,13 +112,13 @@ class Test(unittest.TestCase):
                                                                                 'A9_384Bulk_Plate1_S9')))
         self.assertEqual(363.88953212254, expression.most_dif_expressed['thrL'])
         self.assertEqual(0.115760470543813, expression.most_dif_expressed['satP'])
-        self.assertEqual(12.602181753894525, expression.most_differentially_expressed_genes(\
+        self.assertEqual(12.602181753894525, expression.most_differentially_expressed_genes(
 			'A20_384Bulk_Plate2_S20', 'A9_384Bulk_Plate1_S9')['satP'])
 
-
+        # Test the calculation of counts with expression
         ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
         dataframe_counts, dataframe_RSCU_CAI, stats = read_genome(ecoli_fasta)
-        
+
         self.assertEqual(2109.15514707196, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index'))['AAA']['thrL'])
         self.assertEqual(34.15360753253048, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
@@ -135,25 +136,42 @@ class Test(unittest.TestCase):
         self.assertEqual(12024.890551810831, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index'))['TTT']['Total'])
 
-        self.assertEqual(-843.8532858486651, expression.compare_timepoints(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                                                             dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index')))['Total']['TTT'])
-        self.assertEqual(843.8532858486651,
-                expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                                                                                dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index')))['Total']['TTT'])
-        self.assertEqual(-2127.4423466153694,
-                expression.compare_timepoints(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                                dataframe_counts.to_dict(orient='index')),
-                                              expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index')))['Total']['AAA'])
-        self.assertEqual(2127.4423466153694,
+        # Test comparion of timepoints
+        samples = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',
+                   'F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
+        self.assertEqual(-1407.2443608853446, expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                dataframe_counts.to_dict(orient='index')), samples)[0]['ATG'])
+        self.assertEqual(-843.8532858486651,
                 expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                                                                                 dataframe_counts.to_dict(orient='index')),
                                               expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index')))['Total']['AAA'])
+                                                                                dataframe_counts.to_dict(orient='index')),
+                                              samples)[0]['TTT'])
+        self.assertEqual(2127.4423466153694,
+                expression.compare_timepoints(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                                                                                dataframe_counts.to_dict(orient='index')),
+                                              expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+                dataframe_counts.to_dict(orient='index')), samples)[0]['AAA'])
+        self.assertEqual(-2127.4423466153694,
+                expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
+                                                                                dataframe_counts.to_dict(orient='index')),
+                                              expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+                dataframe_counts.to_dict(orient='index')), samples)[0]['AAA'])
 
+        # Test comparison of counts
+        directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\test'
+        patterns = expression.compare_counts(directory, samples)
+        self.assertEqual('Increase', patterns['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['AAA'])
+        self.assertEqual('Increase', patterns['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TGA'])
+        self.assertEqual('Decrease', patterns['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TAG'])
+        self.assertEqual('Decrease', patterns['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['TAG'])
 
+        # Test ilustration of patterns
+        ilustration = expression.ilustrate_patterns(patterns)
+        self.assertEqual('↗', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['AAA'])
+        self.assertEqual('↗', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TGA'])
+        self.assertEqual('↘', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TAG'])
+        self.assertEqual('↘', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['TAG'])
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.test_read_fasta']
     unittest.main()

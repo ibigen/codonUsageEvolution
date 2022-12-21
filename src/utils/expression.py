@@ -119,33 +119,34 @@ class Expression(object):
         # print(dataframe_counts_expression)
         return dataframe_counts_expression
 
-    def compare_timepoints(self, df1, df2, samples):
+    def compare_timepoints(self, df1, df0, samples):
 
         dif = {}
         for codon in df1:
             if codon not in dif:
 
-                dif[codon] = df1[codon]['Total'] - df2[codon]['Total']
-                # print(df1[codon]['Total'], df2[codon]['Total'])
-                # print(dif[f'{samples[n-1]}-{sample}'][codon])
+                dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
+
 
             else:
-                dif[codon] += df1[codon]['Total'] - df2[codon]['Total']
+                dif[codon] += df1[codon]['Total'] - df0[codon]['Total']
         # print(dif)
         dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
-
-
         return dataframe_dif
 
     def compare_counts(self, folder, samples):
         files_lst = []
         for file in glob.glob(os.path.join(folder, "Differences_*.csv")):
+
             file_df = pd.read_csv(file, index_col=0, sep=',')  # , index_col=0
             # file_df = file_df.split('\n')
             files_lst.append(file_df)
+
         patterns = {}
         for n, dataframe in enumerate(files_lst):
+
             for value in dataframe:
+
                 if files_lst[n - 1][value][0] < dataframe[value][0]:
 
 
@@ -158,10 +159,12 @@ class Expression(object):
                         patterns[value] = ['Decrease']
                     else:
                         patterns[value] += ['Decrease']
+
         columns = [f'{samples[n-1]}_{sample}' for n, sample in enumerate(samples)]
 
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
+
         return final_dataframe
 
     def ilustrate_patterns(self, patterns_lst):
@@ -194,19 +197,15 @@ class Expression(object):
 
 
         for codon in dic_codons:
-            if codon == 'AAA':
-                data = dic_codons[codon]
-                dd = pd.DataFrame(data, index=[sample for sample in samples])
-                dd.plot(kind="bar", stacked=True, edgecolor="k", color='mediumpurple')
-            #plt.xticks(range(0, len(dd.index)), dd.index)
-            #plt.bar(data, 12, bottom=samples, edgecolor="k")
-            #plt.hist(data)
-                plt.yticks(range(0, round(max(data))+100, 7))
-                plt.title(f'Counts of {codon} in different time points')
-                plt.xticks(rotation=360, horizontalalignment="center")
-                plt.xlabel("Time point")
-                plt.ylabel("Counts")
-                plt.show()
+            data = dic_codons[codon]
+            dd = pd.DataFrame(data, index=[sample for sample in samples])
+            dd.plot(kind="bar", stacked=True, edgecolor="k", color='mediumpurple')
+            plt.yscale('log')
+            plt.title(f'Counts of {codon} in different time points')
+            plt.xticks(rotation=360, horizontalalignment="center")
+            plt.xlabel("Time point")
+            plt.ylabel("Counts")
+            plt.show()
 
 
 
