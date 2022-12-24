@@ -1,4 +1,5 @@
 """Open files with information of samples and expression values"""
+import numpy as np
 
 from utils.utils import Utils
 import sys
@@ -7,7 +8,9 @@ import pandas as pd
 from constants.constants import Constants
 import glob, os
 import matplotlib.pyplot as plt
-
+from matplotlib.colors import TwoSlopeNorm
+from matplotlib.cm import ScalarMappable
+import seaborn as sb
 
 class Tissue(object):
 
@@ -186,28 +189,51 @@ class Expression(object):
         return dataframe_direction
 
 
-    def make_histogram(self, lst_counts, samples):
+    def make_histogram(self, lst_counts, samples, b_ecoli, test):
+        if b_ecoli:
+            if test:
+                directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\test'
+            else:
+                directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\ecoli'
+        else:
+            directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\mouse'
         dic_codons = {}
+        final_dict = {}
         for n, dataframe in enumerate(lst_counts):
+            dic_codons[samples[n]] = {}
             for codon in dataframe:
-                if codon not in dic_codons:
-                    dic_codons[codon] = [dataframe[codon]['Total']]
+                if codon not in dic_codons[samples[n]]:
+                    dic_codons[samples[n]][codon] = dataframe[codon]['Total']
                 else:
-                    dic_codons[codon].append(dataframe[codon]['Total'])
+                    dic_codons[samples[n]][codon].append(dataframe[codon]['Total'])
+
+        data = pd.DataFrame(dic_codons, columns=[sample for sample in samples])
+        codons = Constants.TOTAL_CODONS
+        data['Codon'] = codons
+        #dataframe = pd.melt(data, value_vars=samples, value_name='Counts', ignore_index=False)
+        df = pd.melt(data, id_vars='Codon', value_vars=samples, value_name='Counts', ignore_index=True)
+        print(df)
+        max = 0
+        min = 100000
+        for value in df['Counts']:
+            if type(value) == float:
+                if value > max:
+                    max = value
+                elif value < min:
+                    min = value
+
+        norm = TwoSlopeNorm(vcenter=max/2, vmin=0, vmax=max)
+        cmap = plt.get_cmap('bwr')
+
+        def my_bar_plot(x, y, **kwargs):
+            plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
 
 
-        for codon in dic_codons:
-            data = dic_codons[codon]
-            dd = pd.DataFrame(data, index=[sample for sample in samples])
-            dd.plot(kind="bar", stacked=True, edgecolor="k", color='mediumpurple')
-            plt.yscale('log')
-            plt.title(f'Counts of {codon} in different time points')
-            plt.xticks(rotation=360, horizontalalignment="center")
-            plt.xlabel("Time point")
-            plt.ylabel("Counts")
-            plt.show()
-
-
+        g = sb.FacetGrid(data=df, col='variable', height=10, aspect=0.3, sharex=True, sharey=True)
+        g.map(my_bar_plot, 'Counts', 'Codon')
+        g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='horizontal', ax=g.axes, fraction=0.05)
+        #sb.catplot(data=df, x='Counts', y='Codon', hue='variable', col='variable', kind='bar', height=4, aspect=0.3)
+        plt.show()
 
     def __samples_information(self):
         """Open, read and save information from samples

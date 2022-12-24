@@ -144,6 +144,7 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = False
+    test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
@@ -156,7 +157,7 @@ if __name__ == '__main__':
 
     # expression file
     if b_ecoli:
-        if name == 'ecoli.fasta':
+        if test:
             information_file = os.path.join(base_path, "E.coli_information_file.txt")
             expression_file = os.path.join(base_path, "E.coli_expression_values_test.txt")
         else:
@@ -199,7 +200,7 @@ if __name__ == '__main__':
 
     # analyse the different samples
     if b_ecoli:
-        if name == 'ecoli.fasta':
+        if test:
             samples = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',
                        'F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
         else:
@@ -239,5 +240,5 @@ if __name__ == '__main__':
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(base_path, f'{animal}/Table_directions_from_{samples}.csv'))
-    hist = expression.make_histogram(counts, samples)
+    hist = expression.make_histogram(counts, samples, b_ecoli, test)
     print("Finished")
