@@ -140,23 +140,22 @@ class Test(unittest.TestCase):
         samples = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',
                    'F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
         self.assertEqual(-1407.2443608853446, expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index')), samples)[0]['ATG'])
+                dataframe_counts.to_dict(orient='index'))))
         self.assertEqual(-843.8532858486651,
                 expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                                                                                 dataframe_counts.to_dict(orient='index')),
                                               expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                                dataframe_counts.to_dict(orient='index')),
-                                              samples)[0]['TTT'])
+                                                                                dataframe_counts.to_dict(orient='index'))))
         self.assertEqual(2127.4423466153694,
                 expression.compare_timepoints(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                                                                                 dataframe_counts.to_dict(orient='index')),
                                               expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index')), samples)[0]['AAA'])
+                dataframe_counts.to_dict(orient='index'))))
         self.assertEqual(-2127.4423466153694,
                 expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                                                                                 dataframe_counts.to_dict(orient='index')),
                                               expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index')), samples)[0]['AAA'])
+                dataframe_counts.to_dict(orient='index'))))
 
         # Test comparison of counts
         directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\test'

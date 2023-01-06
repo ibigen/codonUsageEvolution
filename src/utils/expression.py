@@ -23,7 +23,7 @@ class Tissue(object):
 
         if gene not in self.dt_gene:
             self.dt_gene[gene] = float(value)
-        ##compor repetição dos genes
+
         else:
             sys.exit(f"Error gene {gene} already exists.")
         return self.dt_gene
@@ -119,11 +119,10 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        # print(dataframe_counts_expression)
+        print(dataframe_counts_expression.sum(axis=1))
         return dataframe_counts_expression
 
-    def compare_timepoints(self, df1, df0, samples):
-
+    def compare_timepoints(self, df1, df0):
         dif = {}
         for codon in df1:
             if codon not in dif:
@@ -133,13 +132,13 @@ class Expression(object):
 
             else:
                 dif[codon] += df1[codon]['Total'] - df0[codon]['Total']
-        # print(dif)
+        #print(dif)
         dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
         return dataframe_dif
 
     def compare_counts(self, folder, samples):
         files_lst = []
-        for file in glob.glob(os.path.join(folder, "Differences_*.csv")):
+        for file in glob.glob(os.path.join(folder, "Counts-with-expression-*.csv")):
 
             file_df = pd.read_csv(file, index_col=0, sep=',')  # , index_col=0
             # file_df = file_df.split('\n')
@@ -149,10 +148,9 @@ class Expression(object):
         for n, dataframe in enumerate(files_lst):
 
             for value in dataframe:
-
+                #print(files_lst[n - 1][value][0])
+                #print(dataframe[value][0])
                 if files_lst[n - 1][value][0] < dataframe[value][0]:
-
-
                     if value not in patterns:
                         patterns[value] = ['Increase']
                     else:
@@ -167,7 +165,7 @@ class Expression(object):
 
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
-
+        #print(final_dataframe)
         return final_dataframe
 
     def ilustrate_patterns(self, patterns_lst):
@@ -189,7 +187,7 @@ class Expression(object):
         return dataframe_direction
 
 
-    def make_histogram(self, lst_counts, samples, b_ecoli, test):
+    def plot_counts(self, lst_counts, samples, b_ecoli, test):
         if b_ecoli:
             if test:
                 directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\test'
@@ -212,7 +210,6 @@ class Expression(object):
         data['Codon'] = codons
         #dataframe = pd.melt(data, value_vars=samples, value_name='Counts', ignore_index=False)
         df = pd.melt(data, id_vars='Codon', value_vars=samples, value_name='Counts', ignore_index=True)
-        print(df)
         max = 0
         min = 100000
         for value in df['Counts']:
@@ -229,10 +226,10 @@ class Expression(object):
             plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
 
 
-        g = sb.FacetGrid(data=df, col='variable', height=10, aspect=0.3, sharex=True, sharey=True)
+        g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2, sharey=True)
         g.map(my_bar_plot, 'Counts', 'Codon')
-        g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='horizontal', ax=g.axes, fraction=0.05)
-        #sb.catplot(data=df, x='Counts', y='Codon', hue='variable', col='variable', kind='bar', height=4, aspect=0.3)
+        g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1, shrink=0.2)
+        #sb.catplot(data=df, x='Counts', y='Codon', hue='variable', col='variable', kind='bar', height=9, aspect=0.2)
         plt.show()
 
     def __samples_information(self):
