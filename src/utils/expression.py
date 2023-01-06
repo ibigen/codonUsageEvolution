@@ -1,4 +1,5 @@
 """Open files with information of samples and expression values"""
+import numpy as np
 
 from utils.utils import Utils
 import sys
@@ -7,7 +8,9 @@ import pandas as pd
 from constants.constants import Constants
 import glob, os
 import matplotlib.pyplot as plt
-
+from matplotlib.colors import TwoSlopeNorm
+from matplotlib.cm import ScalarMappable
+import seaborn as sb
 
 class Tissue(object):
 
@@ -20,7 +23,7 @@ class Tissue(object):
 
         if gene not in self.dt_gene:
             self.dt_gene[gene] = float(value)
-        ##compor repetição dos genes
+
         else:
             sys.exit(f"Error gene {gene} already exists.")
         return self.dt_gene
@@ -116,22 +119,20 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        # print(dataframe_counts_expression)
+        print(dataframe_counts_expression.sum(axis=1))
         return dataframe_counts_expression
 
-    def compare_timepoints(self, df1, df0, samples):
-
+    def compare_timepoints(self, df1, df0):
         dif = {}
         for codon in df1:
             dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
 
-        # print(dif)
         dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
         return dataframe_dif
 
     def compare_counts(self, folder, samples):
         files_lst = []
-        for file in glob.glob(os.path.join(folder, "Differences_*.csv")):
+        for file in glob.glob(os.path.join(folder, "Counts-with-expression-*.csv")):
 
             file_df = pd.read_csv(file, index_col=0, sep=',')  # , index_col=0
             # file_df = file_df.split('\n')
@@ -141,10 +142,9 @@ class Expression(object):
         for n, dataframe in enumerate(files_lst):
 
             for value in dataframe:
-
+                #print(files_lst[n - 1][value][0])
+                #print(dataframe[value][0])
                 if files_lst[n - 1][value][0] < dataframe[value][0]:
-
-
                     if value not in patterns:
                         patterns[value] = ['Increase']
                     else:
@@ -159,7 +159,7 @@ class Expression(object):
 
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
-
+        #print(final_dataframe)
         return final_dataframe
 
     def ilustrate_patterns(self, patterns_lst):
@@ -181,28 +181,50 @@ class Expression(object):
         return dataframe_direction
 
 
-    def make_histogram(self, lst_counts, samples):
+    def plot_counts(self, lst_counts, samples, b_ecoli, test):
+        if b_ecoli:
+            if test:
+                directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\test'
+            else:
+                directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\ecoli'
+        else:
+            directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\mouse'
         dic_codons = {}
+        final_dict = {}
         for n, dataframe in enumerate(lst_counts):
+            dic_codons[samples[n]] = {}
             for codon in dataframe:
-                if codon not in dic_codons:
-                    dic_codons[codon] = [dataframe[codon]['Total']]
+                if codon not in dic_codons[samples[n]]:
+                    dic_codons[samples[n]][codon] = dataframe[codon]['Total']
                 else:
-                    dic_codons[codon].append(dataframe[codon]['Total'])
+                    dic_codons[samples[n]][codon].append(dataframe[codon]['Total'])
+
+        data = pd.DataFrame(dic_codons, columns=[sample for sample in samples])
+        codons = Constants.TOTAL_CODONS
+        data['Codon'] = codons
+        #dataframe = pd.melt(data, value_vars=samples, value_name='Counts', ignore_index=False)
+        df = pd.melt(data, id_vars='Codon', value_vars=samples, value_name='Counts', ignore_index=True)
+        max = 0
+        min = 100000
+        for value in df['Counts']:
+            if type(value) == float:
+                if value > max:
+                    max = value
+                elif value < min:
+                    min = value
+
+        norm = TwoSlopeNorm(vcenter=max/2, vmin=0, vmax=max)
+        cmap = plt.get_cmap('bwr')
+
+        def my_bar_plot(x, y, **kwargs):
+            plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
 
 
-        for codon in dic_codons:
-            data = dic_codons[codon]
-            dd = pd.DataFrame(data, index=[sample for sample in samples])
-            dd.plot(kind="bar", stacked=True, edgecolor="k", color='mediumpurple')
-            plt.yscale('log')
-            plt.title(f'Counts of {codon} in different time points')
-            plt.xticks(rotation=360, horizontalalignment="center")
-            plt.xlabel("Time point")
-            plt.ylabel("Counts")
-            plt.show()
-
-
+        g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2, sharey=True)
+        g.map(my_bar_plot, 'Counts', 'Codon')
+        g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1, shrink=0.2)
+        #sb.catplot(data=df, x='Counts', y='Codon', hue='variable', col='variable', kind='bar', height=9, aspect=0.2)
+        plt.show()
 
     def __samples_information(self):
         """Open, read and save information from samples

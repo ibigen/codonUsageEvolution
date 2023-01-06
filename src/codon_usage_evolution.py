@@ -143,6 +143,7 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = True
+    test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
@@ -155,7 +156,7 @@ if __name__ == '__main__':
 
     # expression file
     if b_ecoli:
-        if name == 'ecoli.fasta':
+        if test:
             information_file = os.path.join(base_path, "E.coli_information_file.txt")
             expression_file = os.path.join(base_path, "E.coli_expression_values_test.txt")
         else:
@@ -198,45 +199,48 @@ if __name__ == '__main__':
 
     # analyse the different samples
     if b_ecoli:
-        if name == 'ecoli.fasta':
+        if test:
             samples = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',
                        'F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
         else:
             samples = ['A9_384Bulk_Plate1_S9', 'F11_384Bulk_Plate2_S131', 'A20_384Bulk_Plate2_S20',
                        'L19_384Bulk_Plate2_S283', 'E20_384Bulk_Plate1_S116']
-
     else:
         samples = ['A9_384Bulk_Plate1_S9', 'B12_384Bulk_Plate2_S36', 'A9_384Bulk_Plate2_S9',
-                   'A20_384Bulk_Plate2_S20', 'A10_384Bulk_Plate1_S10', 'E20_384Bulk_Plate1_S116', 'I20_384Bulk_Plate1_S212',
-                   'P15_384Bulk_Plate2_S375']
-
+                   'A20_384Bulk_Plate2_S20', 'A10_384Bulk_Plate1_S10', 'E20_384Bulk_Plate1_S116',
+                   'I20_384Bulk_Plate1_S212', 'P15_384Bulk_Plate2_S375']
     # get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and
     # E20_384Bulk_Plate1_S116
     # dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
 
     print("Calculating counts with expression values")
     counts = []
+    counts_temp = []
+    last_sample = None
+    #samples = sorted(temp_samples, key=)
     for n, sample in enumerate(samples):
+        #if not last_sample is None and last_sample != timepoint[sample]:
+         #   counts.append(media_counts_temp)
+        #counts_temp.append(expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index')))
         counts.append(expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index')))
+
         save_table(counts[n], os.path.join(base_path, f'{animal}/Counts-with-expression-{sample}.csv'))
+        #last_sample = sample
+    #counts.append(media_counts_temp)
 
-
-
-    # Task 2
-    # Is there any codons unbalanced between the two groups identified in the task1?
     print("Comparing different time points")
     for n, dataframe in enumerate(counts):
-        dif = expression.compare_timepoints(dataframe, counts[n-1], samples)
+        dif = expression.compare_timepoints(dataframe, counts[n-1])
         save_table(dif.T, os.path.join(base_path, f'{animal}/Differences_{samples[n-1]}_{samples[n]}.csv'))
 
     print('Searching for patterns')
     folder = os.path.join(base_path, f'{animal}')
-
     patterns = expression.compare_counts(folder, samples)
     save_table(patterns, os.path.join(base_path, f'{animal}/Patterns_between_{samples}.csv'))
 
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(base_path, f'{animal}/Table_directions_from_{samples}.csv'))
-    hist = expression.make_histogram(counts, samples)
+    hist = expression.plot_counts(counts, samples, b_ecoli, test)
+
     print("Finished")

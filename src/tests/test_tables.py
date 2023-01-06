@@ -147,18 +147,17 @@ class Test(unittest.TestCase):
                 expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                                                                                 dataframe_counts.to_dict(orient='index')),
                                               expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                                                                                dataframe_counts.to_dict(orient='index')),
-                                              samples)[0]['TTT'])
+                                                                                dataframe_counts.to_dict(orient='index'))))
         self.assertEqual(2127.4423466153694,
                 expression.compare_timepoints(expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                                                                                 dataframe_counts.to_dict(orient='index')),
                                               expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index')), samples)[0]['AAA'])
+                dataframe_counts.to_dict(orient='index'))))
         self.assertEqual(-2127.4423466153694,
                 expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                                                                                 dataframe_counts.to_dict(orient='index')),
                                               expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index')), samples)[0]['AAA'])
+                dataframe_counts.to_dict(orient='index'))))
 
         # Test comparison of counts
         directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\test'
