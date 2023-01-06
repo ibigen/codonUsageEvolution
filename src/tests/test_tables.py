@@ -113,7 +113,7 @@ class Test(unittest.TestCase):
         self.assertEqual(363.88953212254, expression.most_dif_expressed['thrL'])
         self.assertEqual(0.115760470543813, expression.most_dif_expressed['satP'])
         self.assertEqual(12.602181753894525, expression.most_differentially_expressed_genes(
-			'A20_384Bulk_Plate2_S20', 'A9_384Bulk_Plate1_S9')['satP'])
+            'A20_384Bulk_Plate2_S20', 'A9_384Bulk_Plate1_S9')['satP'])
 
         # Test the calculation of counts with expression
         ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
@@ -139,7 +139,9 @@ class Test(unittest.TestCase):
         # Test comparion of timepoints
         samples = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',
                    'F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
-        self.assertEqual(-1407.2443608853446, expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index')), expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+        self.assertAlmostEqual(-1407.2443608853446, expression.compare_timepoints(
+                expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index')),
+                expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index')), samples)[0]['ATG'])
         self.assertEqual(-843.8532858486651,
                 expression.compare_timepoints(expression.counts_with_expression('A18_384Bulk_Plate1_S18',
@@ -172,6 +174,8 @@ class Test(unittest.TestCase):
         self.assertEqual('↗', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TGA'])
         self.assertEqual('↘', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TAG'])
         self.assertEqual('↘', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['TAG'])
+        
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.test_read_fasta']
     unittest.main()

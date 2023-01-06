@@ -33,8 +33,8 @@ class Sample(object):
 
     def __init__(self):
         """
-		:parm sample_name
-		"""
+        :parm sample_name
+        """
         self.dt_sample = {}  ## { sample_name : tissue, sample_name1 : tissue, sample_name2 : tissue, ...
 
     def add_sample(self, sample_name, tissue, age, sex):
@@ -63,9 +63,9 @@ class Expression(object):
 
     def __init__(self, sample_info, sample_expression):
         """
-		:param sample_info			info to the samples
-		:param sample_expression   file with expression values
-		"""
+        :param sample_info            info to the samples
+        :param sample_expression   file with expression values
+        """
         self.most_dif_expressed = {}
         self.sample = Sample()
 
@@ -123,13 +123,8 @@ class Expression(object):
 
         dif = {}
         for codon in df1:
-            if codon not in dif:
+            dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
 
-                dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
-
-
-            else:
-                dif[codon] += df1[codon]['Total'] - df0[codon]['Total']
         # print(dif)
         dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
         return dataframe_dif
@@ -211,13 +206,13 @@ class Expression(object):
 
     def __samples_information(self):
         """Open, read and save information from samples
-		File:
-			Sample	Tissue	Age	Sex
-		A9_384Bulk_Plate1_S9	A9_384Bulk_Plate1_S9	Brain	3	Male
-		A20_384Bulk_Plate2_S20	A20_384Bulk_Plate2_S20	Brain	12	Male
-		E20_384Bulk_Plate1_S116	E20_384Bulk_Plate1_S116	Brain	21	Male
+        File:
+            Sample    Tissue    Age    Sex
+        A9_384Bulk_Plate1_S9    A9_384Bulk_Plate1_S9    Brain    3    Male
+        A20_384Bulk_Plate2_S20    A20_384Bulk_Plate2_S20    Brain    12    Male
+        E20_384Bulk_Plate1_S116    E20_384Bulk_Plate1_S116    Brain    21    Male
 
-		"""
+        """
         main_header = ["Sample", "Tissue", "Age", "Sex"]
         with open(self.file_information, 'r') as information_file:
             file = information_file.readlines()
@@ -247,11 +242,11 @@ class Expression(object):
     def __expression_values(self):
         """Open, read and save values of expression from the different samples
 
-		File:
-		  A9_384Bulk_Plate1_S9  A20_384Bulk_Plate2_S20 E20_384Bulk_Plate1_S116 F11_384Bulk_Plate2_S131 L19_384Bulk_Plate2_S283 A18_384Bulk_Plate1_S18
-		lcl|NC_000913.3_cds_NP_414542.1_1 2109.15514707196	2347.99870835941	1745.26561494942	1901.93328159018	2160.2317805036
+        File:
+          A9_384Bulk_Plate1_S9  A20_384Bulk_Plate2_S20 E20_384Bulk_Plate1_S116 F11_384Bulk_Plate2_S131 L19_384Bulk_Plate2_S283 A18_384Bulk_Plate1_S18
+        lcl|NC_000913.3_cds_NP_414542.1_1 2109.15514707196    2347.99870835941    1745.26561494942    1901.93328159018    2160.2317805036
 
-		"""
+        """
 
         genes = 0
         with open(self.file_expression, 'r') as expression_file:
