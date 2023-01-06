@@ -119,7 +119,7 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        print(dataframe_counts_expression.sum(axis=1))
+        #print(dataframe_counts_expression.sum(axis=1))
         return dataframe_counts_expression
 
     def compare_timepoints(self, df1, df0):
@@ -132,8 +132,16 @@ class Expression(object):
 
     def compare_counts(self, folder, samples):
         files_lst = []
-        for file in glob.glob(os.path.join(folder, "Counts-with-expression-*.csv")):
-
+        for n, file in enumerate(glob.glob(os.path.join(folder, "Counts-with-expression-*.csv"))):
+            print(samples[n], file)
+            """
+A9_384Bulk_Plate1_S9 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A9_384Bulk_Plate1_S9.csv
+A20_384Bulk_Plate2_S20 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A20_384Bulk_Plate2_S20.csv
+E20_384Bulk_Plate1_S116 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-E20_384Bulk_Plate1_S116.csv
+F11_384Bulk_Plate2_S131 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A18_384Bulk_Plate1_S18.csv
+L19_384Bulk_Plate2_S283 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-L19_384Bulk_Plate2_S283.csv
+A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-F11_384Bulk_Plate2_S131.csv
+            """
             file_df = pd.read_csv(file, index_col=0, sep=',')  # , index_col=0
             # file_df = file_df.split('\n')
             files_lst.append(file_df)
@@ -142,8 +150,9 @@ class Expression(object):
         for n, dataframe in enumerate(files_lst):
 
             for value in dataframe:
-                #print(files_lst[n - 1][value][0])
-                #print(dataframe[value][0])
+                print(files_lst[n - 1][value][0])
+                print(dataframe[value][0])	## value from gene thrL		Must be Total
+                print(dataframe[value][1])	## value from gene thrA		Must be ToTAL
                 if files_lst[n - 1][value][0] < dataframe[value][0]:
                     if value not in patterns:
                         patterns[value] = ['Increase']
