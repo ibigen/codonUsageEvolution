@@ -15,7 +15,6 @@ from utils.utils import Utils
 from utils.count_sequences import CountSequences
 from utils.expression import Expression
 
-
 # instantiate two objects
 utils = Utils()
 constants = Constants()
@@ -36,10 +35,10 @@ def read_genome(file_name):
         for key in record_dict:
             if record_dict[key].description.find("[gene=") > 0:
                 ### get gene name
-                gene_name = record_dict[key].description.\
-                            split("[gene=")[1].split(" ")[0].replace("]", "")
+                gene_name = record_dict[key].description. \
+                    split("[gene=")[1].split(" ")[0].replace("]", "")
                 if gene_name in dt_gene_name:
-                    
+
                     if len(str(record_dict[key].seq)) > dt_gene_name[gene_name][1]:
                         dt_gene_name[gene_name] = [key, len(str(record_dict[key].seq))]
                 else:
@@ -83,18 +82,21 @@ def read_genome(file_name):
             initial_dic_RSCU[gene_name] = RSCU([record_dict[key].seq])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
 
             # CAI
-            dic_CAI[gene_name] = float(CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[gene_name]))  # {gene1: CAI1} {GENE2: CAI2}
+            dic_CAI[gene_name] = float(
+                CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[gene_name]))  # {gene1: CAI1} {GENE2: CAI2}
         print("Calculating counts of all codons")
         # count of all codons
         data[Constants.GENOME_KEY] = codon_count_total
         # Global RSCU
         initial_dic_RSCU[Constants.GENOME_KEY] = RSCU(
-            [record_dict[dt_gene_name[key][0]].seq for key in initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+            [record_dict[dt_gene_name[key][0]].seq for key in
+             initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
 
         # Global CAI, from RSCU from all genome
         for key in dic_CAI:
             dic_genome_CAI[dt_gene_name[key][0]] = float(
-                CAI(record_dict[dt_gene_name[key][0]].seq, RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
+                CAI(record_dict[dt_gene_name[key][0]].seq,
+                    RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
         dic_genome_CAI[Constants.GENOME_KEY] = 1
 
         # Global CAI, doesn't matter in this case
@@ -142,7 +144,7 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = True
+    b_ecoli = False
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -152,7 +154,7 @@ if __name__ == '__main__':
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
         #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        #name = "ecoli.fasta"  # to create tables for tes
+        # name = "ecoli.fasta"  # to create tables for tes
 
     # expression file
     if b_ecoli:
@@ -187,7 +189,7 @@ if __name__ == '__main__':
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
     # show stats
-    #print(counts_stats)
+    # print(counts_stats)
 
     # save
     save_table(dataframe_count_codons_in_genes, os.path.join(base_path, file_name_out_counts))
@@ -200,38 +202,74 @@ if __name__ == '__main__':
     # analyse the different samples
     if b_ecoli:
         if test:
-            samples = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',
-                       'F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
+            temp_samples = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',
+                            'F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
         else:
-            samples = ['A9_384Bulk_Plate1_S9', 'F11_384Bulk_Plate2_S131', 'A20_384Bulk_Plate2_S20',
-                       'L19_384Bulk_Plate2_S283', 'E20_384Bulk_Plate1_S116']
+            temp_samples = ['A9_384Bulk_Plate1_S9', 'F11_384Bulk_Plate2_S131', 'A20_384Bulk_Plate2_S20',
+                            'L19_384Bulk_Plate2_S283', 'E20_384Bulk_Plate1_S116']
     else:
-        samples = ['A9_384Bulk_Plate1_S9', 'B12_384Bulk_Plate2_S36', 'A9_384Bulk_Plate2_S9',
-                   'A20_384Bulk_Plate2_S20', 'A10_384Bulk_Plate1_S10', 'E20_384Bulk_Plate1_S116',
-                   'I20_384Bulk_Plate1_S212', 'P15_384Bulk_Plate2_S375']
+        temp_samples = ['A9_384Bulk_Plate1_S9', 'B12_384Bulk_Plate3_S36',
+                        'J19_384Bulk_Plate2_S235', 'A9_384Bulk_Plate2_S9', 'A20_384Bulk_Plate2_S20',
+                         'E20_384Bulk_Plate1_S116', 'I20_384Bulk_Plate1_S212',
+                        'P15_384Bulk_Plate2_S375', 'B12_384Bulk_Plate2_S36', 'A10_384Bulk_Plate1_S10']
     # get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and
     # E20_384Bulk_Plate1_S116
     # dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
 
     print("Calculating counts with expression values")
-    counts = []
-    counts_temp = []
-    last_sample = None
-    #samples = sorted(temp_samples, key=)
-    for n, sample in enumerate(samples):
-        #if not last_sample is None and last_sample != timepoint[sample]:
-         #   counts.append(media_counts_temp)
-        #counts_temp.append(expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index')))
-        counts.append(expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index')))
+    unor_samples = temp_samples
+    same_age = {}
+    media = {}
+    time_points = [expression.sample.dt_sample[sample].age for sample in unor_samples]
 
+    indexes = []
+    for n, time in enumerate(time_points):
+        if time_points.count(time) > 1:
+            multi = True
+            indexes.append(n)
+
+    def time_point(sample):
+        return int(expression.sample.dt_sample[sample].age)
+    samples = sorted(unor_samples, key=time_point, reverse=False)
+    print(samples)
+    print(time_points)
+    for n, sample in enumerate(samples):
+        for i in indexes:
+            if n == i:
+                if len(indexes) - 1 != indexes.index(i):
+                    samples.remove(sample)
+                for key, value in expression.sample.dt_sample[sample].dt_gene.items():
+
+                    if key not in same_age:
+                        same_age[key] = [value, ]
+                    else:
+                        same_age[key].append(value)
+    print(samples)
+    time_points = [expression.sample.dt_sample[sample].age for sample in samples]
+    print(time_points)
+
+    for key, value in same_age.items():
+        exp = [float(n) for n in value]
+        if key not in media:
+            media[key] = sum(exp) / len(exp)
+    counts = []
+    for n, sample in enumerate(samples):
+        multi = False
+        if temp_samples.index(sample) in indexes:
+            multi = True
+            counts.append(
+                expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                  multi=multi, media=media))
+        else:
+            counts.append(
+                expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'), multi=multi))
         save_table(counts[n], os.path.join(base_path, f'{animal}/Counts-with-expression-{sample}.csv'))
-        #last_sample = sample
-    #counts.append(media_counts_temp)
 
     print("Comparing different time points")
     for n, dataframe in enumerate(counts):
-        dif = expression.compare_timepoints(dataframe, counts[n-1])
-        save_table(dif.T, os.path.join(base_path, f'{animal}/Differences_{samples[n-1]}_{samples[n]}.csv'))
+        dif = expression.compare_timepoints(dataframe, counts[n - 1])
+        # print(dif)
+        save_table(dif.T, os.path.join(base_path, f'{animal}/Differences_{samples[n - 1]}_{samples[n]}.csv'))
 
     print('Searching for patterns')
     folder = os.path.join(base_path, f'{animal}')

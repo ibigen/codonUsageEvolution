@@ -101,25 +101,37 @@ class Expression(object):
 
         for dif in dif_expression:
             for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
-                if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] - \
+                if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] -
                               self.sample.dt_sample[sample_name1].dt_gene[key]):
                     dif_expression_dict[key] = dif
                 self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
         return self.most_dif_expressed
 
-    def counts_with_expression(self, sample, counts):
-        try:
-            most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
+    def counts_with_expression(self, sample, counts, **kwargs):
+        #print(kwargs)
+        multi = kwargs['multi']
+        if multi:
+            media = kwargs['media']
+            try:
+                most_expressed_counts = {gene: {codon: media[gene] * counts[gene][codon]
+                                            for codon in list(counts[gene].keys())} for gene in counts.keys() if
+                                     gene != 'genome' and gene in media.keys()}
+            except KeyError as e:
+                print(str(e))
+                sys.exit("Error")
+        else:
+
+            try:
+                most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
                                             for codon in list(counts[gene].keys())} for gene in counts.keys() if
                                      gene != 'genome' and gene in self.sample.dt_sample[sample].dt_gene}
-        except KeyError as e:
-            print(str(e))
-            sys.exit("Error")
+            except KeyError as e:
+                print(str(e))
+                sys.exit("Error")
 
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        #print(dataframe_counts_expression.sum(axis=1))
         return dataframe_counts_expression
 
     def compare_timepoints(self, df1, df0):
@@ -133,7 +145,7 @@ class Expression(object):
     def compare_counts(self, folder, samples):
         files_lst = []
         for n, file in enumerate(glob.glob(os.path.join(folder, "Counts-with-expression-*.csv"))):
-            print(samples[n], file)
+            #print(samples[n], file)
             """
 A9_384Bulk_Plate1_S9 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A9_384Bulk_Plate1_S9.csv
 A20_384Bulk_Plate2_S20 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A20_384Bulk_Plate2_S20.csv
@@ -150,10 +162,7 @@ A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/
         for n, dataframe in enumerate(files_lst):
 
             for value in dataframe:
-                print(files_lst[n - 1][value][0])
-                print(dataframe[value][0])	## value from gene thrL		Must be Total
-                print(dataframe[value][1])	## value from gene thrA		Must be ToTAL
-                if files_lst[n - 1][value][0] < dataframe[value][0]:
+                if files_lst[n - 1][value]['Total'] < dataframe[value]['Total']:
                     if value not in patterns:
                         patterns[value] = ['Increase']
                     else:
