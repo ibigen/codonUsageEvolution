@@ -118,49 +118,53 @@ class Test(unittest.TestCase):
         # Test the calculation of counts with expression
         ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
         dataframe_counts, dataframe_RSCU_CAI, stats = read_genome(ecoli_fasta)
+        multi = False
 
         self.assertEqual(2109.15514707196, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index'))['AAA']['thrL'])
+                dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['thrL'])
         self.assertEqual(34.15360753253048, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index'))['TTT']['mbiA'])
+                dataframe_counts.to_dict(orient='index'), multi=multi)['TTT']['mbiA'])
         self.assertEqual(3.3827668758171, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index'))['TTT']['mbiA'])
+                dataframe_counts.to_dict(orient='index'), multi=multi)['TTT']['mbiA'])
         self.assertEqual(2359.80082045078, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index'))['AAA']['thrL'])
+                dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['thrL'])
         self.assertEqual(13215.624492098465, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index'))['AAA']['Total'])
+                dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['Total'])
         self.assertEqual(11088.182145483095, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index'))['AAA']['Total'])
+                dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['Total'])
         self.assertEqual(11181.037265962166, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index'))['TTT']['Total'])
+                dataframe_counts.to_dict(orient='index'), multi=multi)['TTT']['Total'])
         self.assertEqual(12024.890551810831, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index'))['TTT']['Total'])
+                dataframe_counts.to_dict(orient='index'), multi=multi)['TTT']['Total'])
 
         # Test comparion of timepoints
         samples = ['A9_384Bulk_Plate1_S9', 'A20_384Bulk_Plate2_S20', 'E20_384Bulk_Plate1_S116',
                    'F11_384Bulk_Plate2_S131', 'L19_384Bulk_Plate2_S283', 'A18_384Bulk_Plate1_S18']
         self.assertAlmostEqual(-1407.2443608853446, expression.compare_timepoints(
-                expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index')),
-                expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index')))[0]['ATG'])
+                expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index'), multi=multi),
+                expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index'), multi=multi))[0]['ATG'])
         self.assertEqual(-843.8532858486651, expression.compare_timepoints(
-			    expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index')),
-                expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index')))[0]['TTT'])
+			    expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index'), multi=multi),
+                expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index'), multi=multi))[0]['TTT'])
         self.assertEqual(2127.4423466153694, expression.compare_timepoints(
-			    expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index')),
-                expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index')))[0]['AAA'])
+			    expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index'), multi=multi),
+                expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index'), multi=multi))[0]['AAA'])
         self.assertEqual(-2127.4423466153694, expression.compare_timepoints(
-			    expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index')),
-                expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index')))[0]['AAA'])
+			    expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index'), multi=multi),
+                expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index'), multi=multi))[0]['AAA'])
 
         # Test comparison of counts
-        directory = os.path.join(self.expressionDirectory, "files/result")
+        directory = os.path.join(self.expressionDirectory, "files/results")
         counts = []
         for n, sample in enumerate(samples):
-            counts.append(expression.counts_with_expression(sample, dataframe_counts.to_dict(orient='index')))
+            counts.append(expression.counts_with_expression(sample, dataframe_counts.to_dict(orient='index'), multi=multi))
             counts[n].to_csv(os.path.join(directory, f'Counts-with-expression-{sample}.csv'))
 
         patterns = expression.compare_counts(directory, samples)
-        self.assertEqual('Increase', patterns['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['AAA'])
+        print(expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index'),
+                                          multi=multi)['AAA']['Total'])
+        print(expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['Total'])
+        self.assertEqual('Decrease', patterns['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['AAA'])
         self.assertEqual('Increase', patterns['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TGA'])
         self.assertEqual('Decrease', patterns['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TAG'])
         self.assertEqual('Decrease', patterns['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['TAG'])

@@ -108,6 +108,7 @@ class Expression(object):
         return self.most_dif_expressed
 
     def counts_with_expression(self, sample, counts, **kwargs):
+
         #print(kwargs)
         multi = kwargs['multi']
         if multi:

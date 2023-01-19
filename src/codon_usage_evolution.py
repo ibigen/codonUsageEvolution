@@ -144,17 +144,17 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = False
-    test = False
+    b_ecoli = True
+    test = True
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
         #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        # name = "ecoli.fasta"  # to create tables for tes
+        name = "ecoli.fasta"  # to create tables for tes
 
     # expression file
     if b_ecoli:
