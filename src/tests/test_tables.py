@@ -161,9 +161,6 @@ class Test(unittest.TestCase):
             counts[n].to_csv(os.path.join(directory, f'Counts-with-expression-{sample}.csv'))
 
         patterns = expression.compare_counts(directory, samples)
-        print(expression.counts_with_expression('A18_384Bulk_Plate1_S18', dataframe_counts.to_dict(orient='index'),
-                                          multi=multi)['AAA']['Total'])
-        print(expression.counts_with_expression('A9_384Bulk_Plate1_S9', dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['Total'])
         self.assertEqual('Decrease', patterns['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['AAA'])
         self.assertEqual('Increase', patterns['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TGA'])
         self.assertEqual('Decrease', patterns['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TAG'])
