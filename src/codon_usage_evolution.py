@@ -144,17 +144,17 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = True
-    test = True
+    b_ecoli = False
+    test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
         #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        name = "ecoli.fasta"  # to create tables for tes
+        #name = "ecoli.fasta"  # to create tables for tes
 
     # expression file
     if b_ecoli:
@@ -172,8 +172,10 @@ if __name__ == '__main__':
         animal = "mouse"
     elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
         animal = "ecoli"
+
     elif name == "ecoli.fasta":
         animal = "test"
+
 
     file_name_in = os.path.join(base_path, name)
     file_name_out_counts = f"{animal}/table_counts_{animal}.csv"
@@ -231,8 +233,6 @@ if __name__ == '__main__':
     def time_point(sample):
         return int(expression.sample.dt_sample[sample].age)
     samples = sorted(unor_samples, key=time_point, reverse=False)
-    print(samples)
-    print(time_points)
     for n, sample in enumerate(samples):
         for i in indexes:
             if n == i:
@@ -244,10 +244,8 @@ if __name__ == '__main__':
                         same_age[key] = [value, ]
                     else:
                         same_age[key].append(value)
-    print(samples)
-    time_points = [expression.sample.dt_sample[sample].age for sample in samples]
-    print(time_points)
 
+    time_points = [expression.sample.dt_sample[sample].age for sample in samples]
     for key, value in same_age.items():
         exp = [float(n) for n in value]
         if key not in media:
@@ -280,5 +278,6 @@ if __name__ == '__main__':
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(base_path, f'{animal}/Table_directions_from_{samples}.csv'))
     hist = expression.plot_counts(counts, samples, b_ecoli, test)
+    hist.savefig(os.path.join(base_path,f'Barplot_to_{animal}.png'))
 
     print("Finished")

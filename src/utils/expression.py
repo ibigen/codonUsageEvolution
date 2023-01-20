@@ -8,7 +8,7 @@ import pandas as pd
 from constants.constants import Constants
 import glob, os
 import matplotlib.pyplot as plt
-from matplotlib.colors import TwoSlopeNorm
+from matplotlib.colors import TwoSlopeNorm, Normalize
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
 
@@ -221,7 +221,6 @@ A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/
         data = pd.DataFrame(dic_codons, columns=[sample for sample in samples])
         codons = Constants.TOTAL_CODONS
         data['Codon'] = codons
-        #dataframe = pd.melt(data, value_vars=samples, value_name='Counts', ignore_index=False)
         df = pd.melt(data, id_vars='Codon', value_vars=samples, value_name='Counts', ignore_index=True)
         max = 0
         min = 100000
@@ -232,8 +231,14 @@ A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/
                 elif value < min:
                     min = value
 
-        norm = TwoSlopeNorm(vcenter=max/2, vmin=0, vmax=max)
-        cmap = plt.get_cmap('bwr')
+
+        norm = TwoSlopeNorm(vcenter=(max-min)/2, vmin=min-100, vmax=max+100)
+        print(norm)
+        #cmap = plt.get_cmap('PuBuGn')
+        #cmap = plt.get_cmap('YlGnBu')
+        #cmap = plt.get_cmap('brg')
+        cmap = plt.get_cmap('viridis')
+
 
         def my_bar_plot(x, y, **kwargs):
             plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
@@ -242,8 +247,8 @@ A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/
         g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2, sharey=True)
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1, shrink=0.2)
-        #sb.catplot(data=df, x='Counts', y='Codon', hue='variable', col='variable', kind='bar', height=9, aspect=0.2)
         plt.show()
+
 
     def __samples_information(self):
         """Open, read and save information from samples
