@@ -168,10 +168,10 @@ class Test(unittest.TestCase):
 
         # Test ilustration of patterns
         ilustration = expression.ilustrate_patterns(patterns)
-        self.assertEqual('↗', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['AAA'])
-        self.assertEqual('↗', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TGA'])
-        self.assertEqual('↘', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TAG'])
-        self.assertEqual('↘', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['TAG'])
+        self.assertEqual('-', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['AAA'])
+        self.assertEqual('+', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TGA'])
+        self.assertEqual('-', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TAG'])
+        self.assertEqual('-', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['TAG'])
         
 
 if __name__ == "__main__":

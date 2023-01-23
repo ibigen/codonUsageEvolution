@@ -187,14 +187,14 @@ A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/
             for codon in patterns_lst[sample]:
                 if codon == 'Increase':
                     if sample not in direction:
-                        direction[sample] = ['↗']
+                        direction[sample] = ['+']
                     else:
-                        direction[sample] += ['↗']
+                        direction[sample] += ['+']
                 else:
                     if sample not in direction:
-                        direction[sample] = ['↘']
+                        direction[sample] = ['-']
                     else:
-                        direction[sample] += ['↘']
+                        direction[sample] += ['-']
         dataframe_direction = pd.DataFrame(direction, columns=[key for key in direction.keys()], index=Constants.TOTAL_CODONS)
         #print(dataframe_direction)
         return dataframe_direction
