@@ -237,7 +237,7 @@ A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/
         #cmap = plt.get_cmap('PuBuGn')
         #cmap = plt.get_cmap('YlGnBu')
         #cmap = plt.get_cmap('brg')
-        cmap = plt.get_cmap('viridis')
+        cmap = plt.get_cmap('brg')
 
 
         def my_bar_plot(x, y, **kwargs):
