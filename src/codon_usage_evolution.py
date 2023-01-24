@@ -280,3 +280,4 @@ if __name__ == '__main__':
     hist.savefig(os.path.join(base_path, f'Barplot_to_{animal}.png'))
 
     print("Finished")
+
