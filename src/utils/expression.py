@@ -1,6 +1,7 @@
 """Open files with information of samples and expression values"""
 import numpy as np
 
+
 from utils.utils import Utils
 import sys
 import itertools
@@ -87,6 +88,10 @@ class Expression(object):
     def __str__(self):
         return f"samples: {self.sample.get_number_sample()} genes: {self.sample.get_number_gene()}"
 
+    def save_table(self,dataframe_genome, file_out):
+        """ save a data frame to a CSV file """
+        dataframe_genome.to_csv(file_out)
+
     def get_number_sample(self):
         return self.sample.get_number_sample()
 
@@ -143,27 +148,11 @@ class Expression(object):
         dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
         return dataframe_dif
 
-    def compare_counts(self, folder, samples):
-        files_lst = []
-        for n, file in enumerate(glob.glob(os.path.join(folder, "Counts-with-expression-*.csv"))):
-            #print(samples[n], file)
-            """
-A9_384Bulk_Plate1_S9 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A9_384Bulk_Plate1_S9.csv
-A20_384Bulk_Plate2_S20 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A20_384Bulk_Plate2_S20.csv
-E20_384Bulk_Plate1_S116 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-E20_384Bulk_Plate1_S116.csv
-F11_384Bulk_Plate2_S131 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A18_384Bulk_Plate1_S18.csv
-L19_384Bulk_Plate2_S283 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-L19_384Bulk_Plate2_S283.csv
-A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-F11_384Bulk_Plate2_S131.csv
-            """
-            file_df = pd.read_csv(file, index_col=0, sep=',')  # , index_col=0
-            # file_df = file_df.split('\n')
-            files_lst.append(file_df)
-
+    def compare_counts(self, counts, samples, animal):
         patterns = {}
-        for n, dataframe in enumerate(files_lst):
-
+        for n, dataframe in enumerate(counts):
             for value in dataframe:
-                if files_lst[n - 1][value]['Total'] < dataframe[value]['Total']:
+                if counts[n - 1][value]['Total'] < dataframe[value]['Total']:
                     if value not in patterns:
                         patterns[value] = ['Increase']
                     else:
@@ -178,7 +167,10 @@ A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/
 
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
-        #print(final_dataframe)
+        print(final_dataframe)
+        base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
+        self.save_table(final_dataframe, os.path.join(base_path, f'{animal}/Patterns_between_{samples}.csv'))
+
         return final_dataframe
 
     def ilustrate_patterns(self, patterns_lst):
