@@ -146,7 +146,7 @@ class Expression(object):
     def compare_counts(self, folder, samples):
         files_lst = []
         for n, file in enumerate(glob.glob(os.path.join(folder, "Counts-with-expression-*.csv"))):
-            #print(samples[n], file)
+            print(samples[n], file)
             """
 A9_384Bulk_Plate1_S9 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A9_384Bulk_Plate1_S9.csv
 A20_384Bulk_Plate2_S20 /home/mmp/git/codonUsageEvolution/src/tests/files/result/Counts-with-expression-A20_384Bulk_Plate2_S20.csv
@@ -163,6 +163,7 @@ A18_384Bulk_Plate1_S18 /home/mmp/git/codonUsageEvolution/src/tests/files/result/
         for n, dataframe in enumerate(files_lst):
 
             for value in dataframe:
+                print(value, files_lst[n - 1][value]['Total'], dataframe[value]['Total'])
                 if files_lst[n - 1][value]['Total'] < dataframe[value]['Total']:
                     if value not in patterns:
                         patterns[value] = ['Increase']
