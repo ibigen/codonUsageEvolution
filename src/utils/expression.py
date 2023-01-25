@@ -113,8 +113,6 @@ class Expression(object):
         return self.most_dif_expressed
 
     def counts_with_expression(self, sample, counts, **kwargs):
-
-        #print(kwargs)
         multi = kwargs['multi']
         if multi:
             media = kwargs['media']
@@ -138,6 +136,7 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
+
         return dataframe_counts_expression
 
     def compare_timepoints(self, df1, df0):
