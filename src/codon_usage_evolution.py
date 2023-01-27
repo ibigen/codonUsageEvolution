@@ -5,7 +5,6 @@ Created on 09/09/2022
 '''
 import gzip
 import os
-import glob
 import pandas as pd
 import socket
 from constants.constants import Constants
@@ -144,7 +143,7 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = False
+    b_ecoli = True
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -264,20 +263,20 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(base_path, f'{animal}/Counts-with-expression-{sample}.csv'))
 
     print("Comparing different time points")
+    print(samples)
     for n, dataframe in enumerate(counts):
         dif = expression.compare_timepoints(dataframe, counts[n - 1])
         # print(dif)
         save_table(dif.T, os.path.join(base_path, f'{animal}/Differences_{samples[n - 1]}_{samples[n]}.csv'))
 
     print('Searching for patterns')
-    folder = os.path.join(base_path, f'{animal}')
-    patterns = expression.compare_counts(folder, samples)
-    save_table(patterns, os.path.join(base_path, f'{animal}/Patterns_between_{samples}.csv'))
+    patterns = expression.compare_counts(counts, samples,animal)
 
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
-    save_table(table_direction, os.path.join(base_path, f'{animal}/Table_directions_from_{samples}.csv'))
+    save_table(table_direction, os.path.join(base_path, f'{animal}/Table_directions_from_{animal}.csv'))
     hist = expression.plot_counts(counts, samples, b_ecoli, test)
-    hist.savefig(os.path.join(base_path,f'Barplot_to_{animal}.png'))
+    hist.savefig(os.path.join(base_path, f'Barplot_to_{animal}.png'))
 
     print("Finished")
+
