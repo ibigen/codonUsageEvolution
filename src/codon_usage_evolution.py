@@ -144,7 +144,7 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = False
+    b_ecoli = True
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        # name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         # name = "ecoli.fasta"  # to create tables for tes
 
     # expression file
@@ -227,24 +227,6 @@ if __name__ == '__main__':
     time_points_male = [expression.sample.dt_sample[sample].age for sample in un_samples_male]
     time_points_female = [expression.sample.dt_sample[sample].age for sample in un_samples_female]
 
-    indexes = []
-    for n, time in enumerate(time_points):
-        if time_points.count(time) > 1:
-            multi = True
-            indexes.append(n)
-
-    indexes_female = []
-    for n, time in enumerate(time_points_female):
-        if time_points_female.count(time) > 1:
-            multi = True
-            indexes_female.append(n)
-    indexes_male = []
-    for n, time in enumerate(time_points_male):
-        if time_points_male.count(time) > 1:
-            multi = True
-            indexes_male.append(n)
-
-
     def time_point(sample):
         return int(expression.sample.dt_sample[sample].age)
 
@@ -259,7 +241,13 @@ if __name__ == '__main__':
     gender = None
 
     ## SAMPLES FROM BOTH GENDERS
+
     if both == True:
+        indexes = []
+        for n, time in enumerate(time_points):
+            if time_points.count(time) > 1:
+                multi = True
+                indexes.append(n)
         gender = 'F_and_M'
         for n, sample in enumerate(samples):
             for i in indexes:
@@ -294,14 +282,12 @@ if __name__ == '__main__':
             save_table(counts[n], os.path.join(base_path, f'{animal}/{gender}/Counts-with-expression-{sample}.csv'))
 
         print("Comparing different time points")
-
         for n, dataframe in enumerate(counts):
             dif = expression.compare_timepoints(dataframe, counts[n - 1])
-            # print(dif)
             save_table(dif.T, os.path.join(base_path, f'{animal}/{gender}/Differences_{samples[n - 1]}_{samples[n]}.csv'))
 
         print('Searching for patterns')
-        patterns = expression.compare_counts(counts, samples, animal)
+        patterns = expression.compare_counts(counts, samples, animal, gender)
         save_table(patterns, os.path.join(base_path, f'{animal}/{gender}/Table_patterns_from_{animal}.csv'))
 
         print("Illustrating patterns")
@@ -312,6 +298,11 @@ if __name__ == '__main__':
 
     ## SAMPLES WITH SEX == 'Female'
     if female:
+        indexes_female = []
+        for n, time in enumerate(time_points_female):
+            if time_points_female.count(time) > 1:
+                multi = True
+                indexes_female.append(n)
         gender = 'F'
         same_age_female = {}
         media_female = {}
@@ -348,11 +339,10 @@ if __name__ == '__main__':
         print("Comparing different time points")
         for n, dataframe in enumerate(counts_female):
             dif_female = expression.compare_timepoints(dataframe, counts_female[n - 1])
-            # print(dif)
             save_table(dif_female.T, os.path.join(base_path,
                                                   f'{animal}/{gender}/Differences_{samples_female[n - 1]}_{samples_female[n]}.csv'))
         print('Searching for patterns')
-        patterns_female = expression.compare_counts(counts_female, samples_female, animal)
+        patterns_female = expression.compare_counts(counts_female, samples_female, animal, gender)
         print("Illustrating patterns")
         table_direction_female = expression.ilustrate_patterns(patterns_female)
         save_table(table_direction_female,
@@ -362,6 +352,11 @@ if __name__ == '__main__':
 
     ## SAMPLES WITH SEX == 'Male'
     if male:
+        indexes_male = []
+        for n, time in enumerate(time_points_male):
+            if time_points_male.count(time) > 1:
+                multi = True
+                indexes_male.append(n)
         gender = 'M'
         same_age_male = {}
         media_male = {}
@@ -402,7 +397,7 @@ if __name__ == '__main__':
             save_table(dif_male.T, os.path.join(base_path,
                                                 f'{animal}/{gender}/Differences_{samples_male[n - 1]}_{samples_male[n]}.csv'))
         print('Searching for patterns')
-        patterns_male = expression.compare_counts(counts_male, samples_male, animal)
+        patterns_male = expression.compare_counts(counts_male, samples_male, animal, gender)
         print("Illustrating patterns")
         table_direction_male = expression.ilustrate_patterns(patterns_male)
         save_table(table_direction_male,

@@ -113,12 +113,11 @@ class Expression(object):
         return self.most_dif_expressed
 
     def counts_with_expression(self, sample, counts, **kwargs):
-
         multi = kwargs['multi']
-        #sex = kwargs['sex']
-
+        print(multi)
         if multi:
             media = kwargs['media']
+            print(media)
             try:
                 most_expressed_counts = {gene: {codon: media[gene] * counts[gene][codon]
                                                 for codon in list(counts[gene].keys())} for gene in counts.keys() if
@@ -130,20 +129,16 @@ class Expression(object):
         else:
 
             try:
-                most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
-                                                for codon in list(counts[gene].keys())} for gene in counts.keys() if
-                                         gene != 'genome' and gene in self.sample.dt_sample[sample].dt_gene}
+                most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon] for codon in list(counts[gene].keys())} for gene in counts.keys() if gene != 'genome' and gene in self.sample.dt_sample[sample].dt_gene}
             except KeyError as e:
                 print(str(e))
                 sys.exit("Error")
 
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
+        print(most_expressed_counts)
+        print(dataframe_counts_expression)
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        # dataframe_counts_expression_male =
-        # if sex == 'Male':
-        # dataframe_counts_expression_male =
-
         return dataframe_counts_expression
 
     def compare_timepoints(self, df1, df0):
@@ -157,7 +152,7 @@ class Expression(object):
 
         return dataframe_dif
 
-    def compare_counts(self, counts, samples, animal):
+    def compare_counts(self, counts, samples, animal, gender):
         patterns = {}
         for n, dataframe in enumerate(counts):
             for value in dataframe:
@@ -172,18 +167,19 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = [f'{samples[n - 1]}_{sample}' for n, sample in enumerate(samples)]
-
+        columns = [f'Time_points:{self.sample.dt_sample[sample].age}_{self.sample.dt_sample[samples[n - 1]].age}' for n, sample in enumerate(samples)]
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        #self.save_table(final_dataframe, os.path.join(base_path, f'{animal}/{}Patterns_between_{samples}.csv'))
+        self.save_table(final_dataframe, os.path.join(base_path, f'{animal}/{gender}/Patterns_between_{samples}.csv'))
 
         return final_dataframe
 
     def ilustrate_patterns(self, patterns_lst):
         direction = {}
+
         for sample in patterns_lst:
+
             for codon in patterns_lst[sample]:
                 if codon == 'Increase':
                     if sample not in direction:
@@ -195,9 +191,10 @@ class Expression(object):
                         direction[sample] = ['-']
                     else:
                         direction[sample] += ['-']
-        dataframe_direction = pd.DataFrame(direction, columns=[key for key in direction.keys()],
+
+        dataframe_direction = pd.DataFrame(direction, columns=[time for time in direction.keys()],
                                            index=Constants.TOTAL_CODONS)
-        # print(dataframe_direction)
+
         return dataframe_direction
 
     def plot_counts(self, lst_counts, samples, b_ecoli, test):
