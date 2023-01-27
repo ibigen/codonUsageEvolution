@@ -152,8 +152,8 @@ if __name__ == '__main__':
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        #name = "ecoli.fasta"  # to create tables for tes
+        # name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        # name = "ecoli.fasta"  # to create tables for tes
 
     # expression file
     if b_ecoli:
@@ -174,7 +174,6 @@ if __name__ == '__main__':
 
     elif name == "ecoli.fasta":
         animal = "test"
-
 
     file_name_in = os.path.join(base_path, name)
     file_name_out_counts = f"{animal}/table_counts_{animal}.csv"
@@ -210,9 +209,9 @@ if __name__ == '__main__':
                             'L19_384Bulk_Plate2_S283', 'E20_384Bulk_Plate1_S116']
     else:
         temp_samples = ['A9_384Bulk_Plate1_S9', 'B12_384Bulk_Plate3_S36',
-                        'J19_384Bulk_Plate2_S235', 'A9_384Bulk_Plate2_S9', 'A20_384Bulk_Plate2_S20',
-                         'E20_384Bulk_Plate1_S116', 'I20_384Bulk_Plate1_S212',
-                        'P15_384Bulk_Plate2_S375', 'B12_384Bulk_Plate2_S36', 'A10_384Bulk_Plate1_S10']
+                        'J19_384Bulk_Plate2_S235', 'N4_384Bulk_Plate1_S316', 'A20_384Bulk_Plate2_S20',
+                        'E20_384Bulk_Plate1_S116', 'I20_384Bulk_Plate1_S212',
+                        'P15_384Bulk_Plate2_S375', 'B12_384Bulk_Plate2_S36', 'A10_384Bulk_Plate1_S10', 'D5_384Bulk_Plate2_S77', 'A13_384Bulk_Plate3_S13']
     # get the list of the one hundred most differentially expressed genes between sample A9_384Bulk_Plate1_S9 and
     # E20_384Bulk_Plate1_S116
     # dt_genes_diff_expressed = expression.most_differentially_expressed_genes(sample_1, sample_2)
@@ -222,6 +221,10 @@ if __name__ == '__main__':
     same_age = {}
     media = {}
     time_points = [expression.sample.dt_sample[sample].age for sample in unor_samples]
+    un_samples_female = [sample for sample in unor_samples if expression.sample.dt_sample[sample].sex == 'Female']
+    un_samples_male = [sample for sample in unor_samples if expression.sample.dt_sample[sample].sex == 'Male']
+    time_points_male = [expression.sample.dt_sample[sample].age for sample in un_samples_male]
+    time_points_female = [expression.sample.dt_sample[sample].age for sample in un_samples_female]
 
     indexes = []
     for n, time in enumerate(time_points):
@@ -229,54 +232,181 @@ if __name__ == '__main__':
             multi = True
             indexes.append(n)
 
+    indexes_female = []
+    for n, time in enumerate(time_points_female):
+        if time_points_female.count(time) > 1:
+            multi = True
+            indexes_female.append(n)
+    indexes_male = []
+    for n, time in enumerate(time_points_male):
+        if time_points_male.count(time) > 1:
+            multi = True
+            indexes_male.append(n)
+
+
     def time_point(sample):
         return int(expression.sample.dt_sample[sample].age)
+
+
     samples = sorted(unor_samples, key=time_point, reverse=False)
-    for n, sample in enumerate(samples):
-        for i in indexes:
-            if n == i:
-                if len(indexes) - 1 != indexes.index(i):
-                    samples.remove(sample)
-                for key, value in expression.sample.dt_sample[sample].dt_gene.items():
+    samples_male = sorted(un_samples_male, key=time_point, reverse=False)
+    samples_female = sorted(un_samples_female, key=time_point, reverse=False)
 
-                    if key not in same_age:
-                        same_age[key] = [value, ]
-                    else:
-                        same_age[key].append(value)
+    both = False
+    female = False
+    male = True
+    gender = None
 
-    time_points = [expression.sample.dt_sample[sample].age for sample in samples]
-    for key, value in same_age.items():
-        exp = [float(n) for n in value]
-        if key not in media:
-            media[key] = sum(exp) / len(exp)
-    counts = []
-    for n, sample in enumerate(samples):
-        multi = False
-        if temp_samples.index(sample) in indexes:
-            multi = True
-            counts.append(
-                expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'),
-                                                  multi=multi, media=media))
-        else:
-            counts.append(
-                expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'), multi=multi))
-        save_table(counts[n], os.path.join(base_path, f'{animal}/Counts-with-expression-{sample}.csv'))
+    ## SAMPLES FROM BOTH GENDERS
+    if both == True:
+        gender = 'F_and_M'
+        for n, sample in enumerate(samples):
+            for i in indexes:
+                if n == i:
+                    if len(indexes) - 1 != indexes.index(i):
+                        samples.remove(sample)
+                    for key, value in expression.sample.dt_sample[sample].dt_gene.items():
 
-    print("Comparing different time points")
-    print(samples)
-    for n, dataframe in enumerate(counts):
-        dif = expression.compare_timepoints(dataframe, counts[n - 1])
-        # print(dif)
-        save_table(dif.T, os.path.join(base_path, f'{animal}/Differences_{samples[n - 1]}_{samples[n]}.csv'))
+                        if key not in same_age:
+                            same_age[key] = [value, ]
+                        else:
+                            same_age[key].append(value)
+        time_points = [expression.sample.dt_sample[sample].age for sample in samples]
 
-    print('Searching for patterns')
-    patterns = expression.compare_counts(counts, samples,animal)
+        for key, value in same_age.items():
+            exp = [float(n) for n in value]
+            if key not in media:
+                media[key] = sum(exp) / len(exp)
+        counts = []
 
-    print("Illustrating patterns")
-    table_direction = expression.ilustrate_patterns(patterns)
-    save_table(table_direction, os.path.join(base_path, f'{animal}/Table_directions_from_{animal}.csv'))
-    hist = expression.plot_counts(counts, samples, b_ecoli, test)
-    hist.savefig(os.path.join(base_path, f'Barplot_to_{animal}.png'))
+        for n, sample in enumerate(samples):
+            multi = False
+            if temp_samples.index(sample) in indexes:
+                multi = True
+                counts.append(
+                    expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                      multi=multi, media=media))
+            else:
+                counts.append(
+                    expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                      multi=multi))
+            save_table(counts[n], os.path.join(base_path, f'{animal}/{gender}/Counts-with-expression-{sample}.csv'))
+
+        print("Comparing different time points")
+
+        for n, dataframe in enumerate(counts):
+            dif = expression.compare_timepoints(dataframe, counts[n - 1])
+            # print(dif)
+            save_table(dif.T, os.path.join(base_path, f'{animal}/{gender}/Differences_{samples[n - 1]}_{samples[n]}.csv'))
+
+        print('Searching for patterns')
+        patterns = expression.compare_counts(counts, samples, animal)
+        save_table(patterns, os.path.join(base_path, f'{animal}/{gender}/Table_patterns_from_{animal}.csv'))
+
+        print("Illustrating patterns")
+        table_direction = expression.ilustrate_patterns(patterns)
+        save_table(table_direction, os.path.join(base_path, f'{animal}/{gender}/Table_directions_from_{animal}.csv'))
+        hist = expression.plot_counts(counts, samples, b_ecoli, test)
+        hist.savefig(os.path.join(base_path, f'{animal}/{gender}/Barplot_to_counts.png'))
+
+    ## SAMPLES WITH SEX == 'Female'
+    if female:
+        gender = 'F'
+        same_age_female = {}
+        media_female = {}
+        for n, sample in enumerate(samples_female):
+            for i in indexes_female:
+                if n == i:
+                    if len(indexes_female) - 1 != indexes_female.index(i):
+                        samples_female.remove(sample)
+                    for key, value in expression.sample.dt_sample[sample].dt_gene.items():
+                        if key not in same_age_female:
+                            same_age_female[key] = [value, ]
+                        else:
+                            same_age_female[key].append(value)
+        time_points_female = [expression.sample.dt_sample[sample].age for sample in samples_female]
+        for key, value in same_age_female.items():
+            exp = [float(n) for n in value]
+            if key not in media_female:
+                media_female[key] = sum(exp) / len(exp)
+        counts_female = []
+
+        for n, sample in enumerate(samples_female):
+            multi = False
+            if temp_samples.index(sample) in indexes_female:
+                multi = True
+                counts_female.append(
+                    expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                      multi=multi, media=media_female))
+            else:
+                counts_female.append(
+                    expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                      multi=multi))
+            save_table(counts_female[n], os.path.join(base_path, f'{animal}/{gender}/Counts-with-expression-{sample}.csv'))
+
+        print("Comparing different time points")
+        for n, dataframe in enumerate(counts_female):
+            dif_female = expression.compare_timepoints(dataframe, counts_female[n - 1])
+            # print(dif)
+            save_table(dif_female.T, os.path.join(base_path,
+                                                  f'{animal}/{gender}/Differences_{samples_female[n - 1]}_{samples_female[n]}.csv'))
+        print('Searching for patterns')
+        patterns_female = expression.compare_counts(counts_female, samples_female, animal)
+        print("Illustrating patterns")
+        table_direction_female = expression.ilustrate_patterns(patterns_female)
+        save_table(table_direction_female,
+                   os.path.join(base_path, f'{animal}/{gender}/Table_directions_from_{animal}.csv'))
+        hist_female = expression.plot_counts(counts_female, samples_female, b_ecoli, test)
+        hist_female.savefig(os.path.join(base_path, f'{animal}/{gender}/Barplot_to_counts.png'))
+
+    ## SAMPLES WITH SEX == 'Male'
+    if male:
+        gender = 'M'
+        same_age_male = {}
+        media_male = {}
+        for n, sample in enumerate(samples_male):
+            for i in indexes_male:
+                if n == i:
+                    if len(indexes_male) - 1 != indexes_male.index(i):
+                        samples_male.remove(sample)
+                    for key, value in expression.sample.dt_sample[sample].dt_gene.items():
+                        if key not in same_age_male:
+                            same_age_male[key] = [value, ]
+                        else:
+                            same_age_male[key].append(value)
+        time_points_male = [expression.sample.dt_sample[sample].age for sample in samples_male]
+        for key, value in same_age_male.items():
+            exp = [float(n) for n in value]
+            if key not in media_male:
+                media_male[key] = sum(exp) / len(exp)
+        counts_male = []
+
+        for n, sample in enumerate(samples_male):
+            multi = False
+            if temp_samples.index(sample) in indexes_male:
+                multi = True
+                counts_male.append(
+                    expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                      multi=multi, media=media_male))
+            else:
+                counts_male.append(
+                    expression.counts_with_expression(sample, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                      multi=multi))
+            save_table(counts_male[n], os.path.join(base_path, f'{animal}/{gender}/Counts-with-expression-{sample}.csv'))
+
+        print("Comparing different time points")
+        for n, dataframe in enumerate(counts_male):
+            dif_male = expression.compare_timepoints(dataframe, counts_male[n - 1])
+            # print(dif)
+            save_table(dif_male.T, os.path.join(base_path,
+                                                f'{animal}/{gender}/Differences_{samples_male[n - 1]}_{samples_male[n]}.csv'))
+        print('Searching for patterns')
+        patterns_male = expression.compare_counts(counts_male, samples_male, animal)
+        print("Illustrating patterns")
+        table_direction_male = expression.ilustrate_patterns(patterns_male)
+        save_table(table_direction_male,
+                   os.path.join(base_path, f'{animal}/{gender}Table_directions_from_{animal}.csv'))
+        hist_male = expression.plot_counts(counts_male, samples_male, b_ecoli, test)
+        hist_male.savefig(os.path.join(base_path, f'{animal}/{gender}/Barplot_to_counts.png'))
 
     print("Finished")
-

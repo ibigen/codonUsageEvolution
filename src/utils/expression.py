@@ -1,7 +1,6 @@
 """Open files with information of samples and expression values"""
 import numpy as np
 
-
 from utils.utils import Utils
 import sys
 import itertools
@@ -12,6 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm, Normalize
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
+
 
 class Tissue(object):
 
@@ -88,7 +88,7 @@ class Expression(object):
     def __str__(self):
         return f"samples: {self.sample.get_number_sample()} genes: {self.sample.get_number_gene()}"
 
-    def save_table(self,dataframe_genome, file_out):
+    def save_table(self, dataframe_genome, file_out):
         """ save a data frame to a CSV file """
         dataframe_genome.to_csv(file_out)
 
@@ -114,23 +114,25 @@ class Expression(object):
 
     def counts_with_expression(self, sample, counts, **kwargs):
 
-        #print(kwargs)
         multi = kwargs['multi']
+        #sex = kwargs['sex']
+
         if multi:
             media = kwargs['media']
             try:
                 most_expressed_counts = {gene: {codon: media[gene] * counts[gene][codon]
-                                            for codon in list(counts[gene].keys())} for gene in counts.keys() if
-                                     gene != 'genome' and gene in media.keys()}
+                                                for codon in list(counts[gene].keys())} for gene in counts.keys() if
+                                         gene != 'genome' and gene in media.keys()}
             except KeyError as e:
                 print(str(e))
                 sys.exit("Error")
+
         else:
 
             try:
                 most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
-                                            for codon in list(counts[gene].keys())} for gene in counts.keys() if
-                                     gene != 'genome' and gene in self.sample.dt_sample[sample].dt_gene}
+                                                for codon in list(counts[gene].keys())} for gene in counts.keys() if
+                                         gene != 'genome' and gene in self.sample.dt_sample[sample].dt_gene}
             except KeyError as e:
                 print(str(e))
                 sys.exit("Error")
@@ -138,14 +140,21 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
+        # dataframe_counts_expression_male =
+        # if sex == 'Male':
+        # dataframe_counts_expression_male =
+
         return dataframe_counts_expression
 
     def compare_timepoints(self, df1, df0):
         dif = {}
+        print(df1)
         for codon in df1:
+
             dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
 
         dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
+
         return dataframe_dif
 
     def compare_counts(self, counts, samples, animal):
@@ -163,13 +172,12 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = [f'{samples[n-1]}_{sample}' for n, sample in enumerate(samples)]
+        columns = [f'{samples[n - 1]}_{sample}' for n, sample in enumerate(samples)]
 
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
-        print(final_dataframe)
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        self.save_table(final_dataframe, os.path.join(base_path, f'{animal}/Patterns_between_{samples}.csv'))
+        #self.save_table(final_dataframe, os.path.join(base_path, f'{animal}/{}Patterns_between_{samples}.csv'))
 
         return final_dataframe
 
@@ -187,10 +195,10 @@ class Expression(object):
                         direction[sample] = ['-']
                     else:
                         direction[sample] += ['-']
-        dataframe_direction = pd.DataFrame(direction, columns=[key for key in direction.keys()], index=Constants.TOTAL_CODONS)
-        #print(dataframe_direction)
+        dataframe_direction = pd.DataFrame(direction, columns=[key for key in direction.keys()],
+                                           index=Constants.TOTAL_CODONS)
+        # print(dataframe_direction)
         return dataframe_direction
-
 
     def plot_counts(self, lst_counts, samples, b_ecoli, test):
         if b_ecoli:
@@ -223,24 +231,21 @@ class Expression(object):
                 elif value < min:
                     min = value
 
-
-        norm = TwoSlopeNorm(vcenter=(max-min)/2, vmin=min-100, vmax=max+100)
-        print(norm)
-        #cmap = plt.get_cmap('PuBuGn')
-        #cmap = plt.get_cmap('YlGnBu')
-        #cmap = plt.get_cmap('brg')
+        norm = TwoSlopeNorm(vcenter=(max - min) / 2, vmin=min - 100, vmax=max + 100)
+        # print(norm)
+        # cmap = plt.get_cmap('PuBuGn')
+        # cmap = plt.get_cmap('YlGnBu')
+        # cmap = plt.get_cmap('brg')
         cmap = plt.get_cmap('brg')
-
 
         def my_bar_plot(x, y, **kwargs):
             plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
 
-
         g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2, sharey=True)
         g.map(my_bar_plot, 'Counts', 'Codon')
-        g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1, shrink=0.2)
+        g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
+                       shrink=0.2)
         plt.show()
-
 
     def __samples_information(self):
         """Open, read and save information from samples
