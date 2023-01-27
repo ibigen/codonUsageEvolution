@@ -141,6 +141,7 @@ class Expression(object):
         dataframe_counts_expression.loc['Total'] = totals
         return dataframe_counts_expression
 
+
     def compare_timepoints(self, df1, df0):
         dif = {}
         print(df1)
