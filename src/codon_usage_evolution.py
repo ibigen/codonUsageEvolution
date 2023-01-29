@@ -257,6 +257,7 @@ if __name__ == '__main__':
                             same_age[key] = [value, ]
                         else:
                             same_age[key].append(value)
+
         time_points = [expression.sample.dt_sample[sample].age for sample in samples]
 
         for key, value in same_age.items():
