@@ -143,11 +143,7 @@ class Utils(object):
 
 	def make_path(self, path_name):
 		if (not os.path.isdir(path_name) and not os.path.isfile(path_name)):
-			cmd = "mkdir -p " + path_name
-			os.system(cmd)
-			exist_status = os.system(cmd)
-			if (exist_status != 0):
-				raise Exception("Fail to make a path")
+			os.makedirs(path_name)
 
 	def is_integer(self, n_value):
 		try:

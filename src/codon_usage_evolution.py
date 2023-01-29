@@ -164,7 +164,7 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = False
+    b_ecoli = True
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -197,9 +197,13 @@ if __name__ == '__main__':
         animal = "test"
 
     file_name_in = os.path.join(base_path, name)
-    file_name_out_counts = f"{animal}/table_counts_{animal}.csv"
-    file_name_out_RSCU_CAI = f"{animal}/table_RSCU_CAI_{animal}.csv"
-    file_name_out_CAI = f"{animal}/table_CAI_{animal}.csv"
+    
+    ## working path
+    working_path = os.path.join(base_path, f'{animal}')
+    utils.make_path(working_path)
+    
+    file_name_out_counts = os.path.join(working_path, f"table_counts_{animal}.csv")
+    file_name_out_RSCU_CAI = os.path.join(working_path, f"table_RSCU_CAI_{animal}.csv")
 
     # testing existing files
     utils.test_exist_file(file_name_in)
@@ -212,9 +216,9 @@ if __name__ == '__main__':
     # show stats
     # print(counts_stats)
 
-    # save
-    save_table(dataframe_count_codons_in_genes, os.path.join(base_path, file_name_out_counts))
-    save_table(dataframe_RSCU_CAI, os.path.join(base_path, file_name_out_RSCU_CAI))
+    # save tables
+    save_table(dataframe_count_codons_in_genes, file_name_out_counts)
+    save_table(dataframe_RSCU_CAI, file_name_out_RSCU_CAI)
 
     # make expression in genes
     print("Loading expression and samples")
