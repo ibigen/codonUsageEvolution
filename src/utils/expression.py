@@ -114,10 +114,10 @@ class Expression(object):
 
     def counts_with_expression(self, sample, counts, **kwargs):
         multi = kwargs['multi']
-        print(multi)
+
         if multi:
             media = kwargs['media']
-            print(media)
+
             try:
                 most_expressed_counts = {gene: {codon: media[gene] * counts[gene][codon]
                                                 for codon in list(counts[gene].keys())} for gene in counts.keys() if
@@ -135,8 +135,6 @@ class Expression(object):
                 sys.exit("Error")
 
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
-        print(most_expressed_counts)
-        print(dataframe_counts_expression)
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
         return dataframe_counts_expression
@@ -144,7 +142,7 @@ class Expression(object):
 
     def compare_timepoints(self, df1, df0):
         dif = {}
-        print(df1)
+
         for codon in df1:
 
             dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
@@ -168,7 +166,7 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = [f'Time_points:{self.sample.dt_sample[sample].age}_{self.sample.dt_sample[samples[n - 1]].age}' for n, sample in enumerate(samples)]
+        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for n, sample in enumerate(samples)]
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
@@ -206,22 +204,24 @@ class Expression(object):
                 directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\ecoli'
         else:
             directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\mouse'
+        time_points = [f'Time_point:{self.sample.dt_sample[sample].age}' for sample in samples]
         dic_codons = {}
         final_dict = {}
         for n, dataframe in enumerate(lst_counts):
-            dic_codons[samples[n]] = {}
+            dic_codons[time_points[n]] = {}
             for codon in dataframe:
-                if codon not in dic_codons[samples[n]]:
-                    dic_codons[samples[n]][codon] = dataframe[codon]['Total']
+                if codon not in dic_codons[time_points[n]]:
+                    dic_codons[time_points[n]][codon] = dataframe[codon]['Total']
                 else:
-                    dic_codons[samples[n]][codon].append(dataframe[codon]['Total'])
+                    dic_codons[time_points[n]][codon].append(dataframe[codon]['Total'])
 
-        data = pd.DataFrame(dic_codons, columns=[sample for sample in samples])
+        data = pd.DataFrame(dic_codons, columns=time_points)
         codons = Constants.TOTAL_CODONS
         data['Codon'] = codons
-        df = pd.melt(data, id_vars='Codon', value_vars=samples, value_name='Counts', ignore_index=True)
+        df = pd.melt(data, id_vars='Codon', value_vars=time_points, value_name='Counts', ignore_index=True)
         max = 0
         min = 100000
+
         for value in df['Counts']:
             if type(value) == float:
                 if value > max:
@@ -229,7 +229,7 @@ class Expression(object):
                 elif value < min:
                     min = value
 
-        norm = TwoSlopeNorm(vcenter=(max - min) / 2, vmin=min - 100, vmax=max + 100)
+        norm = TwoSlopeNorm(vcenter=max - (max/2), vmin=min, vmax=max)
         # print(norm)
         # cmap = plt.get_cmap('PuBuGn')
         # cmap = plt.get_cmap('YlGnBu')
@@ -243,7 +243,9 @@ class Expression(object):
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
+        plt.title(f'Counts to samples from {[samples for samples in samples]}')
         plt.show()
+
 
     def __samples_information(self):
         """Open, read and save information from samples
