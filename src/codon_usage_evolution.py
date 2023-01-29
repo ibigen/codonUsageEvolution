@@ -157,8 +157,8 @@ def save_final_results(sample_names, counts, working_path):
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
     if socket.gethostname() != "cs-nb0008": ## don't do this in MIGUEL computer
-        hist = expression.plot_counts(counts, sample_names, working_path)
-        hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
+        expression.plot_counts(counts, sample_names, working_path)
+
 
 if __name__ == '__main__':
 
