@@ -238,7 +238,7 @@ if __name__ == '__main__':
     
     ## FEMALE
     gender = Tissue.GENDER_FEMALE
-    counts, sample_names = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
     working_path = os.path.join(base_path, f'{animal}/{gender}')
     utils.make_path(working_path)
     for n, sample in enumerate(list(dict_samples_out.keys())):
@@ -247,7 +247,7 @@ if __name__ == '__main__':
 
     ## MALE
     gender = Tissue.GENDER_MALE
-    counts, sample_names = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
     working_path = os.path.join(base_path, f'{animal}/{gender}')
     utils.make_path(working_path)
     for n, sample in enumerate(list(dict_samples_out.keys())):
