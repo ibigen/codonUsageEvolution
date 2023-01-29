@@ -299,8 +299,6 @@ class Expression(object):
         plt.title(f'Counts to samples from {[samples for samples in samples]}')
         plt.savefig(os.path.join(working_path, 'TwoSlopeNorm.png'))
         #plt.show()
-        
-        plt.show()
 
 
     def __samples_information(self):
