@@ -2,18 +2,21 @@
 import numpy as np
 
 from utils.utils import Utils
-import sys
+import sys, os
 import itertools
 import pandas as pd
+from collections import OrderedDict
 from constants.constants import Constants
-import glob, os
 import matplotlib.pyplot as plt
-from matplotlib.colors import TwoSlopeNorm, Normalize
+from matplotlib.colors import TwoSlopeNorm
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
 
-
 class Tissue(object):
+
+    GENDER_BOTH = "BOTH"
+    GENDER_MALE = "MALE"
+    GENDER_FEMALE = "FEMALE"
 
     def __init__(self, *args):
         self.tissue, self.age, self.sex = args
@@ -60,6 +63,30 @@ class Sample(object):
     def get_number_sample(self):
         return len(self.dt_sample)
 
+    def get_list_samples(self, gender=Tissue.GENDER_BOTH):
+        """ return all sample names ordered by time point """
+        sample_list = list(self.dt_sample)
+        if gender == Tissue.GENDER_MALE:
+            sample_list = [sample for sample in list(self.dt_sample) 
+				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower()]
+        if gender == Tissue.GENDER_FEMALE:
+            sample_list = [sample for sample in list(self.dt_sample) 
+				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower()]
+        return sorted(sample_list, 
+			key=lambda sample : int(self.dt_sample[sample].age), reverse=False)
+
+    def get_list_time_points(self, gender=Tissue.GENDER_BOTH):
+        """ return all time points ordered and not repeated """
+        timepoints = [int(self.dt_sample[sample].age) for sample in self.dt_sample]
+        if gender == Tissue.GENDER_MALE:
+            timepoints = [int(self.dt_sample[sample].age) for sample in self.dt_sample
+				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower() ]
+        if gender == Tissue.GENDER_FEMALE:
+            timepoints = [int(self.dt_sample[sample].age) for sample in self.dt_sample
+				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower() ]
+        
+        return sorted(list(dict.fromkeys(timepoints)), reverse=False)
+
 
 class Expression(object):
     utils = Utils()
@@ -95,6 +122,14 @@ class Expression(object):
     def get_number_sample(self):
         return self.sample.get_number_sample()
 
+    def get_list_samples(self, gender=Tissue.GENDER_BOTH):
+        """ ordered by time point """ 
+        return self.sample.get_list_samples(gender)
+
+    def get_list_time_points(self, gender=Tissue.GENDER_BOTH):
+        """ ordered by time point and not repeated""" 
+        return self.sample.get_list_time_points(gender)
+    
     def get_number_gene(self, sample_name):
         return self.sample.get_number_gene(sample_name)
 
@@ -112,43 +147,67 @@ class Expression(object):
                 self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
         return self.most_dif_expressed
 
-    def counts_with_expression(self, sample, counts, **kwargs):
+    def counts_with_expression(self, counts, average):
 
-        multi = kwargs['multi']
-        #sex = kwargs['sex']
-
-        if multi:
-            media = kwargs['media']
-            try:
-                most_expressed_counts = {gene: {codon: media[gene] * counts[gene][codon]
-                                                for codon in list(counts[gene].keys())} for gene in counts.keys() if
-                                         gene != 'genome' and gene in media.keys()}
-            except KeyError as e:
-                print(str(e))
-                sys.exit("Error")
-
-        else:
-
-            try:
-                most_expressed_counts = {gene: {codon: self.sample.dt_sample[sample].dt_gene[gene] * counts[gene][codon]
-                                                for codon in list(counts[gene].keys())} for gene in counts.keys() if
-                                         gene != 'genome' and gene in self.sample.dt_sample[sample].dt_gene}
-            except KeyError as e:
-                print(str(e))
-                sys.exit("Error")
+        try:
+            most_expressed_counts = {gene: {codon: average[gene] * counts[gene][codon]
+                                            for codon in list(counts[gene].keys())} for gene in counts.keys() if
+                                     gene != 'genome' and gene in average.keys()}
+        except KeyError as e:
+            print(str(e))
+            sys.exit("Error")
 
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        # dataframe_counts_expression_male =
-        # if sex == 'Male':
-        # dataframe_counts_expression_male =
-
         return dataframe_counts_expression
+
+    def get_counts(self, gender, codons_in_genes):
+        """ 
+        :param gender
+        :codons_in_genes {}return counts by gender making average with the same time points 
+    	:out   dict_samples_out { sample_name : [sample_name, sample_name same time point, sample_name same time point 2],
+    	                        sample_name1 : [sample_name1, sample_name same time point, sample_name same time point 2], } """
+
+        list_samples = self.get_list_samples(gender)
+        ## this list 
+        list_time_poins = self.get_list_time_points(gender)
+        return_counts = []
+        dict_samples_out = OrderedDict()  ## Key, first sample of each time point, []
+ 
+        for timepoint in list_time_poins:
+            fist_sample_name = None
+            same_age = {}
+            ## return all the sample for this time point
+            for sample in [_ for _ in list_samples if int(self.sample.dt_sample[_].age) == timepoint]:
+            
+                ### control of the samples with same time points 
+                if fist_sample_name is None:
+                    fist_sample_name = sample
+                    dict_samples_out[fist_sample_name] = [fist_sample_name]
+                else:
+                    dict_samples_out[fist_sample_name].append(sample)
+                    
+                ## create an array for average
+                for key, value in self.sample.dt_sample[sample].dt_gene.items():
+                    if key not in same_age: same_age[key] = [value]
+                    else: same_age[key].append(value)
+
+            average = {}
+            for key, list_values in same_age.items():
+            #    if key not in media:
+                average[key] = sum(list_values) / len(list_values)
+        
+            #### append 
+            return_counts.append(self.counts_with_expression(codons_in_genes, average))
+
+        ### dictionary with expression X codons
+        return return_counts, dict_samples_out
+
 
     def compare_timepoints(self, df1, df0):
         dif = {}
-        print(df1)
+        #print(df1)
         for codon in df1:
 
             dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
@@ -157,7 +216,7 @@ class Expression(object):
 
         return dataframe_dif
 
-    def compare_counts(self, counts, samples, animal):
+    def compare_counts(self, counts, samples):
         patterns = {}
         for n, dataframe in enumerate(counts):
             for value in dataframe:
@@ -172,13 +231,10 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = [f'{samples[n - 1]}_{sample}' for n, sample in enumerate(samples)]
+        columns = [f'{samples[n - 1]}X{sample}' for n, sample in enumerate(samples)]
 
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
-        base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        #self.save_table(final_dataframe, os.path.join(base_path, f'{animal}/{}Patterns_between_{samples}.csv'))
-
         return final_dataframe
 
     def ilustrate_patterns(self, patterns_lst):
@@ -200,16 +256,9 @@ class Expression(object):
         # print(dataframe_direction)
         return dataframe_direction
 
-    def plot_counts(self, lst_counts, samples, b_ecoli, test):
-        if b_ecoli:
-            if test:
-                directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\test'
-            else:
-                directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\ecoli'
-        else:
-            directory = r'C:\Users\Francisca\Desktop\TeseDeMestrado\mouse'
+    def plot_counts(self, lst_counts, samples, working_path):
+
         dic_codons = {}
-        final_dict = {}
         for n, dataframe in enumerate(lst_counts):
             dic_codons[samples[n]] = {}
             for codon in dataframe:
@@ -222,14 +271,6 @@ class Expression(object):
         codons = Constants.TOTAL_CODONS
         data['Codon'] = codons
         df = pd.melt(data, id_vars='Codon', value_vars=samples, value_name='Counts', ignore_index=True)
-        max = 0
-        min = 100000
-        for value in df['Counts']:
-            if type(value) == float:
-                if value > max:
-                    max = value
-                elif value < min:
-                    min = value
 
         norm = TwoSlopeNorm(vcenter=(max - min) / 2, vmin=min - 100, vmax=max + 100)
         # print(norm)
@@ -245,7 +286,9 @@ class Expression(object):
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
-        plt.show()
+        plt.savefig(os.path.join(working_path, 'TwoSlopeNorm.png'))
+        #plt.show()
+        
 
     def __samples_information(self):
         """Open, read and save information from samples
