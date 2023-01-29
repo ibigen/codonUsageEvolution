@@ -207,13 +207,9 @@ class Expression(object):
 
     def compare_timepoints(self, df1, df0):
         dif = {}
-        #print(df1)
         for codon in df1:
-
             dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
-
         dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
-
         return dataframe_dif
 
     def compare_counts(self, counts, samples):
@@ -231,15 +227,16 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = [f'{samples[n - 1]}X{sample}' for n, sample in enumerate(samples)]
-
+        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for n, sample in enumerate(samples)]
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
         return final_dataframe
 
     def ilustrate_patterns(self, patterns_lst):
         direction = {}
+
         for sample in patterns_lst:
+
             for codon in patterns_lst[sample]:
                 if codon == 'Increase':
                     if sample not in direction:
@@ -251,28 +248,40 @@ class Expression(object):
                         direction[sample] = ['-']
                     else:
                         direction[sample] += ['-']
-        dataframe_direction = pd.DataFrame(direction, columns=[key for key in direction.keys()],
+
+        dataframe_direction = pd.DataFrame(direction, columns=[time for time in direction.keys()],
                                            index=Constants.TOTAL_CODONS)
-        # print(dataframe_direction)
+
         return dataframe_direction
 
     def plot_counts(self, lst_counts, samples, working_path):
 
+        time_points = [f'Time_point:{self.sample.dt_sample[sample].age}' for sample in samples]
         dic_codons = {}
         for n, dataframe in enumerate(lst_counts):
-            dic_codons[samples[n]] = {}
+            dic_codons[time_points[n]] = {}
             for codon in dataframe:
-                if codon not in dic_codons[samples[n]]:
-                    dic_codons[samples[n]][codon] = dataframe[codon]['Total']
+                if codon not in dic_codons[time_points[n]]:
+                    dic_codons[time_points[n]][codon] = dataframe[codon]['Total']
                 else:
-                    dic_codons[samples[n]][codon].append(dataframe[codon]['Total'])
+                    dic_codons[time_points[n]][codon].append(dataframe[codon]['Total'])
 
-        data = pd.DataFrame(dic_codons, columns=[sample for sample in samples])
+        data = pd.DataFrame(dic_codons, columns=time_points)
         codons = Constants.TOTAL_CODONS
         data['Codon'] = codons
-        df = pd.melt(data, id_vars='Codon', value_vars=samples, value_name='Counts', ignore_index=True)
 
-        norm = TwoSlopeNorm(vcenter=(max - min) / 2, vmin=min - 100, vmax=max + 100)
+        df = pd.melt(data, id_vars='Codon', value_vars=time_points, value_name='Counts', ignore_index=True)
+        max = 0
+        min = 100000
+
+        for value in df['Counts']:
+            if type(value) == float:
+                if value > max:
+                    max = value
+                elif value < min:
+                    min = value
+
+        norm = TwoSlopeNorm(vcenter=max - (max/2), vmin=min, vmax=max)
         # print(norm)
         # cmap = plt.get_cmap('PuBuGn')
         # cmap = plt.get_cmap('YlGnBu')
@@ -286,9 +295,13 @@ class Expression(object):
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
+  
+        plt.title(f'Counts to samples from {[samples for samples in samples]}')
         plt.savefig(os.path.join(working_path, 'TwoSlopeNorm.png'))
         #plt.show()
         
+        plt.show()
+
 
     def __samples_information(self):
         """Open, read and save information from samples

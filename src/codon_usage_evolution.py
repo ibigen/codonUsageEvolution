@@ -151,7 +151,7 @@ def save_final_results(sample_names, counts, working_path):
 
     print('Searching for patterns')
     patterns = expression.compare_counts(counts, sample_names)
-    save_table(patterns, os.path.join(working_path, f'Table_patterns.csv'))
+    save_table(patterns, os.path.join(working_path, f'Patterns_between_all_samples.csv'))
 
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
@@ -164,7 +164,7 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = True
+    b_ecoli = False
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        # name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         # name = "ecoli.fasta"  # to create tables for tes
 
     # expression file
