@@ -12,8 +12,8 @@ from matplotlib.colors import TwoSlopeNorm
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
 
-class Tissue(object):
 
+class Tissue(object):
     GENDER_BOTH = "BOTH"
     GENDER_MALE = "MALE"
     GENDER_FEMALE = "FEMALE"
@@ -67,24 +67,24 @@ class Sample(object):
         """ return all sample names ordered by time point """
         sample_list = list(self.dt_sample)
         if gender == Tissue.GENDER_MALE:
-            sample_list = [sample for sample in list(self.dt_sample) 
-				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower()]
+            sample_list = [sample for sample in list(self.dt_sample)
+                           if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower()]
         if gender == Tissue.GENDER_FEMALE:
-            sample_list = [sample for sample in list(self.dt_sample) 
-				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower()]
-        return sorted(sample_list, 
-			key=lambda sample : int(self.dt_sample[sample].age), reverse=False)
+            sample_list = [sample for sample in list(self.dt_sample)
+                           if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower()]
+        return sorted(sample_list,
+                      key=lambda sample: int(self.dt_sample[sample].age), reverse=False)
 
     def get_list_time_points(self, gender=Tissue.GENDER_BOTH):
         """ return all time points ordered and not repeated """
         timepoints = [int(self.dt_sample[sample].age) for sample in self.dt_sample]
         if gender == Tissue.GENDER_MALE:
             timepoints = [int(self.dt_sample[sample].age) for sample in self.dt_sample
-				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower() ]
+                          if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower()]
         if gender == Tissue.GENDER_FEMALE:
             timepoints = [int(self.dt_sample[sample].age) for sample in self.dt_sample
-				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower() ]
-        
+                          if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower()]
+
         return sorted(list(dict.fromkeys(timepoints)), reverse=False)
 
 
@@ -123,13 +123,13 @@ class Expression(object):
         return self.sample.get_number_sample()
 
     def get_list_samples(self, gender=Tissue.GENDER_BOTH):
-        """ ordered by time point """ 
+        """ ordered by time point """
         return self.sample.get_list_samples(gender)
 
     def get_list_time_points(self, gender=Tissue.GENDER_BOTH):
-        """ ordered by time point and not repeated""" 
+        """ ordered by time point and not repeated"""
         return self.sample.get_list_time_points(gender)
-    
+
     def get_number_gene(self, sample_name):
         return self.sample.get_number_gene(sample_name)
 
@@ -174,43 +174,68 @@ class Expression(object):
         list_time_poins = self.get_list_time_points(gender)
         return_counts = []
         dict_samples_out = OrderedDict()  ## Key, first sample of each time point, []
- 
+
         for timepoint in list_time_poins:
             fist_sample_name = None
             same_age = {}
             ## return all the sample for this time point
             for sample in [_ for _ in list_samples if int(self.sample.dt_sample[_].age) == timepoint]:
-            
+
                 ### control of the samples with same time points 
                 if fist_sample_name is None:
                     fist_sample_name = sample
                     dict_samples_out[fist_sample_name] = [fist_sample_name]
                 else:
                     dict_samples_out[fist_sample_name].append(sample)
-                    
+
                 ## create an array for average
                 for key, value in self.sample.dt_sample[sample].dt_gene.items():
-                    if key not in same_age: same_age[key] = [value]
-                    else: same_age[key].append(value)
+                    if key not in same_age:
+                        same_age[key] = [value]
+                    else:
+                        same_age[key].append(value)
 
             average = {}
             for key, list_values in same_age.items():
-            #    if key not in media:
+                #    if key not in media:
                 average[key] = sum(list_values) / len(list_values)
-        
+
             #### append 
             return_counts.append(self.counts_with_expression(codons_in_genes, average))
 
         ### dictionary with expression X codons
         return return_counts, dict_samples_out
 
+    def compare_timepoints(self, counts, samples, working_path):
+        differences = {}
+        for n, dataframe in enumerate(counts):
+            differences[
+                f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'] = {}
+            for value in dataframe:
+                if f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}' not in differences:
+                    if value not in differences[
+                        f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
+                        differences[
+                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            value] = counts[n - 1][value]['Total'] - dataframe[value]['Total']
+                    else:
+                        differences[
+                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            value] += counts[n - 1][value]['Total'] - dataframe[value]['Total']
+                else:
+                    if value not in differences[
+                        f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
+                        differences[
+                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            value] = counts[n - 1][value]['Total'] - dataframe[value]['Total']
+                    else:
+                        differences[
+                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            value] += counts[n - 1][value]['Total'] - dataframe[value]['Total']
 
-    def compare_timepoints(self, df1, df0):
-        dif = {}
-        for codon in df1:
-            dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
-        dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
-        return dataframe_dif
+        print(differences)
+
+        return differences
 
     def compare_counts(self, counts, samples):
         patterns = {}
@@ -227,7 +252,8 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for n, sample in enumerate(samples)]
+        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
+                   n, sample in enumerate(samples)]
         data = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
         return final_dataframe
@@ -267,10 +293,12 @@ class Expression(object):
                     dic_codons[time_points[n]][codon].append(dataframe[codon]['Total'])
 
         data = pd.DataFrame(dic_codons, columns=time_points)
+        # print(data)
         codons = Constants.TOTAL_CODONS
         data['Codon'] = codons
 
         df = pd.melt(data, id_vars='Codon', value_vars=time_points, value_name='Counts', ignore_index=True)
+        # print(df)
         max = 0
         min = 100000
 
@@ -281,7 +309,7 @@ class Expression(object):
                 elif value < min:
                     min = value
 
-        norm = TwoSlopeNorm(vcenter=max - (max/2), vmin=min, vmax=max)
+        norm = TwoSlopeNorm(vcenter=max - (max / 2), vmin=min, vmax=max)
         # print(norm)
         # cmap = plt.get_cmap('PuBuGn')
         # cmap = plt.get_cmap('YlGnBu')
@@ -295,11 +323,10 @@ class Expression(object):
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
-  
-        plt.title(f'Counts to samples from {[samples for samples in samples]}')
-        plt.savefig(os.path.join(working_path, 'TwoSlopeNorm.png'))
-        #plt.show()
 
+        plt.title(f'Counts to samples from {[samples for samples in samples]}')
+        plt.savefig(os.path.join(working_path, 'Barplot_to_counts.png'))
+        # plt.show()
 
     def __samples_information(self):
         """Open, read and save information from samples
