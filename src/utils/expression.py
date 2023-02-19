@@ -227,15 +227,44 @@ class Expression(object):
                         f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
                         differences[
                             f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
-                            value] = counts[n - 1][value]['Total'] - dataframe[value]['Total']
+                            value] = abs(counts[n - 1][value]['Total'] - dataframe[value]['Total'])
                     else:
                         differences[
                             f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
-                            value] += counts[n - 1][value]['Total'] - dataframe[value]['Total']
+                            value] += abs(counts[n - 1][value]['Total'] - dataframe[value]['Total'])
 
-        print(differences)
+        dataframe = pd.DataFrame(differences)
+        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
+                   n, sample in enumerate(samples)]
+        print(dataframe)
+        codons = Constants.TOTAL_CODONS
+        dataframe['Codon'] = codons
+        df = pd.melt(dataframe, id_vars='Codon', value_vars=columns, value_name='Difference', ignore_index=True)
+        max = 0
+        min = 100000
 
-        return differences
+        for value in df['Difference']:
+            if type(value) == float:
+                if value > max:
+                    max = value
+                elif value < min:
+                    min = value
+
+        norm = TwoSlopeNorm(vcenter=max - (max / 2), vmin=min, vmax=max)
+        cmap = plt.get_cmap('brg')
+
+        def my_bar_plot(x, y, **kwargs):
+            plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
+
+        g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2, sharey=True)
+        g.map(my_bar_plot, 'Difference', 'Codon')
+        g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
+                       shrink=0.2)
+
+        plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
+        plt.savefig(os.path.join(working_path, 'Barplot_to_differences.png'))
+
+        return df
 
     def compare_counts(self, counts, samples):
         patterns = {}
@@ -293,12 +322,12 @@ class Expression(object):
                     dic_codons[time_points[n]][codon].append(dataframe[codon]['Total'])
 
         data = pd.DataFrame(dic_codons, columns=time_points)
-        # print(data)
+
         codons = Constants.TOTAL_CODONS
         data['Codon'] = codons
 
         df = pd.melt(data, id_vars='Codon', value_vars=time_points, value_name='Counts', ignore_index=True)
-        # print(df)
+
         max = 0
         min = 100000
 

@@ -18,6 +18,7 @@ from utils.expression import Expression, Tissue
 utils = Utils()
 constants = Constants()
 
+
 def read_genome(file_name):
     """ read genome """
 
@@ -142,7 +143,7 @@ def save_final_results(sample_names, counts, working_path):
     """   save final results
     :param sample_names - only samples not repeated in time points
     :counts counts dataframe with expression multiplied by codons"""
-    
+
     print("Comparing different time points")
     dif = expression.compare_timepoints(counts, sample_names, working_path)
     print(dif)
@@ -154,9 +155,10 @@ def save_final_results(sample_names, counts, working_path):
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
-    if socket.gethostname() != "cs-nb0008": ## don't do this in MIGUEL computer
+    if socket.gethostname() != "cs-nb0008":  ## don't do this in MIGUEL computer
         hist = expression.plot_counts(counts, sample_names, working_path)
-        #hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
+        # hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
+
 
 if __name__ == '__main__':
 
@@ -170,7 +172,7 @@ if __name__ == '__main__':
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        # name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         # name = "ecoli.fasta"  # to create tables for tes
 
@@ -195,11 +197,11 @@ if __name__ == '__main__':
         animal = "test"
 
     file_name_in = os.path.join(base_path, name)
-    
+
     ## working path
     working_path = os.path.join(base_path, f'{animal}')
     utils.make_path(working_path)
-    
+
     file_name_out_counts = os.path.join(working_path, f"table_counts_{animal}.csv")
     file_name_out_RSCU_CAI = os.path.join(working_path, f"table_RSCU_CAI_{animal}.csv")
 
@@ -233,25 +235,25 @@ if __name__ == '__main__':
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
     save_final_results(list(dict_samples_out.keys()), counts, working_path)
-    
+
     ## FEMALE
     gender = Tissue.GENDER_FEMALE
     counts, sample_names = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
     working_path = os.path.join(base_path, f'{animal}/{gender}')
     utils.make_path(working_path)
-    for n, sample in enumerate(list(dict_samples_out.keys())):
-        print(dict_samples_out)
-        print(counts)
-        save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
-    save_final_results(list(dict_samples_out.keys()), counts, working_path)
+    # for n, sample in enumerate(list(dict_samples_out.keys())):
+    # print(dict_samples_out)
+    # print(counts)
+    # save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
+    # save_final_results(list(dict_samples_out.keys()), counts, working_path)
 
     ## MALE
     gender = Tissue.GENDER_MALE
     counts, sample_names = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
     working_path = os.path.join(base_path, f'{animal}/{gender}')
     utils.make_path(working_path)
-    #for n, sample in enumerate(list(dict_samples_out.keys())):
-        #save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
-    #save_final_results(list(dict_samples_out.keys()), counts, working_path)
-    
+    # for n, sample in enumerate(list(dict_samples_out.keys())):
+    # save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
+    # save_final_results(list(dict_samples_out.keys()), counts, working_path)
+
     print("Finished")
