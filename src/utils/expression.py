@@ -236,7 +236,7 @@ class Expression(object):
         dataframe = pd.DataFrame(differences)
         columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
                    n, sample in enumerate(samples)]
-        print(dataframe)
+
         codons = Constants.TOTAL_CODONS
         dataframe['Codon'] = codons
         df = pd.melt(dataframe, id_vars='Codon', value_vars=columns, value_name='Difference', ignore_index=True)
@@ -261,7 +261,7 @@ class Expression(object):
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
 
-        plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
+        #plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
         plt.savefig(os.path.join(working_path, 'Barplot_to_differences.png'))
 
         return df
@@ -353,7 +353,7 @@ class Expression(object):
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
 
-        plt.title(f'Counts to samples from {[samples for samples in samples]}')
+        #plt.title(f'Counts to samples from {[samples for samples in samples]}')
         plt.savefig(os.path.join(working_path, 'Barplot_to_counts.png'))
         # plt.show()
 
