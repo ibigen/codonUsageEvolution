@@ -239,6 +239,7 @@ class Expression(object):
 
         codons = Constants.TOTAL_CODONS
         dataframe['Codon'] = codons
+        print(dataframe)
         df = pd.melt(dataframe, id_vars='Codon', value_vars=columns, value_name='Difference', ignore_index=True)
         max = 0
         min = 100000
@@ -261,7 +262,7 @@ class Expression(object):
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
 
-        #plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
+        # plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
         plt.savefig(os.path.join(working_path, 'Barplot_to_differences.png'))
 
         return df
@@ -339,10 +340,6 @@ class Expression(object):
                     min = value
 
         norm = TwoSlopeNorm(vcenter=max - (max / 2), vmin=min, vmax=max)
-        # print(norm)
-        # cmap = plt.get_cmap('PuBuGn')
-        # cmap = plt.get_cmap('YlGnBu')
-        # cmap = plt.get_cmap('brg')
         cmap = plt.get_cmap('brg')
 
         def my_bar_plot(x, y, **kwargs):
@@ -353,7 +350,7 @@ class Expression(object):
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
 
-        #plt.title(f'Counts to samples from {[samples for samples in samples]}')
+        # plt.title(f'Counts to samples from {[samples for samples in samples]}')
         plt.savefig(os.path.join(working_path, 'Barplot_to_counts.png'))
         # plt.show()
 
