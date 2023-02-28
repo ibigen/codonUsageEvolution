@@ -18,6 +18,7 @@ from utils.expression import Expression, Tissue
 utils = Utils()
 constants = Constants()
 
+
 def read_genome(file_name):
     """ read genome """
 
@@ -138,16 +139,13 @@ def save_table(dataframe_genome, file_out):
     dataframe_genome.to_csv(file_out)
 
 
-def save_final_results(sample_names, counts, working_path):
+def save_final_results(expression, sample_names, counts, working_path):
     """   save final results
     :param sample_names - only samples not repeated in time points
     :counts counts dataframe with expression multiplied by codons"""
-    
+
     print("Comparing different time points")
-    for n, dataframe in enumerate(counts):
-        dif = expression.compare_timepoints(dataframe, counts[n - 1])
-        # print(dif)
-        save_table(dif.T, os.path.join(working_path, f'Differences_{sample_names[n - 1]}_{sample_names[n]}.csv'))
+    dif = expression.compare_timepoints(counts, sample_names, working_path)
 
     print('Searching for patterns')
     patterns = expression.compare_counts(counts, sample_names)
@@ -156,8 +154,9 @@ def save_final_results(sample_names, counts, working_path):
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
-    if socket.gethostname() != "cs-nb0008": ## don't do this in MIGUEL computer
-        expression.plot_counts(counts, sample_names, working_path)
+    if socket.gethostname() != "cs-nb0008":  #don't do this in MIGUEL computer
+        hist = expression.plot_counts(counts, sample_names, working_path)
+        # hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
 
 
 if __name__ == '__main__':
@@ -176,6 +175,9 @@ if __name__ == '__main__':
         #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         # name = "ecoli.fasta"  # to create tables for tes
 
+    ### base path
+    print("Base path: " + base_path)
+    
     # expression file
     if b_ecoli:
         if test:
@@ -197,11 +199,11 @@ if __name__ == '__main__':
         animal = "test"
 
     file_name_in = os.path.join(base_path, name)
-    
+
     ## working path
     working_path = os.path.join(base_path, f'{animal}')
     utils.make_path(working_path)
-    
+
     file_name_out_counts = os.path.join(working_path, f"table_counts_{animal}.csv")
     file_name_out_RSCU_CAI = os.path.join(working_path, f"table_RSCU_CAI_{animal}.csv")
 
@@ -234,8 +236,8 @@ if __name__ == '__main__':
     utils.make_path(working_path)
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
-    save_final_results(list(dict_samples_out.keys()), counts, working_path)
-    
+    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path)
+
     ## FEMALE
     gender = Tissue.GENDER_FEMALE
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
@@ -243,7 +245,7 @@ if __name__ == '__main__':
     utils.make_path(working_path)
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
-    save_final_results(list(dict_samples_out.keys()), counts, working_path)
+    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path)
 
     ## MALE
     gender = Tissue.GENDER_MALE
@@ -252,6 +254,8 @@ if __name__ == '__main__':
     utils.make_path(working_path)
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
-    save_final_results(list(dict_samples_out.keys()), counts, working_path)
-    
+    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path)
+
     print("Finished")
+
+

@@ -11,9 +11,10 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
+from collections import defaultdict
+
 
 class Tissue(object):
-
     GENDER_BOTH = "BOTH"
     GENDER_MALE = "MALE"
     GENDER_FEMALE = "FEMALE"
@@ -67,24 +68,24 @@ class Sample(object):
         """ return all sample names ordered by time point """
         sample_list = list(self.dt_sample)
         if gender == Tissue.GENDER_MALE:
-            sample_list = [sample for sample in list(self.dt_sample) 
-				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower()]
+            sample_list = [sample for sample in list(self.dt_sample)
+                           if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower()]
         if gender == Tissue.GENDER_FEMALE:
-            sample_list = [sample for sample in list(self.dt_sample) 
-				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower()]
-        return sorted(sample_list, 
-			key=lambda sample : int(self.dt_sample[sample].age), reverse=False)
+            sample_list = [sample for sample in list(self.dt_sample)
+                           if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower()]
+        return sorted(sample_list,
+                      key=lambda sample: int(self.dt_sample[sample].age), reverse=False)
 
     def get_list_time_points(self, gender=Tissue.GENDER_BOTH):
         """ return all time points ordered and not repeated """
         timepoints = [int(self.dt_sample[sample].age) for sample in self.dt_sample]
         if gender == Tissue.GENDER_MALE:
             timepoints = [int(self.dt_sample[sample].age) for sample in self.dt_sample
-				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower() ]
+                          if self.dt_sample[sample].sex.lower() == Tissue.GENDER_MALE.lower()]
         if gender == Tissue.GENDER_FEMALE:
             timepoints = [int(self.dt_sample[sample].age) for sample in self.dt_sample
-				if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower() ]
-        
+                          if self.dt_sample[sample].sex.lower() == Tissue.GENDER_FEMALE.lower()]
+
         return sorted(list(dict.fromkeys(timepoints)), reverse=False)
 
 
@@ -123,13 +124,13 @@ class Expression(object):
         return self.sample.get_number_sample()
 
     def get_list_samples(self, gender=Tissue.GENDER_BOTH):
-        """ ordered by time point """ 
+        """ ordered by time point """
         return self.sample.get_list_samples(gender)
 
     def get_list_time_points(self, gender=Tissue.GENDER_BOTH):
-        """ ordered by time point and not repeated""" 
+        """ ordered by time point and not repeated"""
         return self.sample.get_list_time_points(gender)
-    
+
     def get_number_gene(self, sample_name):
         return self.sample.get_number_gene(sample_name)
 
@@ -160,7 +161,11 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        return dataframe_counts_expression
+        rscu = self.calculate_RSCU(dataframe_counts_expression)
+        rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
+        final_dataframe = pd.concat([dataframe_counts_expression, rscu_dataframe], axis=0)
+
+        return final_dataframe
 
     def get_counts(self, gender, codons_in_genes):
         """ 
@@ -174,49 +179,105 @@ class Expression(object):
         list_time_poins = self.get_list_time_points(gender)
         return_counts = []
         dict_samples_out = OrderedDict()  ## Key, first sample of each time point, []
- 
         for timepoint in list_time_poins:
             fist_sample_name = None
             same_age = {}
             ## return all the sample for this time point
             for sample in [_ for _ in list_samples if int(self.sample.dt_sample[_].age) == timepoint]:
-            
+
                 ### control of the samples with same time points 
                 if fist_sample_name is None:
                     fist_sample_name = sample
                     dict_samples_out[fist_sample_name] = [fist_sample_name]
                 else:
                     dict_samples_out[fist_sample_name].append(sample)
-                    
+
                 ## create an array for average
                 for key, value in self.sample.dt_sample[sample].dt_gene.items():
-                    if key not in same_age: same_age[key] = [value]
-                    else: same_age[key].append(value)
+                    if key not in same_age:
+                        same_age[key] = [value]
+                    else:
+                        same_age[key].append(value)
 
             average = {}
             for key, list_values in same_age.items():
-            #    if key not in media:
+                #    if key not in media:
                 average[key] = sum(list_values) / len(list_values)
-        
+
             #### append 
             return_counts.append(self.counts_with_expression(codons_in_genes, average))
 
         ### dictionary with expression X codons
         return return_counts, dict_samples_out
 
+    def compare_timepoints(self, counts, samples, working_path):
+        data = 'RSCU'
+        differences = {}
+        for n, dataframe in enumerate(counts):
+            differences[
+                f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'] = {}
+            for value in dataframe:
+                if f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}' not in differences:
+                    if value not in differences[
+                        f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
+                        differences[
+                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            value] = counts[n - 1][value][data] - dataframe[value][data]
+                    else:
+                        differences[
+                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            value] += counts[n - 1][value][data] - dataframe[value][data]
+                else:
+                    if value not in differences[
+                        f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
+                        differences[
+                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            value] = abs(counts[n - 1][value][data] - dataframe[value][data])
+                    else:
+                        differences[
+                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            value] += abs(counts[n - 1][value][data] - dataframe[value][data])
 
-    def compare_timepoints(self, df1, df0):
-        dif = {}
-        for codon in df1:
-            dif[codon] = [df1[codon]['Total'] - df0[codon]['Total']]
-        dataframe_dif = pd.DataFrame.from_dict(dif, orient='index')
-        return dataframe_dif
+        dataframe = pd.DataFrame(differences)
+        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
+                   n, sample in enumerate(samples)]
+
+        codons = Constants.TOTAL_CODONS
+        dataframe['Codon'] = codons
+        df = pd.melt(dataframe, id_vars='Codon', value_vars=columns, value_name='Difference')
+        max = 0
+        min = 100000
+
+        for value in df['Difference']:
+            if type(value) == float:
+                if value > max:
+                    max = value
+                elif value < min:
+                    min = value
+
+        norm = TwoSlopeNorm(vcenter=max - (max / 2), vmin=min, vmax=max)
+        cmap = plt.get_cmap('brg')
+
+        def my_bar_plot(x, y, **kwargs):
+            plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
+
+        g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2, sharey=True)
+        g.map(my_bar_plot, 'Difference', 'Codon')
+        g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
+                       shrink=0.2)
+
+        # plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
+        print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_differences_{data}.png')))
+        plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}.png'))
+
+        return df
 
     def compare_counts(self, counts, samples):
+        data = 'RSCU'
         patterns = {}
         for n, dataframe in enumerate(counts):
             for value in dataframe:
-                if counts[n - 1][value]['Total'] < dataframe[value]['Total']:
+                if counts[n - 1][value][data] < dataframe[value][data]:
                     if value not in patterns:
                         patterns[value] = ['Increase']
                     else:
@@ -227,9 +288,10 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for n, sample in enumerate(samples)]
-        data = [n for key, n in patterns.items()]
-        final_dataframe = pd.DataFrame(data, columns=columns, index=[key for key in patterns.keys()])
+        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
+                   n, sample in enumerate(samples)]
+        data_values = [n for key, n in patterns.items()]
+        final_dataframe = pd.DataFrame(data_values, columns=columns, index=[key for key in patterns.keys()])
         return final_dataframe
 
     def ilustrate_patterns(self, patterns_lst):
@@ -255,22 +317,24 @@ class Expression(object):
         return dataframe_direction
 
     def plot_counts(self, lst_counts, samples, working_path):
-
+        data = 'RSCU'
         time_points = [f'Time_point:{self.sample.dt_sample[sample].age}' for sample in samples]
         dic_codons = {}
         for n, dataframe in enumerate(lst_counts):
             dic_codons[time_points[n]] = {}
             for codon in dataframe:
                 if codon not in dic_codons[time_points[n]]:
-                    dic_codons[time_points[n]][codon] = dataframe[codon]['Total']
+                    dic_codons[time_points[n]][codon] = dataframe[codon][data]
                 else:
-                    dic_codons[time_points[n]][codon].append(dataframe[codon]['Total'])
+                    dic_codons[time_points[n]][codon].append(dataframe[codon][data])
 
-        data = pd.DataFrame(dic_codons, columns=time_points)
+        data_values = pd.DataFrame(dic_codons, columns=time_points)
+
         codons = Constants.TOTAL_CODONS
-        data['Codon'] = codons
+        data_values['Codon'] = codons
 
-        df = pd.melt(data, id_vars='Codon', value_vars=time_points, value_name='Counts', ignore_index=True)
+        df = pd.melt(data_values, id_vars='Codon', value_vars=time_points, value_name='Counts', ignore_index=True)
+
         max = 0
         min = 100000
 
@@ -281,11 +345,7 @@ class Expression(object):
                 elif value < min:
                     min = value
 
-        norm = TwoSlopeNorm(vcenter=max - (max/2), vmin=min, vmax=max)
-        # print(norm)
-        # cmap = plt.get_cmap('PuBuGn')
-        # cmap = plt.get_cmap('YlGnBu')
-        # cmap = plt.get_cmap('brg')
+        norm = TwoSlopeNorm(vcenter=max - (max / 2), vmin=min, vmax=max)
         cmap = plt.get_cmap('brg')
 
         def my_bar_plot(x, y, **kwargs):
@@ -295,11 +355,27 @@ class Expression(object):
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
-  
-        plt.title(f'Counts to samples from {[samples for samples in samples]}')
-        plt.savefig(os.path.join(working_path, 'TwoSlopeNorm.png'))
-        #plt.show()
 
+        # plt.title(f'Counts to samples from {[samples for samples in samples]}')
+        plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}.png'))
+        # plt.show()
+
+    def calculate_RSCU(self, counts):
+            rscu = {}
+            res = {}
+            for key, val in Constants.codons_per_aminoacid.items():
+                if val not in res:
+                    res[val] = [key]
+                else:
+                    res[val].append(key)
+
+            for amino, codons in res.items():
+                codons_T = [str(key).upper().replace('U', 'T') for key in codons]
+                total = [counts[codon]['Total'] for codon in codons_T]
+                for n, codon in enumerate(codons_T):
+                        rscu[codon] =len(codons)*((counts[codon]['Total'])/sum(total))
+                            # nº de codões*(codão/soma(codões por aminoacido))
+            return rscu
 
     def __samples_information(self):
         """Open, read and save information from samples
