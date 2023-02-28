@@ -215,31 +215,31 @@ class Expression(object):
         differences = {}
         for n, dataframe in enumerate(counts):
             differences[
-                f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'] = {}
+                f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'] = {}
             for value in dataframe:
-                if f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}' not in differences:
+                if f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}' not in differences:
                     if value not in differences[
-                        f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
+                        f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}']:
                         differences[
-                            f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'][
                             value] = counts[n - 1][value][data] - dataframe[value][data]
                     else:
                         differences[
-                            f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'][
                             value] += counts[n - 1][value][data] - dataframe[value][data]
                 else:
                     if value not in differences[
-                        f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
+                        f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}']:
                         differences[
-                            f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'][
                             value] = abs(counts[n - 1][value][data] - dataframe[value][data])
                     else:
                         differences[
-                            f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'][
                             value] += abs(counts[n - 1][value][data] - dataframe[value][data])
 
         dataframe = pd.DataFrame(differences)
-        columns = [f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
+        columns = [f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[sample].age}' for
                    n, sample in enumerate(samples)]
 
         codons = [f'{str(key).upper().replace("U", "T")}_{value}' for key, value in Constants.codons_per_aminoacid.items()]
@@ -289,7 +289,7 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = [f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
+        columns = [f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[sample].age}' for
                    n, sample in enumerate(samples)]
         data_values = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data_values, columns=columns, index=[key for key in patterns.keys()])
