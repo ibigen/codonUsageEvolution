@@ -22,6 +22,7 @@ class Constants(object):
 
 	TOTAL_CODONS = [str(key).upper().replace('U', 'T') for key in codons_per_aminoacid]
 
+
 	GENOME_KEY = "genome"
 	GENE_CAI = "GENE CAI"
 	GENOME_CAI = "GENOME CAI"

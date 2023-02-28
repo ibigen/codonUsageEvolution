@@ -171,9 +171,9 @@ if __name__ == '__main__':
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
-        # name = "ecoli.fasta"  # to create tables for tes
+        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        # name = "ecoli.fasta"  # to create tables for test
 
     ### base path
     print("Base path: " + base_path)

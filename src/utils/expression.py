@@ -215,36 +215,37 @@ class Expression(object):
         differences = {}
         for n, dataframe in enumerate(counts):
             differences[
-                f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'] = {}
+                f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'] = {}
             for value in dataframe:
-                if f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}' not in differences:
+                if f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}' not in differences:
                     if value not in differences[
-                        f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
+                        f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
                         differences[
-                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
                             value] = counts[n - 1][value][data] - dataframe[value][data]
                     else:
                         differences[
-                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
                             value] += counts[n - 1][value][data] - dataframe[value][data]
                 else:
                     if value not in differences[
-                        f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
+                        f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}']:
                         differences[
-                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
                             value] = abs(counts[n - 1][value][data] - dataframe[value][data])
                     else:
                         differences[
-                            f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[samples[n]].age}'][
                             value] += abs(counts[n - 1][value][data] - dataframe[value][data])
 
         dataframe = pd.DataFrame(differences)
-        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
+        columns = [f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
                    n, sample in enumerate(samples)]
 
-        codons = Constants.TOTAL_CODONS
+        codons = [f'{str(key).upper().replace("U", "T")}_{value}' for key, value in Constants.codons_per_aminoacid.items()]
         dataframe['Codon'] = codons
         df = pd.melt(dataframe, id_vars='Codon', value_vars=columns, value_name='Difference')
+        print(df)
         max = 0
         min = 100000
 
@@ -288,7 +289,7 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = [f'Time_point:{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
+        columns = [f'{self.sample.dt_sample[samples[n - 1]].age}_to_{self.sample.dt_sample[sample].age}' for
                    n, sample in enumerate(samples)]
         data_values = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data_values, columns=columns, index=[key for key in patterns.keys()])
@@ -318,7 +319,8 @@ class Expression(object):
 
     def plot_counts(self, lst_counts, samples, working_path):
         data = 'RSCU'
-        time_points = [f'Time_point:{self.sample.dt_sample[sample].age}' for sample in samples]
+        time_points = [f'{self.sample.dt_sample[sample].age}' for sample in samples]
+
         dic_codons = {}
         for n, dataframe in enumerate(lst_counts):
             dic_codons[time_points[n]] = {}
