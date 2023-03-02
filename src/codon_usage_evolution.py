@@ -139,7 +139,7 @@ def save_table(dataframe_genome, file_out):
     dataframe_genome.to_csv(file_out)
 
 
-def save_final_results(expression, sample_names, counts, working_path):
+def save_final_results(expression, sample_names, counts, working_path, b_make_averages_for_same_time_points):
     """   save final results
     :param sample_names - only samples not repeated in time points
     :counts counts dataframe with expression multiplied by codons"""
@@ -154,8 +154,8 @@ def save_final_results(expression, sample_names, counts, working_path):
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
-    if socket.gethostname() != "cs-nb0008":  #don't do this in MIGUEL computer
-        hist = expression.plot_counts(counts, sample_names, working_path)
+#    if socket.gethostname() != "cs-nb0008":  #don't do this in MIGUEL computer
+    hist = expression.plot_counts(counts, sample_names, working_path, b_make_averages_for_same_time_points)
         # hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
 
 
@@ -164,6 +164,7 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = True
+    b_make_averages_for_same_time_points = True
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -201,7 +202,8 @@ if __name__ == '__main__':
     file_name_in = os.path.join(base_path, name)
 
     ## working path
-    working_path = os.path.join(base_path, f'{animal}')
+    working_path = os.path.join(base_path, f'{animal}',
+		"average_time_points" if b_make_averages_for_same_time_points else "without_average_time_points")
     utils.make_path(working_path)
 
     file_name_out_counts = os.path.join(working_path, f"table_counts_{animal}.csv")
@@ -231,30 +233,33 @@ if __name__ == '__main__':
 
     ## BOTH
     gender = Tissue.GENDER_BOTH
-    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
-    working_path = os.path.join(base_path, f'{animal}/{gender}')
-    utils.make_path(working_path)
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
+													b_make_averages_for_same_time_points)
+    working_path_gender = os.path.join(working_path, f'{gender}')
+    utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
-    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path)
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
+    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender, b_make_averages_for_same_time_points)
 
     ## FEMALE
     gender = Tissue.GENDER_FEMALE
-    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
-    working_path = os.path.join(base_path, f'{animal}/{gender}')
-    utils.make_path(working_path)
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
+													b_make_averages_for_same_time_points)
+    working_path_gender = os.path.join(working_path, f'{gender}')
+    utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
-    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path)
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
+    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender, b_make_averages_for_same_time_points)
 
     ## MALE
     gender = Tissue.GENDER_MALE
-    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
-    working_path = os.path.join(base_path, f'{animal}/{gender}')
-    utils.make_path(working_path)
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
+													b_make_averages_for_same_time_points)
+    working_path_gender = os.path.join(working_path, f'{gender}')
+    utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path, f'Counts-with-expression-{sample}.csv'))
-    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path)
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
+    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender, b_make_averages_for_same_time_points)
 
     print("Finished")
 
