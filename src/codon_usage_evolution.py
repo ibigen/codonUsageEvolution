@@ -155,7 +155,7 @@ def save_final_results(expression, sample_names, counts, working_path, b_make_av
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
 #    if socket.gethostname() != "cs-nb0008":  #don't do this in MIGUEL computer
-    hist = expression.plot_counts(counts, sample_names, working_path, b_make_averages_for_same_time_points)
+    hist = expression.plot_counts(counts, sample_names, working_path)
         # hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
 
 
@@ -163,8 +163,9 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = True
+    b_ecoli = False
     b_make_averages_for_same_time_points = True
+    liver = True
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -172,8 +173,8 @@ if __name__ == '__main__':
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         # name = "ecoli.fasta"  # to create tables for test
 
     ### base path
@@ -188,11 +189,17 @@ if __name__ == '__main__':
             information_file = os.path.join(base_path, "E.coli_information_file.txt")
             expression_file = os.path.join(base_path, "E.coli_expression_values.txt")
     else:
-        information_file = os.path.join(base_path, "coldata_brain.txt")
-        expression_file = os.path.join(base_path, "norm_brain_counts.txt")
+        if liver:
+            information_file = os.path.join(base_path, "coldata_liver.txt")
+            expression_file = os.path.join(base_path, "norm_liver_counts.txt")
+
+        else:
+            information_file = os.path.join(base_path, "coldata_brain.txt")
+            expression_file = os.path.join(base_path, "norm_brain_counts.txt")
 
     if name == "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz":
         animal = "mouse"
+
     elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
         animal = "ecoli"
 
@@ -202,7 +209,7 @@ if __name__ == '__main__':
     file_name_in = os.path.join(base_path, name)
 
     ## working path
-    working_path = os.path.join(base_path, f'{animal}',
+    working_path = os.path.join(base_path, f'{animal}','liver' if liver else 'brain',
 		"average_time_points" if b_make_averages_for_same_time_points else "without_average_time_points")
     utils.make_path(working_path)
 
@@ -233,8 +240,7 @@ if __name__ == '__main__':
 
     ## BOTH
     gender = Tissue.GENDER_BOTH
-    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
-													b_make_averages_for_same_time_points)
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
@@ -243,8 +249,7 @@ if __name__ == '__main__':
 
     ## FEMALE
     gender = Tissue.GENDER_FEMALE
-    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
-													b_make_averages_for_same_time_points)
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
@@ -253,8 +258,7 @@ if __name__ == '__main__':
 
     ## MALE
     gender = Tissue.GENDER_MALE
-    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
-													b_make_averages_for_same_time_points)
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):

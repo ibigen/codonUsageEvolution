@@ -167,111 +167,103 @@ class Expression(object):
 
         return final_dataframe
 
-    def get_counts(self, gender, codons_in_genes, b_make_averages_for_same_time_points):
+    def get_counts(self, gender, codons_in_genes):
         """ 
         :param gender
         :codons_in_genes {}return counts by gender making average with the same time points 
-        :out   dict_samples_out { sample_name : [sample_name, sample_name same time point, sample_name same time point 2],
-                                sample_name1 : [sample_name1, sample_name same time point, sample_name same time point 2], } """
+    	:out   dict_samples_out { sample_name : [sample_name, sample_name same time point, sample_name same time point 2],
+    	                        sample_name1 : [sample_name1, sample_name same time point, sample_name same time point 2], } """
 
         list_samples = self.get_list_samples(gender)
-        dict_samples_out = OrderedDict()  ## Key, first sample of each time point, []
+        ## this list 
+        list_time_poins = self.get_list_time_points(gender)
         return_counts = []
-        ## this list
-        if b_make_averages_for_same_time_points:   ## make averages...
-            list_time_poins = self.get_list_time_points(gender)
-            for timepoint in list_time_poins:
-                fist_sample_name = None
-                same_age = {}
-                ## return all the sample for this time point
-                for sample in [_ for _ in list_samples if int(self.sample.dt_sample[_].age) == timepoint]:
-    
-                    ### control of the samples with same time points 
-                    if fist_sample_name is None:
-                        fist_sample_name = sample
-                        dict_samples_out[fist_sample_name] = [fist_sample_name]
+        dict_samples_out = OrderedDict()  ## Key, first sample of each time point, []
+        for timepoint in list_time_poins:
+            fist_sample_name = None
+            same_age = {}
+            ## return all the sample for this time point
+            for sample in [_ for _ in list_samples if int(self.sample.dt_sample[_].age) == timepoint]:
+
+                ### control of the samples with same time points 
+                if fist_sample_name is None:
+                    fist_sample_name = sample
+                    dict_samples_out[fist_sample_name] = [fist_sample_name]
+                else:
+                    dict_samples_out[fist_sample_name].append(sample)
+
+                ## create an array for average
+                for key, value in self.sample.dt_sample[sample].dt_gene.items():
+                    if key not in same_age:
+                        same_age[key] = [value]
                     else:
-                        dict_samples_out[fist_sample_name].append(sample)
-    
-                    ## create an array for average
-                    for key, value in self.sample.dt_sample[sample].dt_gene.items():
-                        if key not in same_age:
-                            same_age[key] = [value]
-                        else:
-                            same_age[key].append(value)
-    
-                average = {}
-                for key, list_values in same_age.items():
-                    #    if key not in media:
-                    average[key] = sum(list_values) / len(list_values)
-    
-                #### append 
-                return_counts.append(self.counts_with_expression(codons_in_genes, average))
-        else:   ## return all data for a specific gender
-            for sample in list_samples:
-                if sample in dict_samples_out: sys.exit("Error: sample already in dictonary - " + str(sample))
-                dict_samples_out[sample] = [sample]
-                return_counts.append(self.counts_with_expression(codons_in_genes, self.sample.dt_sample[sample].dt_gene))
+                        same_age[key].append(value)
+
+            average = {}
+            for key, list_values in same_age.items():
+                #    if key not in media:
+                average[key] = sum(list_values) / len(list_values)
+
+            #### append 
+            return_counts.append(self.counts_with_expression(codons_in_genes, average))
 
         ### dictionary with expression X codons
         return return_counts, dict_samples_out
 
     def compare_timepoints(self, counts, samples, working_path):
         data = 'RSCU'
-        differences_abs, differences = OrderedDict(), OrderedDict()   ### need to be ordered
+        differences = {}
         for n, dataframe in enumerate(counts):
-            key_to_process = f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'
-            repeat = 1
-            ### get unique name
-            while key_to_process in differences_abs:
-                key_to_process = f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}_{repeat}'
-                repeat += 1
-            differences_abs[key_to_process] = {}
-            differences[key_to_process] = {}
+            differences[
+                f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'] = {}
             for value in dataframe:
-                
-                if value not in differences[key_to_process]:
-                    differences[key_to_process][
-                        value] = counts[n - 1][value][data] - dataframe[value][data]
-                    differences_abs[key_to_process][
-						value] = abs(counts[n - 1][value][data] - dataframe[value][data])
-
+                if f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}' not in differences:
+                    if value not in differences[
+                        f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}']:
+                        differences[
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'][
+                            value] = counts[n - 1][value][data] - dataframe[value][data]
+                    else:
+                        differences[
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'][
+                            value] += counts[n - 1][value][data] - dataframe[value][data]
                 else:
-                    differences[key_to_process][
-                        value] += counts[n - 1][value][data] - dataframe[value][data]
-                    differences_abs[key_to_process][
-                        value] += abs(counts[n - 1][value][data] - dataframe[value][data])
+                    if value not in differences[
+                        f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}']:
+                        differences[
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'][
+                            value] = counts[n - 1][value][data] - dataframe[value][data]
+                    else:
+                        differences[
+                            f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'][
+                            value] += counts[n - 1][value][data] - dataframe[value][data]
 
-        ### save differences
         dataframe = pd.DataFrame(differences)
-        print("File with differences: " + str(os.path.join(working_path, "differences_between_time_points.csv")))
-        dataframe.to_csv(os.path.join(working_path, "differences_between_time_points.csv"))
-        
-        ### start making chart
-        dataframe_abs = pd.DataFrame(differences_abs)
-        dataframe_abs['Codon'] = [f'{str(key).upper().replace("U", "T")}_{value}' for key, value in Constants.codons_per_aminoacid.items()]
+        self.save_table(dataframe, os.path.join(working_path, 'Differences_between_time_points.csv'))
         columns = [f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[sample].age}' for
                    n, sample in enumerate(samples)]
-        df = pd.melt(dataframe_abs, id_vars='Codon', value_vars=columns, value_name='Difference')
-        df.rename(columns={"variable": "ID"}, inplace=True)
-        max_ = 0
-        min_ = 100000
+
+        codons = [f'{str(key).upper().replace("U", "T")}_{value}' for key, value in Constants.codons_per_aminoacid.items()]
+        dataframe['Codon'] = codons
+        df = pd.melt(dataframe, id_vars='Codon', value_vars=columns, value_name='Difference')
+        max = 0
+        min = 100000
 
         for value in df['Difference']:
+            value = abs(value)
             if type(value) == float:
-                if value > max_:
-                    max_ = value
-                elif value < min_:
-                    min_ = value
+                if value > max:
+                    max = value
+                elif value < min:
+                    min = value
 
-        norm = TwoSlopeNorm(vcenter=max_ - (max_ / 2), vmin=min_, vmax=max_)
+        norm = TwoSlopeNorm(vcenter=max - (max / 2), vmin=min, vmax=max)
         cmap = plt.get_cmap('brg')
 
         def my_bar_plot(x, y, **kwargs):
             plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
 
-        g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2, 
-				col_order = list(dataframe.columns), sharey=True)
+        g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2, sharey=True)
         g.map(my_bar_plot, 'Difference', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
@@ -298,15 +290,8 @@ class Expression(object):
                     else:
                         patterns[value] += ['Decrease']
 
-        columns = []
-        for n, sample in enumerate(samples):
-            key_to_process = f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'
-            repeat = 1
-            ### get unique name
-            while key_to_process in columns:
-                key_to_process = f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}_{repeat}'
-                repeat += 1
-            columns.append(key_to_process)
+        columns = [f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[sample].age}' for
+                   n, sample in enumerate(samples)]
         data_values = [n for key, n in patterns.items()]
         final_dataframe = pd.DataFrame(data_values, columns=columns, index=[key for key in patterns.keys()])
         return final_dataframe
@@ -333,13 +318,11 @@ class Expression(object):
 
         return dataframe_direction
 
-    def plot_counts(self, lst_counts, samples, working_path, b_make_averages_for_same_time_points):
+    def plot_counts(self, lst_counts, samples, working_path):
         data = 'RSCU'
-        time_points = []
-        if b_make_averages_for_same_time_points: time_points = [f'{self.sample.dt_sample[sample].age}' for sample in samples]
-        else: time_points = samples
+        time_points = [f'{self.sample.dt_sample[sample].age}' for sample in samples]
 
-        dic_codons = OrderedDict()
+        dic_codons = {}
         for n, dataframe in enumerate(lst_counts):
             dic_codons[time_points[n]] = {}
             for codon in dataframe:
@@ -353,7 +336,7 @@ class Expression(object):
         codons = Constants.TOTAL_CODONS
         data_values['Codon'] = codons
 
-        df = pd.melt(data_values, id_vars='Codon', value_vars=time_points, value_name='Counts')
+        df = pd.melt(data_values, id_vars='Codon', value_vars=time_points, value_name='Counts', ignore_index=True)
 
         max = 0
         min = 100000
@@ -371,8 +354,7 @@ class Expression(object):
         def my_bar_plot(x, y, **kwargs):
             plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
 
-        g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2,
-						col_order = time_points, sharey=True)
+        g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2, sharey=True)
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
