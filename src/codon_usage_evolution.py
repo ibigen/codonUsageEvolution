@@ -29,6 +29,7 @@ def read_genome(file_name):
 
         record_dict = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
 
+
         dt_gene_name = {}  ### {gene_name : [id, len(seq)], gene_name1 : [id1, len(seq)], ....]
         ### normalize gene IDs
         for key in record_dict:
@@ -155,7 +156,7 @@ def save_final_results(expression, sample_names, counts, working_path, b_make_av
     table_direction = expression.ilustrate_patterns(patterns)
     save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
 #    if socket.gethostname() != "cs-nb0008":  #don't do this in MIGUEL computer
-    hist = expression.plot_counts(counts, sample_names, working_path)
+    hist = expression.plot_counts(counts, sample_names, working_path, b_make_averages_for_same_time_points)
         # hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
 
 
@@ -179,7 +180,7 @@ if __name__ == '__main__':
 
     ### base path
     print("Base path: " + base_path)
-    
+
     # expression file
     if b_ecoli:
         if test:
@@ -240,30 +241,39 @@ if __name__ == '__main__':
 
     ## BOTH
     gender = Tissue.GENDER_BOTH
-    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                     b_make_averages_for_same_time_points)
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
-    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender, b_make_averages_for_same_time_points)
+    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
+                       b_make_averages_for_same_time_points)
+    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
 
     ## FEMALE
     gender = Tissue.GENDER_FEMALE
-    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                     b_make_averages_for_same_time_points)
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
-    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender, b_make_averages_for_same_time_points)
+    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
+                       b_make_averages_for_same_time_points)
+    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
 
     ## MALE
     gender = Tissue.GENDER_MALE
-    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'))
+    counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
+                                                     b_make_averages_for_same_time_points)
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
-    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender, b_make_averages_for_same_time_points)
+    save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
+                       b_make_averages_for_same_time_points)
+    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
 
     print("Finished")
 
