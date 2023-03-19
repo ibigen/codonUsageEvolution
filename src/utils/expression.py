@@ -8,10 +8,11 @@ import pandas as pd
 from collections import OrderedDict
 from constants.constants import Constants
 import matplotlib.pyplot as plt
-from matplotlib.colors import TwoSlopeNorm
+from matplotlib.colors import TwoSlopeNorm, ListedColormap
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
 from sklearn.decomposition import PCA
+
 
 
 class Tissue(object):
@@ -219,7 +220,7 @@ class Expression(object):
 
     def compare_timepoints(self, counts, samples, working_path):
         data = 'RSCU'
-        differences_abs, differences = OrderedDict(), OrderedDict()   ### need to be ordered
+        differences_abs, differences = OrderedDict(), OrderedDict()   # need to be ordered
         for n, dataframe in enumerate(counts):
             key_to_process = f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'
             repeat = 1
@@ -420,19 +421,12 @@ class Expression(object):
 
         RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
         RSCU_dataframe.set_index('Codon', inplace=True)
-
-        pca = PCA(n_components=2)
-        pca.fit(RSCU_dataframe)
-        pca_df = pd.DataFrame(pca.transform(RSCU_dataframe), columns=['PC1', 'PC2'], index=RSCU_dataframe.index)
-        print(pca_df)
-        fig, ax = plt.subplots()
-        for time_point in pca_df.columns:
-            ax.scatter(pca_df.loc[:, 'PC1'], pca_df.loc[:, 'PC2'], label=time_point)
-        ax.legend()
-        plt.show()
-
-
-
+        sample_time = {}
+        times = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
+        RSCU_dataframe = RSCU_dataframe.transpose()
+        RSCU_dataframe["time"] = times
+        RSCU_dataframe = RSCU_dataframe.transpose()
+        print(RSCU_dataframe)
     def __samples_information(self):
         """Open, read and save information from samples
         File:

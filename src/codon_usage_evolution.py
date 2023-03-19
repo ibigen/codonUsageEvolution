@@ -164,7 +164,7 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = False
+    b_ecoli = True
     b_make_averages_for_same_time_points = True
     liver = True
     test = False
@@ -174,8 +174,8 @@ if __name__ == '__main__':
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         # name = "ecoli.fasta"  # to create tables for test
 
     ### base path
@@ -249,7 +249,7 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+    #expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
 
     ## FEMALE
     gender = Tissue.GENDER_FEMALE
@@ -261,7 +261,7 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+    #expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
 
     ## MALE
     gender = Tissue.GENDER_MALE
@@ -273,7 +273,7 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+    #expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
 
     print("Finished")
 
