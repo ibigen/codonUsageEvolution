@@ -19,17 +19,22 @@ utils = Utils()
 constants = Constants()
 
 
-def read_genome(file_name):
+def read_genome(file_name, *args):
     """ read genome """
-
     counts_stats = CountSequences()
+    if len(args) != 0:
+        most_expressed_genes = []
+        name = os.path.join(r"C:\Users\Francisca\Desktop\TeseDeMestrado", args[0])
+        with open(name, 'r') as file:
+            lines = file.readlines()
+            for line in lines[1:]:
+                line = line.strip().replace('"', '')
+                most_expressed_genes.append(line)
+
     print("Genome reading: " + file_name)
     with (gzip.open(file_name, mode='rt') if utils.is_gzip(file_name) else open(file_name,
                                                                                 mode='r')) as handle_read:
-
         record_dict = SeqIO.to_dict(SeqIO.parse(handle_read, "fasta"))
-
-
         dt_gene_name = {}  ### {gene_name : [id, len(seq)], gene_name1 : [id1, len(seq)], ....]
         ### normalize gene IDs
         for key in record_dict:
@@ -38,7 +43,6 @@ def read_genome(file_name):
                 gene_name = record_dict[key].description. \
                     split("[gene=")[1].split(" ")[0].replace("]", "")
                 if gene_name in dt_gene_name:
-
                     if len(str(record_dict[key].seq)) > dt_gene_name[gene_name][1]:
                         dt_gene_name[gene_name] = [key, len(str(record_dict[key].seq))]
                 else:
@@ -52,87 +56,185 @@ def read_genome(file_name):
         dic_CAI, dic_genome_CAI = {}, {}
         codon_count_total = [0] * len(constants.TOTAL_CODONS)
         print("Calculating RSCU and CAI")
-        for gene_name in dt_gene_name:
-            key = dt_gene_name[gene_name][0]
-            if len(record_dict[key].seq) % 3 != 0:
-                counts_stats.add_divisible_3()
-                continue
+        if len(args) != 0:
+            most_expressed_genes = []
+            name = os.path.join(r"C:\Users\Francisca\Desktop\TeseDeMestrado", args[0])
+            with open(name, 'r') as file:
+                lines = file.readlines()
+                for line in lines[1:]:
+                    line = line.strip().replace('"', '')
+                    most_expressed_genes.append(line)
+            # print(most_expressed_genes)
+            for gene_name in dt_gene_name:
+                if (gene_name in most_expressed_genes) or (gene_name == 'genome'):
 
-            counts_stats.add_pass()
-            counts_gene = {}
-            for i in range(0, len(record_dict[key].seq) + 1, 3):
-                codon = str(record_dict[key].seq)[i:i + 3].upper().replace('U', 'T')
+                    key = dt_gene_name[gene_name][0]
+                    if len(record_dict[key].seq) % 3 != 0:
+                        counts_stats.add_divisible_3()
+                        continue
 
-                if codon in counts_gene:
-                    counts_gene[codon] += 1
-                else:
-                    counts_gene[codon] = 1
+                    counts_stats.add_pass()
+                    counts_gene = {}
+                    for i in range(0, len(record_dict[key].seq) + 1, 3):
+                        codon = str(record_dict[key].seq)[i:i + 3].upper().replace('U', 'T')
 
-            # add gene counts
-            codon_count = [0] * len(constants.TOTAL_CODONS)
-            for indexes, codon in enumerate(constants.TOTAL_CODONS):
-                if codon in counts_gene:
-                    codon_count[indexes] = counts_gene[codon]
-                    codon_count_total[indexes] += counts_gene[codon]
+                        if codon in counts_gene:
+                            counts_gene[codon] += 1
+                        else:
+                            counts_gene[codon] = 1
 
-            # add gene with count codon
-            data[gene_name] = codon_count
+                    # add gene counts
+                    codon_count = [0] * len(constants.TOTAL_CODONS)
+                    for indexes, codon in enumerate(constants.TOTAL_CODONS):
+                        if codon in counts_gene:
+                            codon_count[indexes] = counts_gene[codon]
+                            codon_count_total[indexes] += counts_gene[codon]
 
-            # RSCU
-            initial_dic_RSCU[gene_name] = RSCU([record_dict[key].seq])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+                    # add gene with count codon
+                    data[gene_name] = codon_count
+
+                    # RSCU
+                    initial_dic_RSCU[gene_name] = RSCU([record_dict[key].seq])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+
+                    # CAI
+                    dic_CAI[gene_name] = float(
+                        CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[gene_name]))  # {gene1: CAI1} {GENE2: CAI2}
+            print("Calculating counts of all codons")
+            # count of all codons
+            data[Constants.GENOME_KEY] = codon_count_total
+            # Global RSCU
+            initial_dic_RSCU[Constants.GENOME_KEY] = RSCU(
+                [record_dict[dt_gene_name[key][0]].seq for key in
+                 initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+            #print(initial_dic_RSCU)
+
+            # Global CAI, from RSCU from all genome
+            for key in dic_CAI:
+                dic_genome_CAI[dt_gene_name[key][0]] = float(
+                    CAI(record_dict[dt_gene_name[key][0]].seq,
+                        RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
+            dic_genome_CAI[Constants.GENOME_KEY] = 1
+
+            # Global CAI, doesn't matter in this case
+            dic_CAI[Constants.GENOME_KEY] = 1
+
+            # create a dataframe with counts
+            rows = [i for key, i in data.items()]
+            print("Create codon counts data frame")
+            column_labels = constants.TOTAL_CODONS
+            dataframe_counts = pd.DataFrame(rows, columns=column_labels, index=[key for key in data.keys()])
+
+            # Create table sorted by amino acid.
+            dic_values = list(
+                initial_dic_RSCU.values())  # [{codon1: 1, codon2:0, codon3: 1 ...}, {codon1: 1, codon2: 0,
+            # codon3: 1...}, {...}, {...}]
+            sorted_by_aminoacid = {}
+            print("Creating dataframes to RSCU and CAI values")
+            for codon in constants.TOTAL_CODONS:
+                for value in range(0, len(dic_values)):
+                    if str(codon).upper() in dic_values[value]:
+                        if codon in sorted_by_aminoacid:
+                            sorted_by_aminoacid[codon].append(float(dic_values[value][codon]))
+                        else:
+                            sorted_by_aminoacid[codon] = [
+                                float(dic_values[value][codon])]  # {codon1: [1,2,0,...], codon2: [1,0,0,2,0,...]}
+            data_RSCU = [n for key, n in sorted_by_aminoacid.items()]
+            columns_RSCU = [list(value) for value in data_RSCU]
+            dataframe_RSCU = pd.DataFrame(columns_RSCU,
+                                          index=[key for key in sorted_by_aminoacid.keys()],
+                                          columns=[key for key in initial_dic_RSCU.keys()])
+            dataframe_RSCU = dataframe_RSCU.T
 
             # CAI
-            dic_CAI[gene_name] = float(
-                CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[gene_name]))  # {gene1: CAI1} {GENE2: CAI2}
-        print("Calculating counts of all codons")
-        # count of all codons
-        data[Constants.GENOME_KEY] = codon_count_total
-        # Global RSCU
-        initial_dic_RSCU[Constants.GENOME_KEY] = RSCU(
-            [record_dict[dt_gene_name[key][0]].seq for key in
-             initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+            dataframe_RSCU[Constants.GENE_CAI] = dic_CAI.values()
+            dataframe_RSCU[Constants.GENOME_CAI] = dic_genome_CAI.values()
+            return dataframe_counts, dataframe_RSCU, counts_stats
 
-        # Global CAI, from RSCU from all genome
-        for key in dic_CAI:
-            dic_genome_CAI[dt_gene_name[key][0]] = float(
-                CAI(record_dict[dt_gene_name[key][0]].seq,
-                    RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
-        dic_genome_CAI[Constants.GENOME_KEY] = 1
+        else:
+            for gene_name in dt_gene_name:
+                key = dt_gene_name[gene_name][0]
 
-        # Global CAI, doesn't matter in this case
-        dic_CAI[Constants.GENOME_KEY] = 1
+                if len(record_dict[key].seq) % 3 != 0:
+                    counts_stats.add_divisible_3()
+                    continue
 
-        # create a dataframe with counts
-        rows = [i for key, i in data.items()]
-        print("Create codon counts data frame")
-        column_labels = constants.TOTAL_CODONS
-        dataframe_counts = pd.DataFrame(rows, columns=column_labels, index=[key for key in data.keys()])
+                counts_stats.add_pass()
+                counts_gene = {}
+                for i in range(0, len(record_dict[key].seq) + 1, 3):
+                    codon = str(record_dict[key].seq)[i:i + 3].upper().replace('U', 'T')
 
-        # Create table sorted by amino acid.
-        dic_values = list(initial_dic_RSCU.values())  # [{codon1: 1, codon2:0, codon3: 1 ...}, {codon1: 1, codon2: 0,
-        # codon3: 1...}, {...}, {...}]
-        sorted_by_aminoacid = {}
-        print("Creating dataframes to RSCU and CAI values")
-        for codon in constants.TOTAL_CODONS:
-            for value in range(0, len(dic_values)):
-                if str(codon).upper() in dic_values[value]:
-                    if codon in sorted_by_aminoacid:
-                        sorted_by_aminoacid[codon].append(float(dic_values[value][codon]))
+                    if codon in counts_gene:
+                        counts_gene[codon] += 1
                     else:
-                        sorted_by_aminoacid[codon] = [
-                            float(dic_values[value][codon])]  # {codon1: [1,2,0,...], codon2: [1,0,0,2,0,...]}
-        data_RSCU = [n for key, n in sorted_by_aminoacid.items()]
-        columns_RSCU = [list(value) for value in data_RSCU]
-        dataframe_RSCU = pd.DataFrame(columns_RSCU,
-                                      index=[key for key in sorted_by_aminoacid.keys()],
-                                      columns=[key for key in initial_dic_RSCU.keys()])
-        dataframe_RSCU = dataframe_RSCU.T
+                        counts_gene[codon] = 1
 
-        # CAI
-        dataframe_RSCU[Constants.GENE_CAI] = dic_CAI.values()
-        dataframe_RSCU[Constants.GENOME_CAI] = dic_genome_CAI.values()
+                # add gene counts
+                codon_count = [0] * len(constants.TOTAL_CODONS)
+                for indexes, codon in enumerate(constants.TOTAL_CODONS):
+                    if codon in counts_gene:
+                        codon_count[indexes] = counts_gene[codon]
+                        codon_count_total[indexes] += counts_gene[codon]
 
-    return dataframe_counts, dataframe_RSCU, counts_stats
+                # add gene with count codon
+                data[gene_name] = codon_count
+
+                # RSCU
+                initial_dic_RSCU[gene_name] = RSCU([record_dict[key].seq])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+
+                # CAI
+                dic_CAI[gene_name] = float(
+                    CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[gene_name]))  # {gene1: CAI1} {GENE2: CAI2}
+            print("Calculating counts of all codons")
+            # count of all codons
+            data[Constants.GENOME_KEY] = codon_count_total
+            # Global RSCU
+            initial_dic_RSCU[Constants.GENOME_KEY] = RSCU(
+                [record_dict[dt_gene_name[key][0]].seq for key in
+                 initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+            #print(initial_dic_RSCU)
+
+            # Global CAI, from RSCU from all genome
+            for key in dic_CAI:
+                dic_genome_CAI[dt_gene_name[key][0]] = float(
+                    CAI(record_dict[dt_gene_name[key][0]].seq,
+                        RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
+            dic_genome_CAI[Constants.GENOME_KEY] = 1
+
+            # Global CAI, doesn't matter in this case
+            dic_CAI[Constants.GENOME_KEY] = 1
+
+            # create a dataframe with counts
+            rows = [i for key, i in data.items()]
+            print("Create codon counts data frame")
+            column_labels = constants.TOTAL_CODONS
+            dataframe_counts = pd.DataFrame(rows, columns=column_labels, index=[key for key in data.keys()])
+
+            # Create table sorted by amino acid.
+            dic_values = list(
+                initial_dic_RSCU.values())  # [{codon1: 1, codon2:0, codon3: 1 ...}, {codon1: 1, codon2: 0,
+            # codon3: 1...}, {...}, {...}]
+            sorted_by_aminoacid = {}
+            print("Creating dataframes to RSCU and CAI values")
+            for codon in constants.TOTAL_CODONS:
+                for value in range(0, len(dic_values)):
+                    if str(codon).upper() in dic_values[value]:
+                        if codon in sorted_by_aminoacid:
+                            sorted_by_aminoacid[codon].append(float(dic_values[value][codon]))
+                        else:
+                            sorted_by_aminoacid[codon] = [
+                                float(dic_values[value][codon])]  # {codon1: [1,2,0,...], codon2: [1,0,0,2,0,...]}
+            data_RSCU = [n for key, n in sorted_by_aminoacid.items()]
+            columns_RSCU = [list(value) for value in data_RSCU]
+            dataframe_RSCU = pd.DataFrame(columns_RSCU,
+                                          index=[key for key in sorted_by_aminoacid.keys()],
+                                          columns=[key for key in initial_dic_RSCU.keys()])
+            dataframe_RSCU = dataframe_RSCU.T
+
+            # CAI
+            dataframe_RSCU[Constants.GENE_CAI] = dic_CAI.values()
+            dataframe_RSCU[Constants.GENOME_CAI] = dic_genome_CAI.values()
+
+        return dataframe_counts, dataframe_RSCU, counts_stats
 
 
 def save_table(dataframe_genome, file_out):
@@ -164,7 +266,7 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = True
+    b_ecoli = False
     b_make_averages_for_same_time_points = True
     liver = True
     test = False
@@ -174,8 +276,8 @@ if __name__ == '__main__':
         base_path = "/home/projects/ua/master/codon_usage"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-        #name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         # name = "ecoli.fasta"  # to create tables for test
 
     ### base path
@@ -223,7 +325,7 @@ if __name__ == '__main__':
     utils.test_exist_file(expression_file)
 
     # get dataframes
-    dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
+    dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, "genes_brain_all_27vs3.csv")
 
     # show stats
     # print(counts_stats)
@@ -246,10 +348,11 @@ if __name__ == '__main__':
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}_27vs3.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    #expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+
 
     ## FEMALE
     gender = Tissue.GENDER_FEMALE

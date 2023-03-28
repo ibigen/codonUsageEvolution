@@ -135,19 +135,20 @@ class Expression(object):
     def get_number_gene(self, sample_name):
         return self.sample.get_number_gene(sample_name)
 
-    def most_differentially_expressed_genes(self, sample_name1, sample_name2):
-        dif_expression = sorted(
-            [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
-             for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
-        dif_expression_dict = {}
 
-        for dif in dif_expression:
-            for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
-                if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] -
-                              self.sample.dt_sample[sample_name1].dt_gene[key]):
-                    dif_expression_dict[key] = dif
-                self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
-        return self.most_dif_expressed
+    #def most_differentially_expressed_genes(self, sample_name1, sample_name2):
+        #dif_expression = sorted(
+            #[abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
+             #for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
+        #dif_expression_dict = {}
+
+        #for dif in dif_expression:
+            #for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
+                #if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] -
+                              #self.sample.dt_sample[sample_name1].dt_gene[key]):
+                    #dif_expression_dict[key] = dif
+                #self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
+        #return self.most_dif_expressed
 
     def counts_with_expression(self, counts, average):
 
@@ -248,7 +249,7 @@ class Expression(object):
         dataframe = pd.DataFrame(differences)
         print(
             "File with differences: " + str(os.path.join(working_path, "Differences_between_time_points.csv")))
-        dataframe.to_csv(os.path.join(working_path, "Differences_between_time_points.csv"))
+        dataframe.to_csv(os.path.join(working_path, "Differences_between_time_points_27vs3.csv"))
 
         ### start making chart
         dataframe_abs = pd.DataFrame(differences_abs)
@@ -427,6 +428,26 @@ class Expression(object):
         RSCU_dataframe["time"] = times
         RSCU_dataframe = RSCU_dataframe.transpose()
         print(RSCU_dataframe)
+
+        # Obter a linha com os time points
+        time_points = RSCU_dataframe.iloc[-1, :].values
+
+        # Remover a linha com os time points do dataframe
+        RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
+
+        # Executar a análise PCA
+        pca = PCA(n_components=2)
+        pca_result = pca.fit_transform(RSCU_dataframe.transpose())
+
+        # Plotar o gráfico com os pontos coloridos de acordo com os time points
+        fig, ax = plt.subplots()
+        for tp in np.unique(time_points):
+            samples = np.where(time_points == tp)
+            c = plt.cm.Set1(int(tp) / np.max([int(time_point) for time_point in time_points]))
+            ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
+        ax.legend()
+        plt.show()
+
     def __samples_information(self):
         """Open, read and save information from samples
         File:
