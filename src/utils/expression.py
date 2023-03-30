@@ -407,7 +407,7 @@ class Expression(object):
                 # nº de codões*(codão/soma(codões por aminoacido))
         return rscu
 
-    def PCA_analysis(self, counts, samples, working_path):
+    def PCA_analysis(self, counts, samples, working_path,time):
         data = 'RSCU'
         RSCU_dic = OrderedDict()
         time_points = [f'{self.sample.dt_sample[sample].age}' for sample in samples]
@@ -422,31 +422,28 @@ class Expression(object):
 
         RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
         RSCU_dataframe.set_index('Codon', inplace=True)
-        sample_time = {}
+
         times = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
         RSCU_dataframe = RSCU_dataframe.transpose()
         RSCU_dataframe["time"] = times
         RSCU_dataframe = RSCU_dataframe.transpose()
-        print(RSCU_dataframe)
 
-        # Obter a linha com os time points
+        # Obtain time points
         time_points = RSCU_dataframe.iloc[-1, :].values
-
-        # Remover a linha com os time points do dataframe
         RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
 
-        # Executar a análise PCA
+        # PCA analysis
         pca = PCA(n_components=2)
         pca_result = pca.fit_transform(RSCU_dataframe.transpose())
 
-        # Plotar o gráfico com os pontos coloridos de acordo com os time points
         fig, ax = plt.subplots()
         for tp in np.unique(time_points):
             samples = np.where(time_points == tp)
             c = plt.cm.Set1(int(tp) / np.max([int(time_point) for time_point in time_points]))
             ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
         ax.legend()
-        plt.show()
+        plt.savefig(os.path.join(working_path, f'PCA_analysis_{time}.png'))
+        #plt.show()
 
     def __samples_information(self):
         """Open, read and save information from samples

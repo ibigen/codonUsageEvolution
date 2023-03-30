@@ -242,7 +242,7 @@ def save_table(dataframe_genome, file_out):
     dataframe_genome.to_csv(file_out)
 
 
-def save_final_results(expression, sample_names, counts, working_path, b_make_averages_for_same_time_points):
+def save_final_results(expression, sample_names, counts, working_path, b_make_averages_for_same_time_points, time):
     """   save final results
     :param sample_names - only samples not repeated in time points
     :counts counts dataframe with expression multiplied by codons"""
@@ -252,11 +252,11 @@ def save_final_results(expression, sample_names, counts, working_path, b_make_av
 
     print('Searching for patterns')
     patterns = expression.compare_counts(counts, sample_names)
-    save_table(patterns, os.path.join(working_path, f'Patterns_between_all_samples.csv'))
+    save_table(patterns, os.path.join(working_path, f'Patterns_between_all_samples_{time}.csv'))
 
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
-    save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
+    save_table(table_direction, os.path.join(working_path, f'Table_directions_{time}.csv'))
 #    if socket.gethostname() != "cs-nb0008":  #don't do this in MIGUEL computer
     hist = expression.plot_counts(counts, sample_names, working_path, b_make_averages_for_same_time_points)
         # hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
@@ -267,7 +267,7 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = False
-    b_make_averages_for_same_time_points = True
+    b_make_averages_for_same_time_points = False
     liver = True
     test = False
     # set file name in and out
@@ -325,7 +325,8 @@ if __name__ == '__main__':
     utils.test_exist_file(expression_file)
 
     # get dataframes
-    dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, "genes_brain_all_27vs3.csv")
+    time = '27vs3'
+    dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, f'genes_liver_sig_{time}.csv')
 
     # show stats
     # print(counts_stats)
@@ -347,11 +348,12 @@ if __name__ == '__main__':
                                                      b_make_averages_for_same_time_points)
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
+    time = '12vs15'
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}_27vs3.csv'))
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}_{time}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
-                       b_make_averages_for_same_time_points)
-    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+                       b_make_averages_for_same_time_points, time)
+    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, time)
 
 
     ## FEMALE
@@ -361,10 +363,10 @@ if __name__ == '__main__':
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}_{time}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
-                       b_make_averages_for_same_time_points)
-    #expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+                       b_make_averages_for_same_time_points, time)
+    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, time)
 
     ## MALE
     gender = Tissue.GENDER_MALE
@@ -373,10 +375,10 @@ if __name__ == '__main__':
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}_{time}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
-                       b_make_averages_for_same_time_points)
-    #expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+                       b_make_averages_for_same_time_points, time)
+    expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, time)
 
     print("Finished")
 
