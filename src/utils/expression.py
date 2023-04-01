@@ -407,7 +407,7 @@ class Expression(object):
                 # nº de codões*(codão/soma(codões por aminoacido))
         return rscu
 
-    def PCA_analysis(self, counts, samples, working_path,time):
+    def PCA_analysis(self, counts, samples, working_path, time):
         data = 'RSCU'
         RSCU_dic = OrderedDict()
         time_points = [f'{self.sample.dt_sample[sample].age}' for sample in samples]
@@ -437,13 +437,18 @@ class Expression(object):
         pca_result = pca.fit_transform(RSCU_dataframe.transpose())
 
         fig, ax = plt.subplots()
-        for tp in np.unique(time_points):
+        colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
+        for i, tp in enumerate(sorted(np.unique(time_points))):
             samples = np.where(time_points == tp)
-            c = plt.cm.Set1(int(tp) / np.max([int(time_point) for time_point in time_points]))
+            c = colors[i]
             ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
-        ax.legend()
-        plt.savefig(os.path.join(working_path, f'PCA_analysis_{time}.png'))
-        #plt.show()
+        lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.subplots_adjust(right=0.7)
+        plt.title(f'PCA to comparison: {time}')
+        print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis_{time}.png')))
+        plt.savefig(os.path.join(working_path, f'PCA_analysis_{time}.png'), bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+
 
     def __samples_information(self):
         """Open, read and save information from samples

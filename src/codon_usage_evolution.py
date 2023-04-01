@@ -310,7 +310,8 @@ if __name__ == '__main__':
         animal = "test"
 
     file_name_in = os.path.join(base_path, name)
-
+    ## Choose the comparison
+    time = '18vs21'
     ## working path
     working_path = os.path.join(base_path, f'{animal}','liver' if liver else 'brain',
 		"average_time_points" if b_make_averages_for_same_time_points else "without_average_time_points")
@@ -325,14 +326,17 @@ if __name__ == '__main__':
     utils.test_exist_file(expression_file)
 
     # get dataframes
-    time = '27vs3'
+
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, f'genes_liver_sig_{time}.csv')
 
     # show stats
     # print(counts_stats)
 
     # save tables
+    print("File with counts: {}".format(os.path.join(working_path, f'table_counts_{animal}.csv')))
     save_table(dataframe_count_codons_in_genes, file_name_out_counts)
+
+    print("File with RSCU and CAI values: {}".format(os.path.join(working_path, f'table_RSCU_CAI_{animal}.csv')))
     save_table(dataframe_RSCU_CAI, file_name_out_RSCU_CAI)
 
     # make expression in genes
@@ -348,7 +352,7 @@ if __name__ == '__main__':
                                                      b_make_averages_for_same_time_points)
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
-    time = '12vs15'
+
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}_{time}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
