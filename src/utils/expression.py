@@ -444,9 +444,17 @@ class Expression(object):
             ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
         lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.subplots_adjust(right=0.7)
-        plt.title(f'PCA to comparison: {time}')
-        print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis_{time}.png')))
-        plt.savefig(os.path.join(working_path, f'PCA_analysis_{time}.png'), bbox_extra_artists=(lgd,), bbox_inches='tight')
+        if time != None:
+            plt.title(f'PCA to comparison: {time}')
+            print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis_{time}.png')))
+            plt.savefig(os.path.join(working_path, f'PCA_analysis_{time}.png'), bbox_extra_artists=(lgd,),
+                        bbox_inches='tight')
+
+        else:
+            plt.title(f'PCA analysis')
+            print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis.png')))
+            plt.savefig(os.path.join(working_path, f'PCA_analysis.png'), bbox_extra_artists=(lgd,),
+                        bbox_inches='tight')
 
 
 
