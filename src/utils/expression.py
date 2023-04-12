@@ -277,8 +277,7 @@ class Expression(object):
         cmap = plt.get_cmap('brg')
 
         def my_bar_plot(x, y, **kwargs):
-            fig, ax = plt.subplots(figsize=(6, 8))
-            ax.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
+            plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
 
         g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2,
                          col_order=list(dataframe.columns), sharey=True)
@@ -289,10 +288,10 @@ class Expression(object):
         # plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_differences_{data}.png')))
         if time != None:
-            plt.title(f'Barplot_to_differences_{data}_{time}.png')
+            #plt.title(f'Barplot_to_differences_{data}_{time}.png')
             plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}_{time}.png'))
         else:
-            plt.title(f'Barplot_to_differences_{data}.png')
+            #plt.title(f'Barplot_to_differences_{data}.png')
             plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}.png'))
         return df
 
