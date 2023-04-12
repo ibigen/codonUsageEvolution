@@ -246,20 +246,27 @@ def save_table(dataframe_genome, file_out):
 def save_final_results(expression, sample_names, counts, working_path, b_make_averages_for_same_time_points, time):
     """   save final results
     :param sample_names - only samples not repeated in time points
-    :counts counts dataframe with expression multiplied by codons"""
+    :counts dataframe with expression multiplied by codons"""
 
     print("Comparing different time points")
-    dif = expression.compare_timepoints(counts, sample_names, working_path)
+    dif = expression.compare_timepoints(counts, sample_names, working_path, time)
 
     print('Searching for patterns')
     patterns = expression.compare_counts(counts, sample_names)
-    save_table(patterns, os.path.join(working_path, f'Patterns_between_all_samples_{time}.csv'))
+    if time != None:
+        save_table(patterns, os.path.join(working_path, f'Patterns_between_all_samples_{time}.csv'))
+    else:
+        save_table(patterns, os.path.join(working_path, f'Patterns_between_all_samples.csv'))
 
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
-    save_table(table_direction, os.path.join(working_path, f'Table_directions_{time}.csv'))
+    if time != None:
+        save_table(table_direction, os.path.join(working_path, f'Table_directions_{time}.csv'))
+    else:
+        save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
+
 #    if socket.gethostname() != "cs-nb0008":  #don't do this in MIGUEL computer
-    hist = expression.plot_counts(counts, sample_names, working_path, b_make_averages_for_same_time_points)
+    hist = expression.plot_counts(counts, sample_names, working_path, b_make_averages_for_same_time_points, time)
         # hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
 
 

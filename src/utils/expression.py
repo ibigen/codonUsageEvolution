@@ -3,7 +3,6 @@ import numpy as np
 
 from utils.utils import Utils
 import sys, os
-import itertools
 import pandas as pd
 from collections import OrderedDict
 from constants.constants import Constants
@@ -219,7 +218,7 @@ class Expression(object):
         ### dictionary with expression X codons
         return return_counts, dict_samples_out
 
-    def compare_timepoints(self, counts, samples, working_path):
+    def compare_timepoints(self, counts, samples, working_path, time):
         data = 'RSCU'
         differences_abs, differences = OrderedDict(), OrderedDict()   # need to be ordered
         for n, dataframe in enumerate(counts):
@@ -249,7 +248,11 @@ class Expression(object):
         dataframe = pd.DataFrame(differences)
         print(
             "File with differences: " + str(os.path.join(working_path, "Differences_between_time_points.csv")))
-        dataframe.to_csv(os.path.join(working_path, "Differences_between_time_points_27vs3.csv"))
+        if time != None:
+            dataframe.to_csv(os.path.join(working_path, f"Differences_between_time_points_{time}.csv"))
+        else:
+            dataframe.to_csv(os.path.join(working_path, f"Differences_between_time_points.csv"))
+
 
         ### start making chart
         dataframe_abs = pd.DataFrame(differences_abs)
@@ -274,7 +277,8 @@ class Expression(object):
         cmap = plt.get_cmap('brg')
 
         def my_bar_plot(x, y, **kwargs):
-            plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
+            fig, ax = plt.subplots(figsize=(6, 8))
+            ax.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
 
         g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2,
                          col_order=list(dataframe.columns), sharey=True)
@@ -284,8 +288,12 @@ class Expression(object):
 
         # plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_differences_{data}.png')))
-        plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}.png'))
-
+        if time != None:
+            plt.title(f'Barplot_to_differences_{data}_{time}.png')
+            plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}_{time}.png'))
+        else:
+            plt.title(f'Barplot_to_differences_{data}.png')
+            plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}.png'))
         return df
 
 
@@ -359,17 +367,16 @@ class Expression(object):
         sm.set_array([])
         cbar = plt.colorbar(sm)
         #cbar.set_label('genome')
+        plt.xlabel('RSCU')
+        plt.ylabel('Codon')
         plt.subplots_adjust(wspace=0.3)
         plt.title(f'Normalized counts to reference genome')
+        print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_reference.png')))
         plt.savefig(os.path.join(working_path, f'Barplot_to_counts_reference.png'))
         # plt.show()
         return DATA
 
-
-
-
-
-    def plot_counts(self, lst_counts, samples, working_path, b_make_averages_for_same_time_points):
+    def plot_counts(self, lst_counts, samples, working_path, b_make_averages_for_same_time_points, time):
         data = 'RSCU'
         time_points = []
         if b_make_averages_for_same_time_points:
@@ -387,11 +394,8 @@ class Expression(object):
                     dic_codons[time_points[n]][codon].append(dataframe[codon][data])
 
         data_values = pd.DataFrame(dic_codons, columns=time_points)
-        print(data_values)
-
         codons = Constants.TOTAL_CODONS
         data_values['Codon'] = codons
-        print(data_values)
 
         df = pd.melt(data_values, id_vars='Codon', value_vars=time_points, value_name='Counts')
 
@@ -411,14 +415,20 @@ class Expression(object):
         def my_bar_plot(x, y, **kwargs):
             plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
 
-        g = sb.FacetGrid(data=df, col='variable', height=9, aspect=0.2,
+        df.rename(columns={"variable": "ID"}, inplace=True)
+        g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2,
                          col_order=time_points, sharey=True)
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
-
-        # plt.title(f'Counts to samples from {[samples for samples in samples]}')
-        plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}.png'))
+        if time != None:
+            plt.title(f'Normalized counts to {time} differentially expressed genes')
+            print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_{data}_{time}.png')))
+            plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}_{time}.png'))
+        else:
+            plt.title(f'Normalized counts with all genes')
+            print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_{data}.png')))
+            plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}.png'))
         # plt.show()
 
     def calculate_RSCU(self, counts):
