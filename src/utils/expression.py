@@ -340,6 +340,35 @@ class Expression(object):
 
         return dataframe_direction
 
+
+    def plot_reference(self, counts, working_path):
+        DATA = counts.drop(columns=['GENE CAI'])
+        DATA = DATA.drop(columns=['GENOME CAI'])
+        data = DATA.T
+        codons =Constants.TOTAL_CODONS[:-3]
+        data['Codon'] = codons
+        fig, ax = plt.subplots(figsize=(6, 10))
+        fig.set_figwidth(10)
+        plt.subplots_adjust(left=0.3)
+
+        norm = plt.Normalize(vmin=min(data['genome']), vmax=max(data['genome']))
+        cmap = plt.get_cmap('brg')
+        color = cmap(norm(data['genome']))
+        ax.barh(data['Codon'], data['genome'], color=color)
+        sm = ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])
+        cbar = plt.colorbar(sm)
+        #cbar.set_label('genome')
+        plt.subplots_adjust(wspace=0.3)
+        plt.title(f'Normalized counts to reference genome')
+        plt.savefig(os.path.join(working_path, f'Barplot_to_counts_reference.png'))
+        # plt.show()
+        return DATA
+
+
+
+
+
     def plot_counts(self, lst_counts, samples, working_path, b_make_averages_for_same_time_points):
         data = 'RSCU'
         time_points = []
@@ -358,9 +387,11 @@ class Expression(object):
                     dic_codons[time_points[n]][codon].append(dataframe[codon][data])
 
         data_values = pd.DataFrame(dic_codons, columns=time_points)
+        print(data_values)
 
         codons = Constants.TOTAL_CODONS
         data_values['Codon'] = codons
+        print(data_values)
 
         df = pd.melt(data_values, id_vars='Codon', value_vars=time_points, value_name='Counts')
 

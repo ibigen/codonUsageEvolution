@@ -148,6 +148,7 @@ def read_genome(file_name, *args):
             # CAI
             dataframe_RSCU[Constants.GENE_CAI] = dic_CAI.values()
             dataframe_RSCU[Constants.GENOME_CAI] = dic_genome_CAI.values()
+
             return dataframe_counts, dataframe_RSCU, counts_stats
 
         else:
@@ -267,7 +268,7 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = False
-    b_make_averages_for_same_time_points = False
+    b_make_averages_for_same_time_points = True
     liver = True
     test = False
     # set file name in and out
@@ -332,6 +333,7 @@ if __name__ == '__main__':
     else:
         dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
+
     # show stats
     # print(counts_stats)
 
@@ -344,7 +346,9 @@ if __name__ == '__main__':
 
     # make expression in genes
     print("Loading expression and samples")
+
     expression = Expression(information_file, expression_file)
+    print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
 
     # analysis the different samples
     print("Calculating counts with expression values")
