@@ -421,11 +421,11 @@ class Expression(object):
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
         if time != None:
-            plt.title(f'Normalized counts to {time} differentially expressed genes')
+            #plt.title(f'Normalized counts to {time} differentially expressed genes')
             print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_{data}_{time}.png')))
             plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}_{time}.png'))
         else:
-            plt.title(f'Normalized counts with all genes')
+            #plt.title(f'Normalized counts with all genes')
             print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_{data}.png')))
             plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}.png'))
         # plt.show()
