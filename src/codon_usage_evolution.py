@@ -275,8 +275,8 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = False
-    b_make_averages_for_same_time_points = True
-    liver = False
+    b_make_averages_for_same_time_points = False
+    liver = True
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -320,7 +320,7 @@ if __name__ == '__main__':
     file_name_in = os.path.join(base_path, name)
     ## Choose the comparison
     ## If
-    time = '3vs6'
+    time = None
     ## working path
     working_path = os.path.join(base_path, f'{animal}', 'liver' if liver else 'brain',
 		"average_time_points" if b_make_averages_for_same_time_points else "without_average_time_points")
@@ -336,7 +336,7 @@ if __name__ == '__main__':
 
     # get dataframes
     if time != None:
-        dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, f'genes_liver_brain_{time}.csv')
+        dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, f'genes_brain_sig_{time}.csv')
     else:
         dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 

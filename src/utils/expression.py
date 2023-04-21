@@ -162,9 +162,11 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
+        print(dataframe_counts_expression)
         rscu = self.calculate_RSCU(dataframe_counts_expression)
         rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
         final_dataframe = pd.concat([dataframe_counts_expression, rscu_dataframe], axis=0)
+
 
         return final_dataframe
 
@@ -438,13 +440,18 @@ class Expression(object):
                 res[val] = [key]
             else:
                 res[val].append(key)
-
+        print(res)
         for amino, codons in res.items():
             codons_T = [str(key).upper().replace('U', 'T') for key in codons]
             total = [counts[codon]['Total'] for codon in codons_T]
+            print(f'codões :{codons_T}')
+            print(f'total :{total}')
             for n, codon in enumerate(codons_T):
+                print(total, 'soma', sum(total))
                 rscu[codon] = len(codons) * ((counts[codon]['Total']) / sum(total))
+                print(rscu[codon])
                 # nº de codões*(codão/soma(codões por aminoacido))
+
         return rscu
 
     def PCA_analysis(self, counts, samples, working_path, time):
@@ -475,7 +482,6 @@ class Expression(object):
         # PCA analysis
         pca = PCA(n_components=2)
         pca_result = pca.fit_transform(RSCU_dataframe.transpose())
-
         fig, ax = plt.subplots()
         colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
         for i, tp in enumerate(sorted(np.unique(time_points))):
