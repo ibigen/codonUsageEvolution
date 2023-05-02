@@ -238,13 +238,13 @@ class Expression(object):
                     differences[key_to_process][
                         value] = counts[n - 1][value][data] - dataframe[value][data]
                     differences_abs[key_to_process][
-                        value] = abs(counts[n - 1][value][data] - dataframe[value][data])
+                        value] = (counts[n - 1][value][data] - dataframe[value][data])
 
                 else:
                     differences[key_to_process][
                         value] += counts[n - 1][value][data] - dataframe[value][data]
                     differences_abs[key_to_process][
-                        value] += abs(counts[n - 1][value][data] - dataframe[value][data])
+                        value] += (counts[n - 1][value][data] - dataframe[value][data])
 
         ### save differences
         dataframe = pd.DataFrame(differences)
@@ -279,13 +279,14 @@ class Expression(object):
         cmap = plt.get_cmap('brg')
 
         def my_bar_plot(x, y, **kwargs):
-            plt.barh(y=y, width=np.abs(x), color=cmap(norm(x)))
+            colors = ['red' if val < 0 else 'green' for val in x]
+            plt.barh(y=y, width=np.abs(x), color=colors)
 
         g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2,
                          col_order=list(dataframe.columns), sharey=True)
         g.map(my_bar_plot, 'Difference', 'Codon')
-        g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
-                       shrink=0.2)
+        #g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
+                       #shrink=0.2)
 
         # plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_differences_{data}.png')))
@@ -440,16 +441,16 @@ class Expression(object):
                 res[val] = [key]
             else:
                 res[val].append(key)
-        print(res)
+
         for amino, codons in res.items():
             codons_T = [str(key).upper().replace('U', 'T') for key in codons]
             total = [counts[codon]['Total'] for codon in codons_T]
-            print(f'codões :{codons_T}')
-            print(f'total :{total}')
+
+
             for n, codon in enumerate(codons_T):
-                print(total, 'soma', sum(total))
+
                 rscu[codon] = len(codons) * ((counts[codon]['Total']) / sum(total))
-                print(rscu[codon])
+
                 # nº de codões*(codão/soma(codões por aminoacido))
 
         return rscu

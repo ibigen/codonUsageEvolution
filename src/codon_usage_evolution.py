@@ -275,7 +275,7 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = False
-    b_make_averages_for_same_time_points = False
+    b_make_averages_for_same_time_points = True
     liver = True
     test = False
     # set file name in and out
@@ -355,7 +355,7 @@ if __name__ == '__main__':
     print("Loading expression and samples")
 
     expression = Expression(information_file, expression_file)
-    print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
+    #print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
 
     # analysis the different samples
     print("Calculating counts with expression values")
