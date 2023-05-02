@@ -278,6 +278,7 @@ if __name__ == '__main__':
     b_make_averages_for_same_time_points = True
     liver = True
     test = False
+    consecutive = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
@@ -320,6 +321,10 @@ if __name__ == '__main__':
     file_name_in = os.path.join(base_path, name)
     ## Choose the comparison
     ## If
+    if consecutive:
+        times = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24', '24vs27']
+    else:
+        times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21', '3vs24', '3vs27']
     time = None
     ## working path
     working_path = os.path.join(base_path, f'{animal}', 'liver' if liver else 'brain',
