@@ -274,10 +274,10 @@ if __name__ == '__main__':
 
     # several utilities
     utils = Utils()
-    b_ecoli = False
+    b_ecoli = True
     b_make_averages_for_same_time_points = True
     liver = True
-    test = False
+    test = True
     consecutive = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -325,10 +325,11 @@ if __name__ == '__main__':
         times = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24', '24vs27']
     else:
         times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21', '3vs24', '3vs27']
+
     time = None
     ## working path
     working_path = os.path.join(base_path, f'{animal}', 'liver' if liver else 'brain',
-		"average_time_points" if b_make_averages_for_same_time_points else "without_average_time_points")
+        "average_time_points" if b_make_averages_for_same_time_points else "without_average_time_points")
     utils.make_path(working_path)
 
     file_name_out_counts = os.path.join(working_path, f"table_counts_{animal}.csv")
@@ -339,9 +340,17 @@ if __name__ == '__main__':
     utils.test_exist_file(information_file)
     utils.test_exist_file(expression_file)
 
+    # make expression in genes
+    print("Loading expression and samples")
+    expression = Expression(information_file, expression_file)
+    #print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
+    
     # get dataframes
+    dt_data_total = {}
     if time != None:
-        dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, f'genes_brain_sig_{time}.csv')
+    	for time in times:
+        dt_data_total[time] = read_genome(file_name_in, f'genes_brain_sig_{time}.csv')
+        #dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, f'genes_brain_sig_{time}.csv')
     else:
         dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
@@ -355,12 +364,6 @@ if __name__ == '__main__':
 
     print("File with RSCU and CAI values: {}".format(os.path.join(working_path, f'table_RSCU_CAI_{animal}.csv')))
     save_table(dataframe_RSCU_CAI, file_name_out_RSCU_CAI)
-
-    # make expression in genes
-    print("Loading expression and samples")
-
-    expression = Expression(information_file, expression_file)
-    #print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
 
     # analysis the different samples
     print("Calculating counts with expression values")
@@ -413,5 +416,4 @@ if __name__ == '__main__':
     expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, time)
 
     print("Finished")
-
 
