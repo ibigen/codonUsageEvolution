@@ -122,7 +122,7 @@ class Comparison(object):
 #print(self.counts_to_degs)
 
             self.plot_differences()
-            self.PCA_analysis()
+            #self.PCA_analysis()
         else:
             self.comparison = 'fixed_comparisons'
             final_counts = []
@@ -159,7 +159,7 @@ class Comparison(object):
             # print(self.counts_to_degs)
 
             self.plot_differences()
-            self.PCA_analysis()
+            #self.PCA_analysis()
 
     def plot_differences(self):
         working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'DEGs')
@@ -196,11 +196,11 @@ class Comparison(object):
             ### start making chart
         dataframe_abs = pd.DataFrame(self.differences_abs)
 
-        dataframe_abs['Codon'] = [f'{str(key).upper().replace("U", "T")}_{value}' for key, value in
+        dataframe_dif['Codon'] = [f'{str(key).upper().replace("U", "T")}_{value}' for key, value in
                                       Constants.codons_per_aminoacid.items()]
         columns = [time for time in self.final_times]
         #columns = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15']
-        df = pd.melt(dataframe_abs, id_vars='Codon', value_vars=columns, value_name='Difference')
+        df = pd.melt(dataframe_dif, id_vars='Codon', value_vars=columns, value_name='Difference')
         df.rename(columns={"variable": "ID"}, inplace=True)
         max_ = 0
         min_ = 100000
@@ -212,9 +212,6 @@ class Comparison(object):
                 elif value < min_:
                     min_ = value
 
-        norm = TwoSlopeNorm(vcenter=max_ - (max_ / 2), vmin=min_, vmax=max_)
-        cmap = plt.get_cmap('brg')
-
         def my_bar_plot(x, y, **kwargs):
                 colors = ['red' if val < 0 else 'green' for val in x]
                 plt.barh(y=y, width=np.abs(x), color=colors)
@@ -222,17 +219,13 @@ class Comparison(object):
         g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2,
                              col_order=list(dataframe_dif.columns), sharey=True)
         g.map(my_bar_plot, 'Difference', 'Codon')
-            # g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
-            # shrink=0.2)
 
-            # plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png')))
 
         plt.savefig(os.path.join(working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png'))
 
         return df
 
-            #self.differences[key] = self.counts_to_degs[key][1]['RSCU']-self.counts_to_degs[key][0]['RSCU']
 
 
 
