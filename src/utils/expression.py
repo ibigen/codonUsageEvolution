@@ -162,7 +162,7 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        print(dataframe_counts_expression)
+        #print(dataframe_counts_expression)
         rscu = self.calculate_RSCU(dataframe_counts_expression)
         rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
         final_dataframe = pd.concat([dataframe_counts_expression, rscu_dataframe], axis=0)
@@ -539,6 +539,7 @@ class Expression(object):
                 if len(lst_line) != len(lst_data) + 1:
                     sys.exit("Wrong line: " + line)
                 self.sample.add_sample(lst_line[0], lst_line[2], lst_line[3], lst_line[4])
+
 
     def __expression_values(self):
         """Open, read and save values of expression from the different samples
