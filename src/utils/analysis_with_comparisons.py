@@ -226,19 +226,16 @@ class Comparison(object):
 
         return df
 
-
-
-
     def PCA_analysis(self):
-        data = 'RSCU'
         RSCU_dic = OrderedDict()
         time_points = self.final_times
-        for n, dataframe in enumerate(counts):
-            for codon in dataframe:
-                if samples[n] not in RSCU_dic:
-                    RSCU_dic[samples[n]] = [dataframe[codon][data]]
-                else:
-                    RSCU_dic[samples[n]].append(dataframe[codon][data])
+        for tuple in self.counts:
+            for n, dataframe in enumerate(tuple):
+                for codon in dataframe:
+                    if self.final_times[n] not in RSCU_dic:
+                        RSCU_dic[self.final_times[n]] = [dataframe[codon]['RSCU']]
+                    else:
+                        RSCU_dic[self.final_times[n]].append(dataframe[codon]['RSCU'])
 
         RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
 
@@ -267,6 +264,6 @@ class Comparison(object):
         plt.subplots_adjust(right=0.7)
 
         plt.title(f'PCA to comparisons')
-        print("Create image: {}".format(os.path.join(self.working_path, f'PCA_analysis.png')))
-        plt.savefig(os.path.join(self.working_path, f'PCA_analysis.png'), bbox_extra_artists=(lgd,),
+        print("Create image: {}".format(os.path.join(self.working_path, f'PCA_analysis_{self.comparison}.png')))
+        plt.savefig(os.path.join(self.working_path, f'PCA_analysis_{self.comparison}.png'), bbox_extra_artists=(lgd,),
                         bbox_inches='tight')
