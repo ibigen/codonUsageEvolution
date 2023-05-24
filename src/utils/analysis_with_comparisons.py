@@ -8,11 +8,13 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm, ListedColormap
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
+from sklearn.decomposition import PCA
 
 
 
 class Comparison(object):
     def __init__(self, counts, samples, gender, liver):
+        self.working_path = None
         self.consecutive = False
         self.comparison = None
         self.counts = counts
@@ -120,6 +122,7 @@ class Comparison(object):
 #print(self.counts_to_degs)
 
             self.plot_differences()
+            self.PCA_analysis()
         else:
             self.comparison = 'fixed_comparisons'
             final_counts = []
@@ -129,15 +132,15 @@ class Comparison(object):
             final_dataframes = []
 
             indexes_to_remove = []
-            for n in range(1, len(self.times)):
+            for n in range(1, len(self.times)+1):
                 if self.times[n-1] in self.differentially_expressed_genes:
                     self.final_times.append(self.times[n-1])
-                    indices_desejados = self.differentially_expressed_genes[self.times[n]]
+                    indices_desejados = self.differentially_expressed_genes[self.times[n-1]]
                     final_counts.append((self.counts[0].loc[self.counts[0].index.isin(indices_desejados)],
                                          self.counts[n].loc[self.counts[n].index.isin(indices_desejados)]))
                 else:
-                    indexes_to_remove.append(n)
-            print(indexes_to_remove, self.final_times)
+                    indexes_to_remove.append(n-1)
+
             for m, comparison in enumerate(final_counts):
                 if m in indexes_to_remove:
                     continue
@@ -156,6 +159,7 @@ class Comparison(object):
             # print(self.counts_to_degs)
 
             self.plot_differences()
+            self.PCA_analysis()
 
     def plot_differences(self):
         working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'DEGs')
@@ -182,7 +186,7 @@ class Comparison(object):
 
                 ### save differences
         dataframe_dif = pd.DataFrame(self.differences)
-        print(self.differences)
+
         print(
                 "File with differences: " + str(os.path.join(working_path, f"Differences_between_time_points_{self.comparison}.csv")))
 
@@ -232,3 +236,44 @@ class Comparison(object):
 
 
 
+    def PCA_analysis(self):
+        data = 'RSCU'
+        RSCU_dic = OrderedDict()
+        time_points = self.final_times
+        for n, dataframe in enumerate(counts):
+            for codon in dataframe:
+                if samples[n] not in RSCU_dic:
+                    RSCU_dic[samples[n]] = [dataframe[codon][data]]
+                else:
+                    RSCU_dic[samples[n]].append(dataframe[codon][data])
+
+        RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
+
+        RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
+        RSCU_dataframe.set_index('Codon', inplace=True)
+
+        times = [time for time in RSCU_dataframe.columns]
+        RSCU_dataframe = RSCU_dataframe.transpose()
+        RSCU_dataframe["time"] = times
+        RSCU_dataframe = RSCU_dataframe.transpose()
+
+        # Obtain time points
+        time_points = RSCU_dataframe.iloc[-1, :].values
+        RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
+
+        # PCA analysis
+        pca = PCA(n_components=2)
+        pca_result = pca.fit_transform(RSCU_dataframe.transpose())
+        fig, ax = plt.subplots()
+        colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
+        for i, tp in enumerate(sorted(np.unique(time_points))):
+            samples = np.where(time_points == tp)
+            c = colors[i]
+            ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
+        lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        plt.subplots_adjust(right=0.7)
+
+        plt.title(f'PCA to comparisons')
+        print("Create image: {}".format(os.path.join(self.working_path, f'PCA_analysis.png')))
+        plt.savefig(os.path.join(self.working_path, f'PCA_analysis.png'), bbox_extra_artists=(lgd,),
+                        bbox_inches='tight')
