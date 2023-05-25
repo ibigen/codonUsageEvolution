@@ -376,7 +376,8 @@ if __name__ == '__main__':
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
     expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, time)
-    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver)
+    consecutive = False
+    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive)
 
 
     ## FEMALE

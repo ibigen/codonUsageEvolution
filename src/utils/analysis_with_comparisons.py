@@ -13,9 +13,10 @@ from sklearn.decomposition import PCA
 
 
 class Comparison(object):
-    def __init__(self, counts, samples, gender, liver):
+    def __init__(self, counts, samples, gender, liver, consecutive):
         self.working_path = None
-        self.consecutive = False
+        self.consecutive = consecutive
+        print(False)
         self.comparison = None
         self.counts = counts
         self.samples = samples
