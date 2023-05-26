@@ -203,22 +203,15 @@ class Comparison(object):
         #columns = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15']
         df = pd.melt(dataframe_dif, id_vars='Codon', value_vars=columns, value_name='Difference')
         df.rename(columns={"variable": "ID"}, inplace=True)
-        max_ = 0
-        min_ = 100000
-
-        for value in df['Difference']:
-           if type(value) == float:
-                if value > max_:
-                    max_ = value
-                elif value < min_:
-                    min_ = value
-
+        print(df)
+        col_order =[x for x in list(dataframe_dif.columns) if x != 'Codon']
+        print(col_order)
         def my_bar_plot(x, y, **kwargs):
                 colors = ['red' if val < 0 else 'green' for val in x]
                 plt.barh(y=y, width=np.abs(x), color=colors)
 
         g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2,
-                             col_order=list(dataframe_dif.columns), sharey=True)
+                             col_order=col_order, sharey=True)
         g.map(my_bar_plot, 'Difference', 'Codon')
 
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png')))
