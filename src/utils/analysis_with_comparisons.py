@@ -16,7 +16,6 @@ class Comparison(object):
         self.working_path = None
         self.time_points = []
         self.consecutive = consecutive
-        print(False)
         self.comparison = None
         self.counts = counts
         self.samples = samples
@@ -43,7 +42,7 @@ class Comparison(object):
         for time in self.times:
             if self.liver:
                 with open(os.path.join(self.base_path, f'genes_liver_sig_{time}.csv')) as genes:
-                    print(f'genes_liver_sig_{time}.csv')
+
                     for line in genes.readlines():
                         if 'genes' not in line:
                             line = line.strip()
@@ -206,7 +205,7 @@ class Comparison(object):
         df = pd.melt(dataframe_dif, id_vars='Codon', value_vars=columns, value_name='Difference')
         df.rename(columns={"variable": "ID"}, inplace=True)
         col_order = [x for x in list(dataframe_dif.columns) if x != 'Codon']
-        print(col_order)
+
 
         def my_bar_plot(x, y, **kwargs):
             colors = ['red' if val < 0 else 'green' for val in x]
@@ -235,34 +234,34 @@ class Comparison(object):
                 else:
                     RSCU_dic[f'{self.time_points[n][0]}'].append(dataframe.T['RSCU'])
 
-        RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
-        print(RSCU_dataframe)
-        RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
-        RSCU_dataframe.T.set_index('Codon', inplace=True)
+            RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
+            #print(RSCU_dataframe)
+            RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
+            RSCU_dataframe.T.set_index('Codon', inplace=True)
 
-        times = [self.time_points[n][0], self.comparison[n][1]]
-        RSCU_dataframe = RSCU_dataframe.transpose()
-        RSCU_dataframe["time"] = times
-        RSCU_dataframe = RSCU_dataframe.transpose()
+            times = [self.time_points[n][0], self.time_points[n][1]]
+            RSCU_dataframe = RSCU_dataframe.transpose()
+            RSCU_dataframe["time"] = times
+            RSCU_dataframe = RSCU_dataframe.transpose()
 
-        # Obtain time points
-        time_points = RSCU_dataframe.iloc[-1, :].values
-        RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
+            # Obtain time points
+            time_points = RSCU_dataframe.iloc[-1, :].values
+            RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
 
-        # PCA analysis
-        pca = PCA(n_components=2)
-        pca_result = pca.fit_transform(RSCU_dataframe.transpose())
-        fig, ax = plt.subplots()
-        colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
-        for i, tp in enumerate(sorted(np.unique(time_points))):
-            samples = np.where(time_points == tp)
-            c = colors[i]
-            ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
-        lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.subplots_adjust(right=0.7)
-        plt.title(f'PCA to comparison: {key}')
-        print("Create image: {}".format(os.path.join(self.working_path, f'PCA_analysis_{key}.png')))
-        plt.savefig(os.path.join(self.working_path, f'PCA_analysis_{key}.png'), bbox_extra_artists=(lgd,),
-                            bbox_inches='tight')
+            # PCA analysis
+            pca = PCA(n_components=2)
+            pca_result = pca.fit_transform(RSCU_dataframe.transpose())
+            fig, ax = plt.subplots()
+            colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
+            for i, tp in enumerate(sorted(np.unique(time_points))):
+                samples = np.where(time_points == tp)
+                c = colors[i]
+                ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
+            lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            plt.subplots_adjust(right=0.7)
+            plt.title(f'PCA to comparison: {key}')
+            print("Create image: {}".format(os.path.join(self.working_path, f'PCA_analysis_{key}.png')))
+            plt.savefig(os.path.join(self.working_path, f'PCA_analysis_{key}.png'), bbox_extra_artists=(lgd,),
+                                bbox_inches='tight')
 
 
