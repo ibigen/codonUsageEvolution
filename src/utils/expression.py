@@ -458,7 +458,6 @@ class Expression(object):
     def PCA_analysis(self, counts, samples, working_path, time):
         data = 'RSCU'
         RSCU_dic = OrderedDict()
-        time_points = [f'{self.sample.dt_sample[sample].age}' for sample in samples]
         for n, dataframe in enumerate(counts):
             for codon in dataframe:
                 if samples[n] not in RSCU_dic:

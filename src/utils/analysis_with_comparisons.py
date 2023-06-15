@@ -120,6 +120,7 @@ class Comparison(object):
                     self.counts_to_degs[self.final_times[m]] = final_dataframes[m]
 
             self.plot_differences()
+            #self.PCA_analysis()
 
         else:
             self.comparison = 'fixed_comparisons'
@@ -157,8 +158,7 @@ class Comparison(object):
             # print(self.counts_to_degs)
 
             self.plot_differences()
-
-            self.PCA_analysis()
+            #self.PCA_analysis()
 
     def plot_differences(self):
         working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'DEGs')
@@ -219,27 +219,24 @@ class Comparison(object):
             os.path.join(working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png')))
 
         plt.savefig(os.path.join(working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png'))
-
         return df
 
     def PCA_analysis(self):
-        RSCU_dic = dict()
-        for n, key in enumerate(self.counts_to_degs.keys()):
-            print(n, key)
-            for m, dataframe in enumerate(self.counts_to_degs[key]):
-
-                if f'{self.time_points[n][0]}' not in RSCU_dic:
-                    print([dataframe.T['RSCU']])
-                    RSCU_dic[f'{self.time_points[n][0]}'] = [dataframe.T['RSCU']]
+        RSCU_dic = OrderedDict()
+        for n, comparison in enumerate(self.counts_to_degs.values()):
+            for m in range(0, 1):
+                if self.time_points[n][m] not in RSCU_dic:
+                    RSCU_dic[self.time_points[n][m]] = comparison[m].T['RSCU']
                 else:
-                    RSCU_dic[f'{self.time_points[n][0]}'].append(dataframe.T['RSCU'])
+                    RSCU_dic[self.time_points[n][m]].append(comparison[m].T['RSCU'])
 
             RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
-            #print(RSCU_dataframe)
-            RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
-            RSCU_dataframe.T.set_index('Codon', inplace=True)
 
-            times = [self.time_points[n][0], self.time_points[n][1]]
+            RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
+            RSCU_dataframe.set_index('Codon', inplace=True)
+            print(RSCU_dataframe)
+'''
+            times = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
             RSCU_dataframe = RSCU_dataframe.transpose()
             RSCU_dataframe["time"] = times
             RSCU_dataframe = RSCU_dataframe.transpose()
@@ -259,9 +256,9 @@ class Comparison(object):
                 ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
             lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
             plt.subplots_adjust(right=0.7)
-            plt.title(f'PCA to comparison: {key}')
-            print("Create image: {}".format(os.path.join(self.working_path, f'PCA_analysis_{key}.png')))
-            plt.savefig(os.path.join(self.working_path, f'PCA_analysis_{key}.png'), bbox_extra_artists=(lgd,),
-                                bbox_inches='tight')
-
-
+            
+            plt.title(f'PCA to comparison: {time}')
+            print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis_{time}.png')))
+            plt.savefig(os.path.join(working_path, f'PCA_analysis_{time}.png'), bbox_extra_artists=(lgd,),
+                            bbox_inches='tight')
+          '''
