@@ -159,7 +159,7 @@ class Comparison(object):
 
             self.plot_differences()
 
-            self.PCA_analysis()
+            #self.PCA_analysis()
 
     def plot_differences(self):
         working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'DEGs')

@@ -220,7 +220,7 @@ class Expression(object):
         ### dictionary with expression X codons
         return return_counts, dict_samples_out
 
-    def compare_timepoints(self, counts, samples, working_path, time):
+    def compare_timepoints(self, counts, samples, working_path):
         data = 'RSCU'
         differences_abs, differences = OrderedDict(), OrderedDict()   # need to be ordered
         for n, dataframe in enumerate(counts):
@@ -250,10 +250,8 @@ class Expression(object):
         dataframe = pd.DataFrame(differences)
         print(
             "File with differences: " + str(os.path.join(working_path, "Differences_between_time_points.csv")))
-        if time != None:
-            dataframe.to_csv(os.path.join(working_path, f"Differences_between_time_points_{time}.csv"))
-        else:
-            dataframe.to_csv(os.path.join(working_path, f"Differences_between_time_points.csv"))
+
+        dataframe.to_csv(os.path.join(working_path, f"Differences_between_time_points.csv"))
 
 
         ### start making chart
@@ -290,12 +288,9 @@ class Expression(object):
 
         # plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_differences_{data}.png')))
-        if time != None:
-            #plt.title(f'Barplot_to_differences_{data}_{time}.png')
-            plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}_{time}.png'))
-        else:
+
             #plt.title(f'Barplot_to_differences_{data}.png')
-            plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}.png'))
+        plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}.png'))
         return df
 
 
@@ -378,7 +373,7 @@ class Expression(object):
         # plt.show()
         return DATA
 
-    def plot_counts(self, lst_counts, samples, working_path, b_make_averages_for_same_time_points, time):
+    def plot_counts(self, lst_counts, samples, working_path, b_make_averages_for_same_time_points):
         data = 'RSCU'
         time_points = []
         if b_make_averages_for_same_time_points:
@@ -423,14 +418,9 @@ class Expression(object):
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
-        if time != None:
-            #plt.title(f'Normalized counts to {time} differentially expressed genes')
-            print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_{data}_{time}.png')))
-            plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}_{time}.png'))
-        else:
             #plt.title(f'Normalized counts with all genes')
-            print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_{data}.png')))
-            plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}.png'))
+        print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_{data}.png')))
+        plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}.png'))
         # plt.show()
 
     def calculate_RSCU(self, counts):
@@ -455,7 +445,7 @@ class Expression(object):
 
         return rscu
 
-    def PCA_analysis(self, counts, samples, working_path, time):
+    def PCA_analysis(self, counts, samples, working_path):
         data = 'RSCU'
         RSCU_dic = OrderedDict()
         for n, dataframe in enumerate(counts):
@@ -490,16 +480,10 @@ class Expression(object):
             ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
         lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.subplots_adjust(right=0.7)
-        if time != None:
-            plt.title(f'PCA to comparison: {time}')
-            print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis_{time}.png')))
-            plt.savefig(os.path.join(working_path, f'PCA_analysis_{time}.png'), bbox_extra_artists=(lgd,),
-                        bbox_inches='tight')
 
-        else:
-            plt.title(f'PCA analysis')
-            print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis.png')))
-            plt.savefig(os.path.join(working_path, f'PCA_analysis.png'), bbox_extra_artists=(lgd,),
+        plt.title(f'PCA analysis')
+        print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis.png')))
+        plt.savefig(os.path.join(working_path, f'PCA_analysis.png'), bbox_extra_artists=(lgd,),
                         bbox_inches='tight')
 
 
