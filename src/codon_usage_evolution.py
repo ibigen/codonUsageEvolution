@@ -340,6 +340,11 @@ if __name__ == '__main__':
     #print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
 
     # get dataframes
+    dt_data_total = {}
+    if time != None:
+        dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, f'genes_brain_sig_{time}.csv')
+    else:
+        dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
 
