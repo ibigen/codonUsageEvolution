@@ -348,9 +348,7 @@ if __name__ == '__main__':
     # get dataframes
     dt_data_total = {}
     if time != None:
-    	for time in times:
-        dt_data_total[time] = read_genome(file_name_in, f'genes_brain_sig_{time}.csv')
-        #dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, f'genes_brain_sig_{time}.csv')
+        dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in, f'genes_brain_sig_{time}.csv')
     else:
         dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
 
