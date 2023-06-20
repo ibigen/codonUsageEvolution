@@ -167,7 +167,7 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = False
-    b_make_averages_for_same_time_points = True
+    b_make_averages_for_same_time_points = False
     liver = True
     test = False
     # set file name in and out
@@ -267,10 +267,12 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    #expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
     consecutive = False
-    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive)
-
+    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive, b_make_averages_for_same_time_points)
+    if not b_make_averages_for_same_time_points:
+        expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, comparison.differentially_expressed_genes, comparison.time_points)
+    else:
+        expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
 
     ## FEMALE
     gender = Tissue.GENDER_FEMALE

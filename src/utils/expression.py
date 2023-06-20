@@ -11,7 +11,7 @@ from matplotlib.colors import TwoSlopeNorm, ListedColormap
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
 from sklearn.decomposition import PCA
-
+from utils.analysis_with_comparisons import Comparison
 
 
 class Tissue(object):
@@ -445,46 +445,53 @@ class Expression(object):
 
         return rscu
 
-    def PCA_analysis(self, counts, samples, working_path):
-        data = 'RSCU'
-        RSCU_dic = OrderedDict()
-        for n, dataframe in enumerate(counts):
-            for codon in dataframe:
-                if samples[n] not in RSCU_dic:
-                    RSCU_dic[samples[n]] = [dataframe[codon][data]]
-                else:
-                    RSCU_dic[samples[n]].append(dataframe[codon][data])
+    def PCA_analysis(self, counts, samples, working_path, *args):
+        if len(args) == 0:
+            data = 'RSCU'
+            RSCU_dic = OrderedDict()
+            for n, dataframe in enumerate(counts):
+                for codon in dataframe:
+                    if samples[n] not in RSCU_dic:
+                        RSCU_dic[samples[n]] = [dataframe[codon][data]]
+                    else:
+                        RSCU_dic[samples[n]].append(dataframe[codon][data])
 
-        RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
+            RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
 
-        RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
-        RSCU_dataframe.set_index('Codon', inplace=True)
+            RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
+            RSCU_dataframe.set_index('Codon', inplace=True)
 
-        times = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
-        RSCU_dataframe = RSCU_dataframe.transpose()
-        RSCU_dataframe["time"] = times
-        RSCU_dataframe = RSCU_dataframe.transpose()
+            times = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
+            RSCU_dataframe = RSCU_dataframe.transpose()
+            RSCU_dataframe["time"] = times
+            RSCU_dataframe = RSCU_dataframe.transpose()
 
-        # Obtain time points
-        time_points = RSCU_dataframe.iloc[-1, :].values
-        RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
+            # Obtain time points
+            time_points = RSCU_dataframe.iloc[-1, :].values
+            RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
 
-        # PCA analysis
-        pca = PCA(n_components=2)
-        pca_result = pca.fit_transform(RSCU_dataframe.transpose())
-        fig, ax = plt.subplots()
-        colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
-        for i, tp in enumerate(sorted(np.unique(time_points))):
-            samples = np.where(time_points == tp)
-            c = colors[i]
-            ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
-        lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.subplots_adjust(right=0.7)
+            # PCA analysis
+            pca = PCA(n_components=2)
+            pca_result = pca.fit_transform(RSCU_dataframe.transpose())
+            fig, ax = plt.subplots()
+            colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
+            for i, tp in enumerate(sorted(np.unique(time_points))):
+                samples = np.where(time_points == tp)
+                c = colors[i]
+                ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
+            lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            plt.subplots_adjust(right=0.7)
 
-        plt.title(f'PCA analysis')
-        print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis.png')))
-        plt.savefig(os.path.join(working_path, f'PCA_analysis.png'), bbox_extra_artists=(lgd,),
-                        bbox_inches='tight')
+            plt.title(f'PCA analysis')
+            print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis.png')))
+            plt.savefig(os.path.join(working_path, f'PCA_analysis.png'), bbox_extra_artists=(lgd,),
+                            bbox_inches='tight')
+        else:
+            diff_expressed_genes = args[0]
+            comparisons = args[1]
+            print(diff_expressed_genes)
+            times = [self.sample.dt_sample[sample].age for sample in samples]
+            print(times, comparisons)
 
 
 
