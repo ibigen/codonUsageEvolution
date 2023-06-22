@@ -7,11 +7,10 @@ import pandas as pd
 from collections import OrderedDict
 from constants.constants import Constants
 import matplotlib.pyplot as plt
-from matplotlib.colors import TwoSlopeNorm, ListedColormap
+from matplotlib.colors import TwoSlopeNorm
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
 from sklearn.decomposition import PCA
-from utils.analysis_with_comparisons import Comparison
 
 
 class Tissue(object):

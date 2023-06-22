@@ -5,11 +5,7 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.colors import TwoSlopeNorm, ListedColormap
-from matplotlib.cm import ScalarMappable
 import seaborn as sb
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
 
 
 
@@ -148,8 +144,8 @@ class Comparison(object):
                     continue
                 else:
                     totals.append((comparison[0].sum(axis=0).T, comparison[1].sum(axis=0).T))
-                    comparison_copy_0 = comparison[0].copy()  # Cópia do DataFrame comparison[0]
-                    comparison_copy_1 = comparison[1].copy()  # Cópia do DataFrame comparison[1]
+                    comparison_copy_0 = comparison[0].copy()
+                    comparison_copy_1 = comparison[1].copy()
                     comparison_copy_0.loc['Total'] = totals[m][0]
                     comparison_copy_1.loc['Total'] = totals[m][1]
                     rscu.append((self.calculate_RSCU(comparison_copy_0), self.calculate_RSCU(comparison_copy_1)))
@@ -217,9 +213,9 @@ class Comparison(object):
         g.map(my_bar_plot, 'Difference', 'Codon')
 
         print("Create image: {}".format(
-            os.path.join(working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png')))
+            os.path.join(self.working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png')))
 
-        plt.savefig(os.path.join(working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png'))
+        plt.savefig(os.path.join(self.working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png'))
         return df
 
     '''def PCA_analysis(self):
