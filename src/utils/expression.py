@@ -476,9 +476,9 @@ class Expression(object):
             fig, ax = plt.subplots()
             colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
             for i, tp in enumerate(sorted(np.unique(time_points))):
-                samples = np.where(time_points == tp)
+                a = np.where(time_points == tp)
                 c = colors[i]
-                ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
+                ax.scatter(pca_result[:, 0][a], pca_result[:, 1][a], color=c, label=f'Time {tp}')
             lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
             plt.subplots_adjust(right=0.7)
 
@@ -487,13 +487,68 @@ class Expression(object):
             plt.savefig(os.path.join(working_path, f'PCA_analysis.png'), bbox_extra_artists=(lgd,),
                             bbox_inches='tight')
         else:
+            working_path_PCA = os.path.join(working_path, 'DEGs')
             diff_expressed_genes = args[0]
             comparisons = args[1]
-            print(diff_expressed_genes)
             times = [self.sample.dt_sample[sample].age for sample in samples]
-            print(times, comparisons)
+            print(times)
+            for n, comparison in enumerate(comparisons):
+                comparison_counts = []
+                final_samples = []
+                final_counts = []
+                for m, time in enumerate(times):
+                    if int(time) in comparisons[n]:
+                        comparison_counts.append(counts[m])
+                        final_samples.append(samples[m])
 
+                for d, dataframe in enumerate(comparison_counts):
+                    indices_desejados = diff_expressed_genes[f'{comparison[0]}vs{comparison[1]}']
+                    new_dataframe = dataframe.loc[dataframe.index.isin(indices_desejados)]
+                    totals = new_dataframe.sum(axis=0).T
+                    new_dataframe.loc['Total'] = totals
+                    rscu = self.calculate_RSCU(new_dataframe)
+                    rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
+                    final_dataframe = pd.concat([new_dataframe, rscu_dataframe], axis=0)
+                    final_counts.append(final_dataframe)
+                RSCU_dic = OrderedDict()
+                for x, dataframe in enumerate(final_counts):
+                    for codon in dataframe:
+                        if final_samples[x] not in RSCU_dic:
+                            RSCU_dic[final_samples[x]] = [dataframe[codon]['RSCU']]
+                        else:
+                            RSCU_dic[final_samples[x]].append(dataframe[codon]['RSCU'])
 
+                RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
+
+                RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
+                RSCU_dataframe.set_index('Codon', inplace=True)
+
+                times_dataframe = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
+                RSCU_dataframe = RSCU_dataframe.transpose()
+                RSCU_dataframe["time"] = times_dataframe
+                RSCU_dataframe = RSCU_dataframe.transpose()
+
+                # Obtain time points
+                time_points = RSCU_dataframe.iloc[-1, :].values
+                RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
+
+                # PCA analysis
+                pca = PCA(n_components=2)
+                pca_result = pca.fit_transform(RSCU_dataframe.transpose())
+                fig, ax = plt.subplots()
+                colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
+                for i, tp in enumerate(sorted(np.unique(time_points))):
+                    a = np.where(time_points == tp)
+                    c = colors[i]
+                    ax.scatter(pca_result[:, 0][a], pca_result[:, 1][a], color=c, label=f'Time {tp}')
+                lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                plt.subplots_adjust(right=0.7)
+
+                plt.title(f'PCA analysis {comparison[0]}vs{comparison[1]}')
+                print("Create image: {}".format(
+                    os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png')))
+                plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png'),
+                            bbox_extra_artists=(lgd,), bbox_inches='tight')
 
     def __samples_information(self):
         """Open, read and save information from samples

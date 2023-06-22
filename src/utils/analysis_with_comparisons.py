@@ -162,7 +162,7 @@ class Comparison(object):
 
 
     def plot_differences(self):
-        working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'DEGs')
+        self.working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'DEGs')
         for key in self.counts_to_degs:
             for dataframe in self.counts_to_degs[key]:
                 self.differences_abs[key] = {}
@@ -192,9 +192,9 @@ class Comparison(object):
 
         print(
             "File with differences: " + str(
-                os.path.join(working_path, f"Differences_between_time_points_{self.comparison}.csv")))
+                os.path.join(self.working_path, f"Differences_between_time_points_{self.comparison}.csv")))
 
-        dataframe_dif.to_csv(os.path.join(working_path, f"Differences_between_time_points_{self.comparison}.csv"))
+        dataframe_dif.to_csv(os.path.join(self.working_path, f"Differences_between_time_points_{self.comparison}.csv"))
 
         ### start making chart
         dataframe_abs = pd.DataFrame(self.differences_abs)
