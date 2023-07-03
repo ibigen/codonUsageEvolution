@@ -120,7 +120,6 @@ class Comparison(object):
 
             self.plot_differences()
 
-
         else:
             self.comparison = 'fixed_comparisons'
             self.final_counts = []
@@ -217,50 +216,4 @@ class Comparison(object):
 
         plt.savefig(os.path.join(self.working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png'))
         return df
-
-    '''def PCA_analysis(self):
-        working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'DEGs')
-        for n, comparison in enumerate(self.counts_to_degs.values()):
-            RSCU_dic = OrderedDict()
-            for m in range(0, 2):
-                if self.time_points[n][m] not in RSCU_dic:
-                    RSCU_dic[self.time_points[n][m]] = comparison[m].T['RSCU']
-                else:
-                    RSCU_dic[self.time_points[n][m]].append(comparison[m].T['RSCU'])
-
-            RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
-            codons = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
-            RSCU_dataframe['Codon'] = codons
-            RSCU_dataframe.set_index('Codon', inplace=True)
-
-            RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
-            RSCU_dataframe.set_index('Codon', inplace=True)
-
-            times =[x for x in RSCU_dataframe.columns.tolist()]
-
-            RSCU_dataframe = RSCU_dataframe.transpose()
-            RSCU_dataframe["time"] = times
-            RSCU_dataframe = RSCU_dataframe.transpose()
-
-            # Obtain time points
-            time_points = [x for x in RSCU_dataframe.columns.tolist()]
-            RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
-
-            # PCA analysis
-            pca = PCA(n_components=2)
-            pca_result = pca.fit_transform(RSCU_dataframe.transpose())
-            fig, ax = plt.subplots()
-            colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
-            for i, tp in enumerate(sorted(np.unique(time_points))):
-                samples = np.where(time_points == tp)
-                print(samples)
-                c = colors[i]
-                ax.scatter(pca_result[:, 0][samples], pca_result[:, 1][samples], color=c, label=f'Time {tp}')
-            lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.subplots_adjust(right=0.7)
-
-            plt.title(f'PCA analysis')
-            print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis.png')))
-            plt.savefig(os.path.join(working_path, f'PCA_analysis{self.time_points[n]}.png'), bbox_extra_artists=(lgd,),
-                        bbox_inches='tight')'''
 

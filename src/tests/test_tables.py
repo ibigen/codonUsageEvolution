@@ -108,26 +108,19 @@ class Test(unittest.TestCase):
         self.assertEqual(8.53840188313262, expression.sample.dt_sample['A18_384Bulk_Plate1_S18'].dt_gene[
             'mbiA'])
 
-        self.assertEqual(12, len(expression.most_differentially_expressed_genes('E20_384Bulk_Plate1_S116',
-                                                                                'A9_384Bulk_Plate1_S9')))
-        self.assertEqual(363.88953212254, expression.most_dif_expressed['thrL'])
-        self.assertEqual(0.115760470543813, expression.most_dif_expressed['satP'])
-        self.assertEqual(12.602181753894525, expression.most_differentially_expressed_genes(
-            'A20_384Bulk_Plate2_S20', 'A9_384Bulk_Plate1_S9')['satP'])
-
         # Test the calculation of counts with expression
         ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
         dataframe_counts, dataframe_RSCU_CAI, stats = read_genome(ecoli_fasta)
-        multi = False
-
+        average = True
         self.assertEqual(2109.15514707196, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['thrL'])
+                dataframe_counts.to_dict(orient='index') )['AAA']['thrL'])
         self.assertEqual(34.15360753253048, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index'), multi=multi)['TTT']['mbiA'])
+                dataframe_counts.to_dict(orient='index') )['TTT']['mbiA'])
         self.assertEqual(3.3827668758171, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
-                dataframe_counts.to_dict(orient='index'), multi=multi)['TTT']['mbiA'])
+                dataframe_counts.to_dict(orient='index'))['TTT']['mbiA'])
         self.assertEqual(2359.80082045078, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
-                dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['thrL'])
+                dataframe_counts.to_dict(orient='index'))['AAA']['thrL'])
+        average = False
         self.assertEqual(13215.624492098465, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['Total'])
         self.assertEqual(11088.182145483095, expression.counts_with_expression('A18_384Bulk_Plate1_S18',

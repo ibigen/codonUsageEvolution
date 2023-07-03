@@ -258,8 +258,7 @@ if __name__ == '__main__':
     gender = Tissue.GENDER_BOTH
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
                                                      b_make_averages_for_same_time_points)
-    #comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver)
-    #print(comparison.counts)
+
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
 
@@ -267,12 +266,11 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    consecutive = False
+    consecutive = True
     comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive, b_make_averages_for_same_time_points)
     if not b_make_averages_for_same_time_points:
-        expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, comparison.differentially_expressed_genes, comparison.time_points)
-    else:
-        expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+        expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, comparison.differentially_expressed_genes, comparison.time_points, consecutive)
+
 
     ## FEMALE
     gender = Tissue.GENDER_FEMALE

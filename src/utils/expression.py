@@ -1,6 +1,5 @@
 """Open files with information of samples and expression values"""
 import numpy as np
-
 from utils.utils import Utils
 import sys, os
 import pandas as pd
@@ -11,6 +10,11 @@ from matplotlib.colors import TwoSlopeNorm
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
+from sklearn.decomposition import FastICA
+
+
 
 
 class Tissue(object):
@@ -120,6 +124,7 @@ class Expression(object):
         dataframe_genome.to_csv(file_out)
 
     def get_number_sample(self):
+        """return number of samples"""
         return self.sample.get_number_sample()
 
     def get_list_samples(self, gender=Tissue.GENDER_BOTH):
@@ -131,6 +136,7 @@ class Expression(object):
         return self.sample.get_list_time_points(gender)
 
     def get_number_gene(self, sample_name):
+        """return number of genes"""
         return self.sample.get_number_gene(sample_name)
 
 
@@ -149,6 +155,10 @@ class Expression(object):
         #return self.most_dif_expressed
 
     def counts_with_expression(self, counts, average):
+        """
+                :param average: dataframe with the average of counts
+                :codons_in_genes {}return counts by gender making average with the same time points
+                :out   dataframe with counts calculated with expression appended to RSCU values to each codon """
 
         try:
             most_expressed_counts = {gene: {codon: average[gene] * counts[gene][codon]
@@ -361,15 +371,12 @@ class Expression(object):
         ax.barh(data['Codon'], data['genome'], color=color)
         sm = ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
-        cbar = plt.colorbar(sm)
-        #cbar.set_label('genome')
         plt.xlabel('RSCU')
         plt.ylabel('Codon')
         plt.subplots_adjust(wspace=0.3)
         plt.title(f'Normalized counts to reference genome')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_reference.png')))
         plt.savefig(os.path.join(working_path, f'Barplot_to_counts_reference.png'))
-        # plt.show()
         return DATA
 
     def plot_counts(self, lst_counts, samples, working_path, b_make_averages_for_same_time_points):
@@ -417,10 +424,8 @@ class Expression(object):
         g.map(my_bar_plot, 'Counts', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
-            #plt.title(f'Normalized counts with all genes')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_{data}.png')))
         plt.savefig(os.path.join(working_path, f'Barplot_to_counts_{data}.png'))
-        # plt.show()
 
     def calculate_RSCU(self, counts):
         rscu = {}
@@ -445,53 +450,14 @@ class Expression(object):
         return rscu
 
     def PCA_analysis(self, counts, samples, working_path, *args):
-        if len(args) == 0:
-            data = 'RSCU'
-            RSCU_dic = OrderedDict()
-            for n, dataframe in enumerate(counts):
-                for codon in dataframe:
-                    if samples[n] not in RSCU_dic:
-                        RSCU_dic[samples[n]] = [dataframe[codon][data]]
-                    else:
-                        RSCU_dic[samples[n]].append(dataframe[codon][data])
-
-            RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
-
-            RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
-            RSCU_dataframe.set_index('Codon', inplace=True)
-
-            times = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
-            RSCU_dataframe = RSCU_dataframe.transpose()
-            RSCU_dataframe["time"] = times
-            RSCU_dataframe = RSCU_dataframe.transpose()
-
-            # Obtain time points
-            time_points = RSCU_dataframe.iloc[-1, :].values
-            RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
-
-            # PCA analysis
-            pca = PCA(n_components=2)
-            pca_result = pca.fit_transform(RSCU_dataframe.transpose())
-            fig, ax = plt.subplots()
-            colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
-            for i, tp in enumerate(sorted(np.unique(time_points))):
-                a = np.where(time_points == tp)
-                c = colors[i]
-                ax.scatter(pca_result[:, 0][a], pca_result[:, 1][a], color=c, label=f'Time {tp}')
-            lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.subplots_adjust(right=0.7)
-
-            plt.title(f'PCA analysis')
-            print("Create image: {}".format(os.path.join(working_path, f'PCA_analysis.png')))
-            plt.savefig(os.path.join(working_path, f'PCA_analysis.png'), bbox_extra_artists=(lgd,),
-                            bbox_inches='tight')
-        else:
             working_path_PCA = os.path.join(working_path, 'DEGs')
             diff_expressed_genes = args[0]
             comparisons = args[1]
+            consecutive = args[2]
             times = [self.sample.dt_sample[sample].age for sample in samples]
-            print(times)
+
             for n, comparison in enumerate(comparisons):
+                if comparison == (12, 15): continue
                 comparison_counts = []
                 final_samples = []
                 final_counts = []
@@ -500,54 +466,110 @@ class Expression(object):
                         comparison_counts.append(counts[m])
                         final_samples.append(samples[m])
 
-                for d, dataframe in enumerate(comparison_counts):
-                    indices_desejados = diff_expressed_genes[f'{comparison[0]}vs{comparison[1]}']
-                    new_dataframe = dataframe.loc[dataframe.index.isin(indices_desejados)]
-                    totals = new_dataframe.sum(axis=0).T
-                    new_dataframe.loc['Total'] = totals
-                    rscu = self.calculate_RSCU(new_dataframe)
-                    rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
-                    final_dataframe = pd.concat([new_dataframe, rscu_dataframe], axis=0)
-                    final_counts.append(final_dataframe)
+                for i, key in enumerate(list(diff_expressed_genes.keys())):
+                    if list(diff_expressed_genes.keys())[i] == f'{comparison[0]}vs{comparison[1]}':
+                        indices_desejados = diff_expressed_genes[key]
+                        new_counts = [dataframe.loc[dataframe.index.isin(indices_desejados)]
+                                        for dataframe in comparison_counts]
+
+                        for dataframe in new_counts:
+                            dataframe_copy = dataframe.copy()
+                            totals = dataframe_copy.sum(axis=0)
+                            dataframe_copy.loc['Total'] = totals
+                            rscu = self.calculate_RSCU(dataframe_copy)
+                            rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
+                            final_dataframe = pd.concat([dataframe_copy, rscu_dataframe], axis=0)
+                            final_counts.append(final_dataframe)
+
                 RSCU_dic = OrderedDict()
                 for x, dataframe in enumerate(final_counts):
                     for codon in dataframe:
                         if final_samples[x] not in RSCU_dic:
+                            print(final_samples[x])
                             RSCU_dic[final_samples[x]] = [dataframe[codon]['RSCU']]
+                            print('NEW KEY')
                         else:
                             RSCU_dic[final_samples[x]].append(dataframe[codon]['RSCU'])
+                            print(f'APPEND TO KEY {final_samples[x]}')
 
                 RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
+                print('RSCU DATAFRAME', RSCU_dataframe)
+                print(len(RSCU_dataframe.transpose()))
 
                 RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
                 RSCU_dataframe.set_index('Codon', inplace=True)
+                print('RSCU DATAFRAME with codons', RSCU_dataframe)
+                print(len(RSCU_dataframe.transpose()))
 
                 times_dataframe = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
-                RSCU_dataframe = RSCU_dataframe.transpose()
+                '''RSCU_dataframe = RSCU_dataframe.transpose()
                 RSCU_dataframe["time"] = times_dataframe
                 RSCU_dataframe = RSCU_dataframe.transpose()
-
+                '''
                 # Obtain time points
-                time_points = RSCU_dataframe.iloc[-1, :].values
+                '''time_points = RSCU_dataframe.iloc[-1, :].values
+                print(RSCU_dataframe)
                 RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
+                print(RSCU_dataframe)'''
 
-                # PCA analysis
-                pca = PCA(n_components=2)
-                pca_result = pca.fit_transform(RSCU_dataframe.transpose())
-                fig, ax = plt.subplots()
-                colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(time_points))))
-                for i, tp in enumerate(sorted(np.unique(time_points))):
-                    a = np.where(time_points == tp)
-                    c = colors[i]
-                    ax.scatter(pca_result[:, 0][a], pca_result[:, 1][a], color=c, label=f'Time {tp}')
-                lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-                plt.subplots_adjust(right=0.7)
+                if consecutive:
+                    ica = FastICA(n_components=2, whiten='unit-variance')  # Defina o número de componentes desejados
+                    ica_result = ica.fit_transform(RSCU_dataframe)
 
-                plt.title(f'PCA analysis {comparison[0]}vs{comparison[1]}')
-                print("Create image: {}".format(
-                    os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png')))
-                plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png'),
-                            bbox_extra_artists=(lgd,), bbox_inches='tight')
+                    # Plotagem dos clusters
+                    fig, ax = plt.subplots()
+                    colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
+                    for i, tp in enumerate(sorted(np.unique(times_dataframe))):
+                        indices = np.where(times_dataframe == tp)
+                        c = colors[i]
+                        ax.scatter(ica_result[indices, 0], ica_result[indices, 1], color=c, label=f'Time {tp}')
+                    lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                    plt.subplots_adjust(right=0.7)
+                    plt.title(f'ICA Clustering')
+                    plt.savefig(os.path.join(working_path_PCA, f'ICA Clustering_{comparison[0]}vs{comparison[1]}.png'),
+                                bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+                    ''' tsne = TSNE(n_components=2, random_state=42)
+                    X_tsne = tsne.fit_transform(RSCU_dataframe)
+
+                    # Aplicação do algoritmo de clustering (por exemplo, K-means)
+                    kmeans = KMeans(n_clusters=2, random_state=42, n_init='auto')
+                    labels = kmeans.fit_predict(X_tsne)
+
+                    # Plotagem dos clusters
+                    fig, ax = plt.subplots()
+                    colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
+                    for i, tp in enumerate(sorted(np.unique(times_dataframe))):
+                        a = np.where(times_dataframe == tp)
+                        c = colors[i]
+                        ax.scatter(X_tsne[a, 0], X_tsne[a, 1], color=c, label=f'Time {tp}')
+                    lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                    plt.subplots_adjust(right=0.7)
+                    plt.title(f't-SNE Clustering {comparison[0]}vs{comparison[1]}')
+                    print("Create image: {}".format(
+                        os.path.join(working_path_PCA, f'Kmeans_analysis_{comparison[0]}vs{comparison[1]}.png')))
+                    plt.savefig(os.path.join(working_path_PCA, f'Kmeans_analysis_{comparison[0]}vs{comparison[1]}.png'),
+                                bbox_extra_artists=(lgd,), bbox_inches='tight')'''
+
+
+                else:
+                    # PCA analysis
+                    pca = PCA(n_components=2)
+                    pca_result = pca.fit_transform(RSCU_dataframe.transpose())
+                    fig, ax = plt.subplots()
+                    colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
+                    for i, tp in enumerate(sorted(np.unique(times_dataframe))):
+                        a = np.where(times_dataframe == tp)
+                        c = colors[i]
+                        ax.scatter(pca_result[:, 0][a], pca_result[:, 1][a], color=c, label=f'Time {tp}')
+                    lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                    plt.subplots_adjust(right=0.7)
+
+                    plt.title(f'PCA analysis {comparison[0]}vs{comparison[1]}')
+                    print("Create image: {}".format(
+                        os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png')))
+                    plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png'),
+                                bbox_extra_artists=(lgd,), bbox_inches='tight')
 
     def __samples_information(self):
         """Open, read and save information from samples
