@@ -481,95 +481,95 @@ class Expression(object):
                             final_dataframe = pd.concat([dataframe_copy, rscu_dataframe], axis=0)
                             final_counts.append(final_dataframe)
 
-                RSCU_dic = OrderedDict()
-                for x, dataframe in enumerate(final_counts):
-                    for codon in dataframe:
-                        if final_samples[x] not in RSCU_dic:
-                            print(final_samples[x])
-                            RSCU_dic[final_samples[x]] = [dataframe[codon]['RSCU']]
-                            print('NEW KEY')
-                        else:
-                            RSCU_dic[final_samples[x]].append(dataframe[codon]['RSCU'])
-                            print(f'APPEND TO KEY {final_samples[x]}')
+                    RSCU_dic = OrderedDict()
+                    for x, dataframe in enumerate(final_counts):
+                        for codon in dataframe:
+                            if final_samples[x] not in RSCU_dic:
+                                print(final_samples[x])
+                                RSCU_dic[final_samples[x]] = [dataframe[codon]['RSCU']]
+                                print('NEW KEY')
+                            else:
+                                RSCU_dic[final_samples[x]].append(dataframe[codon]['RSCU'])
+                                print(f'APPEND TO KEY {final_samples[x]}')
 
-                RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
-                print('RSCU DATAFRAME', RSCU_dataframe)
-                print(len(RSCU_dataframe.transpose()))
+                    RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
+                    print('RSCU DATAFRAME', RSCU_dataframe)
+                    print(len(RSCU_dataframe.transpose()))
 
-                RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
-                RSCU_dataframe.set_index('Codon', inplace=True)
-                print('RSCU DATAFRAME with codons', RSCU_dataframe)
-                print(len(RSCU_dataframe.transpose()))
+                    RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
+                    RSCU_dataframe.set_index('Codon', inplace=True)
+                    print('RSCU DATAFRAME with codons', RSCU_dataframe)
+                    print(len(RSCU_dataframe.transpose()))
 
-                times_dataframe = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
-                '''RSCU_dataframe = RSCU_dataframe.transpose()
-                RSCU_dataframe["time"] = times_dataframe
-                RSCU_dataframe = RSCU_dataframe.transpose()
-                '''
-                # Obtain time points
-                '''time_points = RSCU_dataframe.iloc[-1, :].values
-                print(RSCU_dataframe)
-                RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
-                print(RSCU_dataframe)'''
+                    times_dataframe = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
+                    '''RSCU_dataframe = RSCU_dataframe.transpose()
+                    RSCU_dataframe["time"] = times_dataframe
+                    RSCU_dataframe = RSCU_dataframe.transpose()
+                    '''
+                    # Obtain time points
+                    '''time_points = RSCU_dataframe.iloc[-1, :].values
+                    print(RSCU_dataframe)
+                    RSCU_dataframe.drop(RSCU_dataframe.tail(1).index, inplace=True)
+                    print(RSCU_dataframe)'''
 
-                if consecutive:
-                    ica = FastICA(n_components=2, whiten='unit-variance')  # Defina o número de componentes desejados
-                    ica_result = ica.fit_transform(RSCU_dataframe)
+                    if consecutive:
+                        ica = FastICA(n_components=2, whiten='unit-variance')  # Defina o número de componentes desejados
+                        ica_result = ica.fit_transform(RSCU_dataframe)
 
-                    # Plotagem dos clusters
-                    fig, ax = plt.subplots()
-                    colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
-                    for i, tp in enumerate(sorted(np.unique(times_dataframe))):
-                        indices = np.where(times_dataframe == tp)
-                        c = colors[i]
-                        ax.scatter(ica_result[indices, 0], ica_result[indices, 1], color=c, label=f'Time {tp}')
-                    lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-                    plt.subplots_adjust(right=0.7)
-                    plt.title(f'ICA Clustering')
-                    plt.savefig(os.path.join(working_path_PCA, f'ICA Clustering_{comparison[0]}vs{comparison[1]}.png'),
-                                bbox_extra_artists=(lgd,), bbox_inches='tight')
+                        # Plotagem dos clusters
+                        fig, ax = plt.subplots()
+                        colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
+                        for i, tp in enumerate(sorted(np.unique(times_dataframe))):
+                            indices = np.where(times_dataframe == tp)
+                            c = colors[i]
+                            ax.scatter(ica_result[indices, 0], ica_result[indices, 1], color=c, label=f'Time {tp}')
+                        lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                        plt.subplots_adjust(right=0.7)
+                        plt.title(f'ICA Clustering')
+                        plt.savefig(os.path.join(working_path_PCA, f'ICA Clustering_{comparison[0]}vs{comparison[1]}.png'),
+                                    bbox_extra_artists=(lgd,), bbox_inches='tight')
 
-                    ''' tsne = TSNE(n_components=2, random_state=42)
-                    X_tsne = tsne.fit_transform(RSCU_dataframe)
+                        ''' tsne = TSNE(n_components=2, random_state=42)
+                        X_tsne = tsne.fit_transform(RSCU_dataframe)
+    
+                        # Aplicação do algoritmo de clustering (por exemplo, K-means)
+                        kmeans = KMeans(n_clusters=2, random_state=42, n_init='auto')
+                        labels = kmeans.fit_predict(X_tsne)
+    
+                        # Plotagem dos clusters
+                        fig, ax = plt.subplots()
+                        colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
+                        for i, tp in enumerate(sorted(np.unique(times_dataframe))):
+                            a = np.where(times_dataframe == tp)
+                            c = colors[i]
+                            ax.scatter(X_tsne[a, 0], X_tsne[a, 1], color=c, label=f'Time {tp}')
+                        lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                        plt.subplots_adjust(right=0.7)
+                        plt.title(f't-SNE Clustering {comparison[0]}vs{comparison[1]}')
+                        print("Create image: {}".format(
+                            os.path.join(working_path_PCA, f'Kmeans_analysis_{comparison[0]}vs{comparison[1]}.png')))
+                        plt.savefig(os.path.join(working_path_PCA, f'Kmeans_analysis_{comparison[0]}vs{comparison[1]}.png'),
+                                    bbox_extra_artists=(lgd,), bbox_inches='tight')'''
 
-                    # Aplicação do algoritmo de clustering (por exemplo, K-means)
-                    kmeans = KMeans(n_clusters=2, random_state=42, n_init='auto')
-                    labels = kmeans.fit_predict(X_tsne)
 
-                    # Plotagem dos clusters
-                    fig, ax = plt.subplots()
-                    colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
-                    for i, tp in enumerate(sorted(np.unique(times_dataframe))):
-                        a = np.where(times_dataframe == tp)
-                        c = colors[i]
-                        ax.scatter(X_tsne[a, 0], X_tsne[a, 1], color=c, label=f'Time {tp}')
-                    lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-                    plt.subplots_adjust(right=0.7)
-                    plt.title(f't-SNE Clustering {comparison[0]}vs{comparison[1]}')
-                    print("Create image: {}".format(
-                        os.path.join(working_path_PCA, f'Kmeans_analysis_{comparison[0]}vs{comparison[1]}.png')))
-                    plt.savefig(os.path.join(working_path_PCA, f'Kmeans_analysis_{comparison[0]}vs{comparison[1]}.png'),
-                                bbox_extra_artists=(lgd,), bbox_inches='tight')'''
+                    else:
+                        # PCA analysis
+                        pca = PCA(n_components=2)
+                        pca_result = pca.fit_transform(RSCU_dataframe.transpose())
+                        fig, ax = plt.subplots()
+                        colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
+                        for i, tp in enumerate(sorted(np.unique(times_dataframe))):
+                            a = np.where(times_dataframe == tp)
+                            c = colors[i]
+                            ax.scatter(pca_result[:, 0][a], pca_result[:, 1][a], color=c, label=f'Time {tp}')
+                        lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                        plt.subplots_adjust(right=0.7)
 
-
-                else:
-                    # PCA analysis
-                    pca = PCA(n_components=2)
-                    pca_result = pca.fit_transform(RSCU_dataframe.transpose())
-                    fig, ax = plt.subplots()
-                    colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
-                    for i, tp in enumerate(sorted(np.unique(times_dataframe))):
-                        a = np.where(times_dataframe == tp)
-                        c = colors[i]
-                        ax.scatter(pca_result[:, 0][a], pca_result[:, 1][a], color=c, label=f'Time {tp}')
-                    lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-                    plt.subplots_adjust(right=0.7)
-
-                    plt.title(f'PCA analysis {comparison[0]}vs{comparison[1]}')
-                    print("Create image: {}".format(
-                        os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png')))
-                    plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png'),
-                                bbox_extra_artists=(lgd,), bbox_inches='tight')
+                        plt.title(f'PCA analysis {comparison[0]}vs{comparison[1]}')
+                        print("Create image: {}".format(
+                            os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png')))
+                        plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png'),
+                                    bbox_extra_artists=(lgd,), bbox_inches='tight')
 
     def __samples_information(self):
         """Open, read and save information from samples
