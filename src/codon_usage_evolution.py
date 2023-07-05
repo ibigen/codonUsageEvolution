@@ -210,9 +210,6 @@ if __name__ == '__main__':
         animal = "test"
 
     file_name_in = os.path.join(base_path, name)
-    ## Choose the comparison
-    ## If
-    ## working path
     working_path = os.path.join(base_path, f'{animal}', 'liver' if liver else 'brain',
 		"average_time_points" if b_make_averages_for_same_time_points else "without_average_time_points")
     utils.make_path(working_path)
@@ -266,7 +263,7 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    consecutive = True
+    consecutive = False
     comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive, b_make_averages_for_same_time_points)
     if not b_make_averages_for_same_time_points:
         expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, comparison.differentially_expressed_genes, comparison.time_points, consecutive)
