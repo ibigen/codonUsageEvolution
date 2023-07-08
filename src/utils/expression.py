@@ -15,8 +15,6 @@ from sklearn.cluster import KMeans
 from sklearn.decomposition import FastICA
 
 
-
-
 class Tissue(object):
     GENDER_BOTH = "BOTH"
     GENDER_MALE = "MALE"
@@ -139,20 +137,19 @@ class Expression(object):
         """return number of genes"""
         return self.sample.get_number_gene(sample_name)
 
+    # def most_differentially_expressed_genes(self, sample_name1, sample_name2):
+    # dif_expression = sorted(
+    # [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
+    # for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
+    # dif_expression_dict = {}
 
-    #def most_differentially_expressed_genes(self, sample_name1, sample_name2):
-        #dif_expression = sorted(
-            #[abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
-             #for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
-        #dif_expression_dict = {}
-
-        #for dif in dif_expression:
-            #for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
-                #if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] -
-                              #self.sample.dt_sample[sample_name1].dt_gene[key]):
-                    #dif_expression_dict[key] = dif
-                #self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
-        #return self.most_dif_expressed
+    # for dif in dif_expression:
+    # for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
+    # if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] -
+    # self.sample.dt_sample[sample_name1].dt_gene[key]):
+    # dif_expression_dict[key] = dif
+    # self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
+    # return self.most_dif_expressed
 
     def counts_with_expression(self, counts, average):
         """
@@ -171,11 +168,10 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        #print(dataframe_counts_expression)
+        # print(dataframe_counts_expression)
         rscu = self.calculate_RSCU(dataframe_counts_expression)
         rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
         final_dataframe = pd.concat([dataframe_counts_expression, rscu_dataframe], axis=0)
-
 
         return final_dataframe
 
@@ -231,7 +227,7 @@ class Expression(object):
 
     def compare_timepoints(self, counts, samples, working_path):
         data = 'RSCU'
-        differences_abs, differences = OrderedDict(), OrderedDict()   # need to be ordered
+        differences_abs, differences = OrderedDict(), OrderedDict()  # need to be ordered
         for n, dataframe in enumerate(counts):
             key_to_process = f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'
             repeat = 1
@@ -262,7 +258,6 @@ class Expression(object):
 
         dataframe.to_csv(os.path.join(working_path, f"Differences_between_time_points.csv"))
 
-
         ### start making chart
         dataframe_abs = pd.DataFrame(differences_abs)
 
@@ -292,16 +287,15 @@ class Expression(object):
         g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2,
                          col_order=list(dataframe.columns), sharey=True)
         g.map(my_bar_plot, 'Difference', 'Codon')
-        #g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
-                       #shrink=0.2)
+        # g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
+        # shrink=0.2)
 
         # plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_differences_{data}.png')))
 
-            #plt.title(f'Barplot_to_differences_{data}.png')
+        # plt.title(f'Barplot_to_differences_{data}.png')
         plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}.png'))
         return df
-
 
     def compare_counts(self, counts, samples):
         data = 'RSCU'
@@ -354,12 +348,11 @@ class Expression(object):
 
         return dataframe_direction
 
-
     def plot_reference(self, counts, working_path):
         DATA = counts.drop(columns=['GENE CAI'])
         DATA = DATA.drop(columns=['GENOME CAI'])
         data = DATA.T
-        codons =Constants.TOTAL_CODONS[:-3]
+        codons = Constants.TOTAL_CODONS[:-3]
         data['Codon'] = codons
         fig, ax = plt.subplots(figsize=(6, 10))
         fig.set_figwidth(10)
@@ -440,117 +433,121 @@ class Expression(object):
             codons_T = [str(key).upper().replace('U', 'T') for key in codons]
             total = [counts[codon]['Total'] for codon in codons_T]
 
-
             for n, codon in enumerate(codons_T):
-
                 rscu[codon] = len(codons) * ((counts[codon]['Total']) / sum(total))
 
                 # nº de codões*(codão/soma(codões por aminoacido))
 
         return rscu
 
-    def PCA_analysis(self, counts, samples, working_path, *args):
-            working_path_PCA = os.path.join(working_path, 'DEGs')
-            diff_expressed_genes = args[0]
-            comparisons = args[1]
-            consecutive = args[2]
-            times = [self.sample.dt_sample[sample].age for sample in samples]
+    def PCA_analysis(self, counts, samples, working_path, **kwargs):
+        working_path_PCA = os.path.join(working_path, 'DEGs')
+        diff_expressed_genes = kwargs['genes']
+        comparisons = kwargs['comparisons']
+        consecutive = kwargs['consecutive']
+        self.gender = kwargs['gender']
+        times = [self.sample.dt_sample[sample].age for sample in samples]
 
-            for n, comparison in enumerate(comparisons):
-                comparison_counts = []
-                final_samples = []
-                final_counts = []
-                for m, time in enumerate(times):
-                    if int(time) in comparisons[n]:
-                        comparison_counts.append(counts[m])
-                        final_samples.append(samples[m])
+        for n, comparison in enumerate(comparisons):
+            comparison_counts = []
+            final_samples = []
+            final_counts = []
+            for m, time in enumerate(times):
+                if int(time) in comparisons[n]:
+                    comparison_counts.append(counts[m])
+                    final_samples.append(samples[m])
 
-                if f'{comparison[0]}vs{comparison[1]}' in diff_expressed_genes.keys():
-                    indices_desejados = diff_expressed_genes[f'{comparison[0]}vs{comparison[1]}']
-                    new_counts = [dataframe.loc[dataframe.index.isin(indices_desejados)]
-                                        for dataframe in comparison_counts]
+            if f'{comparison[0]}vs{comparison[1]}' in diff_expressed_genes.keys():
+                indices_desejados = diff_expressed_genes[f'{comparison[0]}vs{comparison[1]}']
+                new_counts = [dataframe.loc[dataframe.index.isin(indices_desejados)]
+                              for dataframe in comparison_counts]
 
-                    for dataframe in new_counts:
-                        dataframe_copy = dataframe.copy()
-                        totals = dataframe_copy.sum(axis=0)
-                        dataframe_copy.loc['Total'] = totals
-                        rscu = self.calculate_RSCU(dataframe_copy)
-                        rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
-                        final_dataframe = pd.concat([dataframe_copy, rscu_dataframe], axis=0)
-                        final_counts.append(final_dataframe)
+                for dataframe in new_counts:
+                    dataframe_copy = dataframe.copy()
+                    totals = dataframe_copy.sum(axis=0)
+                    dataframe_copy.loc['Total'] = totals
+                    rscu = self.calculate_RSCU(dataframe_copy)
+                    rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
+                    final_dataframe = pd.concat([dataframe_copy, rscu_dataframe], axis=0)
+                    final_counts.append(final_dataframe)
 
-                    RSCU_dic = OrderedDict()
-                    for x, dataframe in enumerate(final_counts):
-                        for codon in dataframe:
-                            if final_samples[x] not in RSCU_dic:
+                RSCU_dic = OrderedDict()
+                for x, dataframe in enumerate(final_counts):
+                    for codon in dataframe:
+                        if final_samples[x] not in RSCU_dic:
 
-                                RSCU_dic[final_samples[x]] = [dataframe[codon]['RSCU']]
+                            RSCU_dic[final_samples[x]] = [dataframe[codon]['RSCU']]
 
-                            else:
-                                RSCU_dic[final_samples[x]].append(dataframe[codon]['RSCU'])
+                        else:
+                            RSCU_dic[final_samples[x]].append(dataframe[codon]['RSCU'])
 
-                    RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
-                    RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
-                    RSCU_dataframe.set_index('Codon', inplace=True)
-                    times_dataframe = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
+                RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
+                RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
+                RSCU_dataframe.set_index('Codon', inplace=True)
+                times_dataframe = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
+                RSCU_dataframe.transpose()
 
-                    if consecutive:
-                        RSCU_matrix = RSCU_dataframe.to_numpy()
-                        ica = FastICA(n_components=2, whiten='unit-variance')
-                        ica_result = ica.fit_transform(RSCU_matrix)
-                        componentes = ica.components_
-                        print(componentes)
-                        num_componentes = 2
-                        num_codons_maior_peso = 10
-                        for i in range(num_componentes):
-                            pesos_componente = componentes[i]
-                            indices_maior_peso = np.argsort(pesos_componente)[::-1][:num_codons_maior_peso]
-                            codons_com_maior_peso = list(RSCU_dataframe.index[indices_maior_peso])
-                            df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_com_maior_peso})
-                            df.to_excel(os.path.join(working_path_PCA,
-                                                     f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_ICA.xlsx'),
-                                        index=False)
-                        fig, ax = plt.subplots(2, 1, figsize=(8, 6))
+                if consecutive or self.gender != 'BOTH':
+                    RSCU_matrix = RSCU_dataframe.to_numpy()
+                    ica = FastICA(n_components=2, whiten='unit-variance')
+                    ica_result = ica.fit_transform(RSCU_matrix)
+                    fig, ax = plt.subplots()
+                    colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
+                    for i, tp in enumerate(sorted(np.unique(times_dataframe))):
+                        indices = np.where(times_dataframe == tp)
+                        c = colors[i]
+                        ax.scatter(ica_result[indices, 0], ica_result[indices, 1], color=c, label=f'Time {tp}')
+                    lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                    plt.subplots_adjust(right=0.7)
+                    plt.title(f'ICA analysis {comparison[0]}vs{comparison[1]}')
+                    plt.savefig(os.path.join(working_path_PCA, f'ICA Clustering_{comparison[0]}vs{comparison[1]}.png'),
+                                bbox_extra_artists=(lgd,), bbox_inches='tight')
+                    componentes = ica.components_
+                    print(componentes)
+                    num_componentes = 2
+                    num_codons_maior_peso = 10
+                    for i in range(num_componentes):
+                        pesos_componente = componentes[i]
+                        indices_maior_peso = np.argsort(pesos_componente)[::-1][:num_codons_maior_peso]
+                        codons_com_maior_peso = list(RSCU_dataframe.index[indices_maior_peso])
+                        df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_com_maior_peso})
+                        df.to_excel(os.path.join(working_path_PCA,
+                                                 f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_ICA.xlsx'),
+                                    index=False)
 
-                        ax.plot(ica_result[:, 0], ica_result[:, 1], label='Componente 1')
-                        ax.set_xlabel('Índice dos Códons')
-                        ax.set_ylabel('Amplitude')
-                        ax.legend()
-                        plt.tight_layout()
-                        plt.savefig(os.path.join(working_path_PCA, f'ICA Clustering_{comparison[0]}vs{comparison[1]}.png'),
-                                    bbox_inches='tight')
+                else:
+                    # PCA analysis
+                    pca = PCA(n_components=2)
+                    pca_result = pca.fit_transform(RSCU_dataframe.transpose())
+                    print(pca_result)
+                    fig, ax = plt.subplots()
+                    colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
+                    for i, tp in enumerate(sorted(np.unique(times_dataframe))):
+                        a = np.where(times_dataframe == tp)
+                        c = colors[i]
+                        ax.scatter(pca_result[:, 0][a], pca_result[:, 1][a], color=c, label=f'Time {tp}')
+                    lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                    plt.subplots_adjust(right=0.7)
 
-                    else:
-                        # PCA analysis
-                        pca = PCA(n_components=2)
-                        pca_result = pca.fit_transform(RSCU_dataframe.transpose())
-                        print(pca_result)
-                        fig, ax = plt.subplots()
-                        colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
-                        for i, tp in enumerate(sorted(np.unique(times_dataframe))):
-                            a = np.where(times_dataframe == tp)
-                            c = colors[i]
-                            ax.scatter(pca_result[:, 0][a], pca_result[:, 1][a], color=c, label=f'Time {tp}')
-                        lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-                        plt.subplots_adjust(right=0.7)
-
-                        plt.title(f'PCA analysis {comparison[0]}vs{comparison[1]}')
-                        print("Create image: {}".format(
-                                os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png')))
-                        plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png'),
-                                        bbox_extra_artists=(lgd,), bbox_inches='tight')
-                        componentes = pca.components_
-                        num_componentes = 2
-                        num_codons_maior_peso = 10
-                        for i in range(num_componentes):
-                            pesos_componente = componentes[i]
-                            indices_maior_peso = np.argsort(pesos_componente)[::-1][:num_codons_maior_peso]
-                            codons_com_maior_peso = list(RSCU_dataframe.index[indices_maior_peso])
-                            print(type(codons_com_maior_peso))
-                            df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_com_maior_peso})
-                            df.to_excel(os.path.join(working_path_PCA,
-                                                     f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
-                                        index=False)
+                    plt.title(f'PCA analysis {comparison[0]}vs{comparison[1]}')
+                    print("Create image: {}".format(
+                        os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png')))
+                    plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png'),
+                                bbox_extra_artists=(lgd,), bbox_inches='tight')
+                    componentes = pca.components_
+                    num_componentes = 2
+                    num_codons_maior_peso = 10
+                    for i in range(num_componentes):
+                        pesos_componente = componentes[i]
+                        indices_maior_peso = np.argsort(pesos_componente)[::-1][:num_codons_maior_peso]
+                        print(indices_maior_peso)
+                        maiores_pesos = pesos_componente[indices_maior_peso]
+                        print(maiores_pesos)
+                        codons_com_maior_peso = list(RSCU_dataframe.index[indices_maior_peso])
+                        df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_com_maior_peso}, {'Pesos': maiores_pesos})
+                        df.to_excel(os.path.join(working_path_PCA,
+                                                 f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
+                                    index=False)
 
     def __samples_information(self):
         """Open, read and save information from samples
@@ -586,7 +583,6 @@ class Expression(object):
                 if len(lst_line) != len(lst_data) + 1:
                     sys.exit("Wrong line: " + line)
                 self.sample.add_sample(lst_line[0], lst_line[2], lst_line[3], lst_line[4])
-
 
     def __expression_values(self):
         """Open, read and save values of expression from the different samples

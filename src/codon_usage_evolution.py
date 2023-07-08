@@ -19,6 +19,7 @@ from utils.analysis_with_comparisons import Comparison
 utils = Utils()
 constants = Constants()
 
+
 def read_genome(file_name):
     """ read genome """
     counts_stats = CountSequences()
@@ -72,13 +73,13 @@ def read_genome(file_name):
                     codon_count[indexes] = counts_gene[codon]
                     codon_count_total[indexes] += counts_gene[codon]
 
-        # add gene with count codon
+            # add gene with count codon
             data[gene_name] = codon_count
 
-        # RSCU
+            # RSCU
             initial_dic_RSCU[gene_name] = RSCU([record_dict[key].seq])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
 
-        # CAI
+            # CAI
             dic_CAI[gene_name] = float(
                 CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[gene_name]))  # {gene1: CAI1} {GENE2: CAI2}
         print("Calculating counts of all codons")
@@ -86,15 +87,15 @@ def read_genome(file_name):
         data[Constants.GENOME_KEY] = codon_count_total
         # Global RSCU
         initial_dic_RSCU[Constants.GENOME_KEY] = RSCU(
-                [record_dict[dt_gene_name[key][0]].seq for key in
-                 initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
-            #print(initial_dic_RSCU)
+            [record_dict[dt_gene_name[key][0]].seq for key in
+             initial_dic_RSCU])  # {gene: {codon1: RSCU1, codon2: RSCU2}}
+        # print(initial_dic_RSCU)
 
         # Global CAI, from RSCU from all genome
         for key in dic_CAI:
             dic_genome_CAI[dt_gene_name[key][0]] = float(
-                    CAI(record_dict[dt_gene_name[key][0]].seq,
-                        RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
+                CAI(record_dict[dt_gene_name[key][0]].seq,
+                    RSCUs=initial_dic_RSCU[Constants.GENOME_KEY]))  # {gene1: CAI1} {GENE2: CAI2}
         dic_genome_CAI[Constants.GENOME_KEY] = 1
 
         # Global CAI, doesn't matter in this case
@@ -108,7 +109,7 @@ def read_genome(file_name):
 
         # Create table sorted by amino acid.
         dic_values = list(
-                initial_dic_RSCU.values())  # [{codon1: 1, codon2:0, codon3: 1 ...}, {codon1: 1, codon2: 0,
+            initial_dic_RSCU.values())  # [{codon1: 1, codon2:0, codon3: 1 ...}, {codon1: 1, codon2: 0,
         # codon3: 1...}, {...}, {...}]
         sorted_by_aminoacid = {}
         print("Creating dataframes to RSCU and CAI values")
@@ -119,12 +120,12 @@ def read_genome(file_name):
                         sorted_by_aminoacid[codon].append(float(dic_values[value][codon]))
                     else:
                         sorted_by_aminoacid[codon] = [
-                                float(dic_values[value][codon])]  # {codon1: [1,2,0,...], codon2: [1,0,0,2,0,...]}
+                            float(dic_values[value][codon])]  # {codon1: [1,2,0,...], codon2: [1,0,0,2,0,...]}
         data_RSCU = [n for key, n in sorted_by_aminoacid.items()]
         columns_RSCU = [list(value) for value in data_RSCU]
         dataframe_RSCU = pd.DataFrame(columns_RSCU,
-                                          index=[key for key in sorted_by_aminoacid.keys()],
-                                          columns=[key for key in initial_dic_RSCU.keys()])
+                                      index=[key for key in sorted_by_aminoacid.keys()],
+                                      columns=[key for key in initial_dic_RSCU.keys()])
         dataframe_RSCU = dataframe_RSCU.T
 
         # CAI
@@ -157,9 +158,9 @@ def save_final_results(expression, sample_names, counts, working_path, b_make_av
 
     save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
 
-#   if socket.gethostname() != "cs-nb0008":  #don't do this in MIGUEL computer
+    #   if socket.gethostname() != "cs-nb0008":  #don't do this in MIGUEL computer
     hist = expression.plot_counts(counts, sample_names, working_path, b_make_averages_for_same_time_points)
-        # hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
+    # hist.savefig(os.path.join(working_path, f'Barplot_to_counts.png'))
 
 
 if __name__ == '__main__':
@@ -177,7 +178,7 @@ if __name__ == '__main__':
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        # name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         # name = "ecoli.fasta"  # to create tables for test
 
     ### base path
@@ -211,7 +212,7 @@ if __name__ == '__main__':
 
     file_name_in = os.path.join(base_path, name)
     working_path = os.path.join(base_path, f'{animal}', 'liver' if liver else 'brain',
-		"average_time_points" if b_make_averages_for_same_time_points else "without_average_time_points")
+                                "average_time_points" if b_make_averages_for_same_time_points else "without_average_time_points")
     utils.make_path(working_path)
 
     file_name_out_counts = os.path.join(working_path, f"table_counts_{animal}.csv")
@@ -225,12 +226,11 @@ if __name__ == '__main__':
     # make expression in genes
     print("Loading expression and samples")
     expression = Expression(information_file, expression_file)
-    #print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
+    # print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
 
     # get dataframes
 
     dataframe_count_codons_in_genes, dataframe_RSCU_CAI, counts_stats = read_genome(file_name_in)
-
 
     # show stats
     # print(counts_stats)
@@ -246,12 +246,12 @@ if __name__ == '__main__':
     print("Loading expression and samples")
 
     expression = Expression(information_file, expression_file)
-    #print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
+    # print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
 
     # analysis the different samples
     print("Calculating counts with expression values")
 
-    ## BOTH
+    # BOTH
     gender = Tissue.GENDER_BOTH
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
                                                      b_make_averages_for_same_time_points)
@@ -263,13 +263,15 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    consecutive = False
-    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive, b_make_averages_for_same_time_points)
+    consecutive = True
+    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive,
+                            b_make_averages_for_same_time_points)
     if not b_make_averages_for_same_time_points:
-        expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender, comparison.differentially_expressed_genes, comparison.time_points, consecutive)
+        expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender,
+                                genes=comparison.differentially_expressed_genes, comparisons=comparison.time_points,
+                                consecutive=consecutive, gender=gender)
 
-
-    ## FEMALE
+    # FEMALE
     gender = Tissue.GENDER_FEMALE
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
                                                      b_make_averages_for_same_time_points)
@@ -279,9 +281,10 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    #expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive,
+                            b_make_averages_for_same_time_points)
 
-    ## MALE
+    # MALE
     gender = Tissue.GENDER_MALE
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
                                                      b_make_averages_for_same_time_points)
@@ -291,8 +294,7 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    #expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender)
+    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive,
+                            b_make_averages_for_same_time_points)
 
     print("Finished")
-
-

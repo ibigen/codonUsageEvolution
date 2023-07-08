@@ -19,6 +19,7 @@ class Comparison(object):
         self.counts = counts
         self.samples = samples
         self.gender = gender
+        print(self.gender)
         self.liver = liver
         self.final_times = []
         self.differentially_expressed_genes, self.counts_to_degs, self.differences_abs, self.differences = OrderedDict(), OrderedDict(), OrderedDict(), OrderedDict()  # need to be ordered
@@ -33,7 +34,10 @@ class Comparison(object):
 
             self.base_path = "/home/projects/ua/master/codon_usage"
         else:
-            self.base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
+            if liver:
+                self.base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
+            else:
+                self.base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
 
         self.get_genes()
 
@@ -60,6 +64,7 @@ class Comparison(object):
                                 self.differentially_expressed_genes[time] = [line]
                             else:
                                 self.differentially_expressed_genes[time].append(line)
+        print(self.differentially_expressed_genes)
         if self.average:
             self.compare_timepoints()
 
@@ -93,14 +98,14 @@ class Comparison(object):
             final_dataframes = []
             indexes_to_remove = []
             for n, time in enumerate(self.times):
-                if time in self.differentially_expressed_genes:
-
+                if time in self.differentially_expressed_genes.keys():
                     self.final_times.append(time)
                     indices_desejados = self.differentially_expressed_genes[time]
                     self.final_counts.append((self.counts[n - 1].loc[self.counts[n - 1].index.isin(indices_desejados)],
                                          self.counts[n].loc[self.counts[n].index.isin(indices_desejados)]))
                 else:
                     indexes_to_remove.append(n)
+            print(self.final_times)
 
             for m, comparison in enumerate(self.final_counts):
                 if m in indexes_to_remove:
@@ -157,8 +162,10 @@ class Comparison(object):
 
 
     def plot_differences(self):
-        self.working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'DEGs')
+        self.working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'average_time_points', f'{self.gender}', 'DEGs')
+        print(self.counts_to_degs)
         for key in self.counts_to_degs:
+            print(key)
             for dataframe in self.counts_to_degs[key]:
                 self.differences_abs[key] = {}
                 self.differences[key] = {}
@@ -196,7 +203,7 @@ class Comparison(object):
 
         dataframe_dif['Codon'] = [f'{str(key).upper().replace("U", "T")}_{value}' for key, value in
                                   Constants.codons_per_aminoacid.items()]
-        columns = [time for time in self.final_times]
+        columns = [time for time in self.counts_to_degs.keys()]
         # columns = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15']
         df = pd.melt(dataframe_dif, id_vars='Codon', value_vars=columns, value_name='Difference')
         df.rename(columns={"variable": "ID"}, inplace=True)
