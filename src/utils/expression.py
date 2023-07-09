@@ -504,13 +504,20 @@ class Expression(object):
                                 bbox_extra_artists=(lgd,), bbox_inches='tight')
                     componentes = ica.components_
                     print(componentes)
-                    num_componentes = 2
-                    num_codons_maior_peso = 10
-                    for i in range(num_componentes):
-                        pesos_componente = componentes[i]
-                        indices_maior_peso = np.argsort(pesos_componente)[::-1][:num_codons_maior_peso]
-                        codons_com_maior_peso = list(RSCU_dataframe.index[indices_maior_peso])
-                        df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_com_maior_peso})
+                    num_components = 2
+                    num_codons_highest_weight = 10
+                    for i in range(num_components):
+                        components_weights = componentes[i]
+                        indexes_highest_weight = np.argsort(components_weights)[::-1][:num_codons_highest_weight]
+                        codons_highest_weight = list(RSCU_dataframe.index[indexes_highest_weight])
+                        #To present weights in per cent
+                        # highest_weights = [float(weight)*100 for n, weight in list(components_weights) if n in indexes_highest_weight]
+                        highest_weights = [float(components_weights[n]) * 100 for n in indexes_highest_weight]
+                        print(highest_weights)
+                        df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_highest_weight})
+                        highest_weights_df = pd.DataFrame({'Weight': codons_highest_weight})
+                        final_df = pd.concat([df, highest_weights_df])
+
                         df.to_excel(os.path.join(working_path_PCA,
                                                  f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_ICA.xlsx'),
                                     index=False)
@@ -519,7 +526,6 @@ class Expression(object):
                     # PCA analysis
                     pca = PCA(n_components=2)
                     pca_result = pca.fit_transform(RSCU_dataframe.transpose())
-                    print(pca_result)
                     fig, ax = plt.subplots()
                     colors = plt.cm.Set1(np.linspace(0, 1, len(np.unique(times_dataframe))))
                     for i, tp in enumerate(sorted(np.unique(times_dataframe))):
@@ -535,16 +541,16 @@ class Expression(object):
                     plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png'),
                                 bbox_extra_artists=(lgd,), bbox_inches='tight')
                     componentes = pca.components_
-                    num_componentes = 2
-                    num_codons_maior_peso = 10
-                    for i in range(num_componentes):
-                        pesos_componente = componentes[i]
-                        indices_maior_peso = np.argsort(pesos_componente)[::-1][:num_codons_maior_peso]
-                        print(indices_maior_peso)
-                        maiores_pesos = pesos_componente[indices_maior_peso]
+                    num_components = 2
+                    num_codons_highest_weight = 10
+                    for i in range(num_components):
+                        components_weights = componentes[i]
+                        indexes_highest_weight = np.argsort(components_weights)[::-1][:num_codons_highest_weight]
+                        print(indexes_highest_weight)
+                        maiores_pesos = components_weights[indexes_highest_weight]
                         print(maiores_pesos)
-                        codons_com_maior_peso = list(RSCU_dataframe.index[indices_maior_peso])
-                        df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_com_maior_peso}, {'Pesos': maiores_pesos})
+                        codons_highest_weight = list(RSCU_dataframe.index[indexes_highest_weight])
+                        df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_highest_weight}, {'Pesos': maiores_pesos})
                         df.to_excel(os.path.join(working_path_PCA,
                                                  f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
                                     index=False)
