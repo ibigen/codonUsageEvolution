@@ -487,7 +487,7 @@ class Expression(object):
                 times_dataframe = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
                 RSCU_dataframe.transpose()
 
-                if consecutive or self.gender != 'BOTH':
+                if consecutive:
                     RSCU_matrix = RSCU_dataframe.to_numpy()
                     ica = FastICA(n_components=2, whiten='unit-variance')
                     ica_result = ica.fit_transform(RSCU_matrix)
@@ -503,7 +503,6 @@ class Expression(object):
                     plt.savefig(os.path.join(working_path_PCA, f'ICA Clustering_{comparison[0]}vs{comparison[1]}.png'),
                                 bbox_extra_artists=(lgd,), bbox_inches='tight')
                     componentes = ica.components_
-                    print(componentes)
                     num_components = 2
                     num_codons_highest_weight = 10
                     for i in range(num_components):
@@ -512,13 +511,13 @@ class Expression(object):
                         codons_highest_weight = list(RSCU_dataframe.index[indexes_highest_weight])
                         #To present weights in per cent
                         # highest_weights = [float(weight)*100 for n, weight in list(components_weights) if n in indexes_highest_weight]
-                        highest_weights = [float(components_weights[n]) * 100 for n in indexes_highest_weight]
+                        highest_weights = [float(components_weights[n]) for n in indexes_highest_weight]
                         print(highest_weights)
-                        df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_highest_weight})
-                        highest_weights_df = pd.DataFrame({'Weight': codons_highest_weight})
-                        final_df = pd.concat([df, highest_weights_df])
+                        df = pd.DataFrame(codons_highest_weight)
+                        highest_weights_df = pd.DataFrame(highest_weights)
+                        final_df = pd.concat([df.T, highest_weights_df.T])
 
-                        df.to_excel(os.path.join(working_path_PCA,
+                        final_df.to_excel(os.path.join(working_path_PCA,
                                                  f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_ICA.xlsx'),
                                     index=False)
 
@@ -546,15 +545,16 @@ class Expression(object):
                     for i in range(num_components):
                         components_weights = componentes[i]
                         indexes_highest_weight = np.argsort(components_weights)[::-1][:num_codons_highest_weight]
-                        print(indexes_highest_weight)
-                        maiores_pesos = components_weights[indexes_highest_weight]
-                        print(maiores_pesos)
                         codons_highest_weight = list(RSCU_dataframe.index[indexes_highest_weight])
-                        df = pd.DataFrame({f'{comparison[0]}vs{comparison[1]}': codons_highest_weight}, {'Pesos': maiores_pesos})
-                        df.to_excel(os.path.join(working_path_PCA,
-                                                 f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
-                                    index=False)
-
+                        # To present weights in per cent
+                        # highest_weights = [float(weight)*100 for n, weight in list(components_weights) if n in indexes_highest_weight]
+                        highest_weights = [float(components_weights[n]) for n in indexes_highest_weight]
+                        print(highest_weights)
+                        df = pd.DataFrame(codons_highest_weight)
+                        highest_weights_df = pd.DataFrame(highest_weights)
+                        final_df = pd.concat([df.T, highest_weights_df.T])
+                        final_df.to_excel(os.path.join(working_path_PCA, f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
+                                          index=False)
     def __samples_information(self):
         """Open, read and save information from samples
         File:

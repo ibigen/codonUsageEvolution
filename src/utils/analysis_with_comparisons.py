@@ -89,6 +89,7 @@ class Comparison(object):
     def compare_timepoints(self):
         if self.consecutive:
             self.comparison = 'consecutive_comparisons'
+            print(self.comparison)
             self.final_counts = []
             totals = []
             rscu = []
