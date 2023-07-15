@@ -47,31 +47,25 @@ def read_genome(file_name):
         initial_dic_RSCU = {}
         dic_CAI, dic_genome_CAI = {}, {}
         codon_count_total = [0] * len(constants.TOTAL_CODONS)
-        print("Calculating RSCU and CAI")
+        print("Calculating RSCU and CAI for '{}' genes".format(len(dt_gene_name)))
 
-        for gene_name in dt_gene_name:
+        index_codons = dict(zip(constants.TOTAL_CODONS, range(0, len(constants.TOTAL_CODONS)) ))
+        for index, gene_name in enumerate(dt_gene_name):
             key = dt_gene_name[gene_name][0]
 
+            #print("{}/{}".format(index, len(dt_gene_name)))
             if len(record_dict[key].seq) % 3 != 0:
                 counts_stats.add_divisible_3()
                 continue
 
             counts_stats.add_pass()
-            counts_gene = {}
+            codon_count = [0] * len(constants.TOTAL_CODONS)
+#            counts_gene = {}
             for i in range(0, len(record_dict[key].seq) + 1, 3):
                 codon = str(record_dict[key].seq)[i:i + 3].upper().replace('U', 'T')
-
-                if codon in counts_gene:
-                    counts_gene[codon] += 1
-                else:
-                    counts_gene[codon] = 1
-
-                # add gene counts
-            codon_count = [0] * len(constants.TOTAL_CODONS)
-            for indexes, codon in enumerate(constants.TOTAL_CODONS):
-                if codon in counts_gene:
-                    codon_count[indexes] = counts_gene[codon]
-                    codon_count_total[indexes] += counts_gene[codon]
+                if codon in index_codons: 
+                    codon_count[index_codons[codon]] += 1
+                    codon_count_total[index_codons[codon]] += 1
 
             # add gene with count codon
             data[gene_name] = codon_count
@@ -174,7 +168,11 @@ if __name__ == '__main__':
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
         name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        if test and b_ecoli: name = "eColi_test.fa"  # ecoli genome
         base_path = "/home/projects/ua/master/codon_usage"
+        if not b_ecoli:
+            name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
+            base_path = "/home/projects/ua/master_2/2022/master/francisca/TeseDeMestrado"
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
@@ -207,7 +205,7 @@ if __name__ == '__main__':
     elif name == "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz":
         animal = "ecoli"
 
-    elif name == "ecoli.fasta":
+    elif name == "ecoli.fasta" or name == "eColi_test.fa":
         animal = "test"
 
     file_name_in = os.path.join(base_path, name)

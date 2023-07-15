@@ -441,7 +441,11 @@ class Expression(object):
         return rscu
 
     def PCA_analysis(self, counts, samples, working_path, **kwargs):
+        
+        ## define working path
         working_path_PCA = os.path.join(working_path, 'DEGs')
+        self.utils.make_path(working_path_PCA)
+        
         diff_expressed_genes = kwargs['genes']
         comparisons = kwargs['comparisons']
         consecutive = kwargs['consecutive']
@@ -475,18 +479,20 @@ class Expression(object):
                 for x, dataframe in enumerate(final_counts):
                     for codon in dataframe:
                         if final_samples[x] not in RSCU_dic:
-
                             RSCU_dic[final_samples[x]] = [dataframe[codon]['RSCU']]
-
                         else:
                             RSCU_dic[final_samples[x]].append(dataframe[codon]['RSCU'])
 
                 RSCU_dataframe = pd.DataFrame.from_dict(RSCU_dic, orient='columns')
                 RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
                 RSCU_dataframe.set_index('Codon', inplace=True)
-                times_dataframe = [self.sample.dt_sample[sample].age for sample in RSCU_dataframe.columns]
-                RSCU_dataframe.transpose()
-
+                times_dataframe = [int(self.sample.dt_sample[sample].age) for sample in RSCU_dataframe.columns]
+                
+                ## save file, to REMOVE
+                print("Create RSCU_dataframe csv: {}".format(os.path.join(working_path_PCA, f'PCA_Clustering_{comparison[0]}vs{comparison[1]}.csv')))
+                RSCU_dataframe.to_csv(os.path.join(working_path_PCA, f'PCA_Clustering_{comparison[0]}vs{comparison[1]}.csv'), index=True)
+                ## END save file, to REMOVE
+                
                 if consecutive:
                     RSCU_matrix = RSCU_dataframe.to_numpy()
                     ica = FastICA(n_components=2, whiten='unit-variance')
@@ -498,9 +504,10 @@ class Expression(object):
                         c = colors[i]
                         ax.scatter(ica_result[indices, 0], ica_result[indices, 1], color=c, label=f'Time {tp}')
                     lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+                    print("Create image consecutive: {}".format(os.path.join(working_path_PCA, f'PCA_Clustering_consecutive_{comparison[0]}vs{comparison[1]}.png')))
                     plt.subplots_adjust(right=0.7)
-                    plt.title(f'ICA analysis {comparison[0]}vs{comparison[1]}')
-                    plt.savefig(os.path.join(working_path_PCA, f'ICA Clustering_{comparison[0]}vs{comparison[1]}.png'),
+                    plt.title(f'PCA analysis consecutive {comparison[0]}vs{comparison[1]}')
+                    plt.savefig(os.path.join(working_path_PCA, f'PCA_Clustering_consecutive_{comparison[0]}vs{comparison[1]}.png'),
                                 bbox_extra_artists=(lgd,), bbox_inches='tight')
                     componentes = ica.components_
                     num_components = 2
@@ -512,17 +519,16 @@ class Expression(object):
                         #To present weights in per cent
                         # highest_weights = [float(weight)*100 for n, weight in list(components_weights) if n in indexes_highest_weight]
                         highest_weights = [float(components_weights[n]) for n in indexes_highest_weight]
-                        print(highest_weights)
                         df = pd.DataFrame(codons_highest_weight)
                         highest_weights_df = pd.DataFrame(highest_weights)
                         final_df = pd.concat([df.T, highest_weights_df.T])
 
                         final_df.to_excel(os.path.join(working_path_PCA,
-                                                 f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_ICA.xlsx'),
+                                                 f'Major_influence_codons_consecutive_{comparison[0]}vs{comparison[1]}_ICA.xlsx'),
                                     index=False)
-
                 else:
                     # PCA analysis
+                    print("Stat PCA analysis")
                     pca = PCA(n_components=2)
                     pca_result = pca.fit_transform(RSCU_dataframe.transpose())
                     fig, ax = plt.subplots()
@@ -534,10 +540,10 @@ class Expression(object):
                     lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
                     plt.subplots_adjust(right=0.7)
 
-                    plt.title(f'PCA analysis {comparison[0]}vs{comparison[1]}')
-                    print("Create image: {}".format(
-                        os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png')))
-                    plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_{comparison[0]}vs{comparison[1]}.png'),
+                    plt.title(f'PCA analysis non consecutive {comparison[0]}vs{comparison[1]}')
+                    print("Create image not consecutive: {}".format(
+                        os.path.join(working_path_PCA, f'PCA_analysis_non_consecutive_{comparison[0]}vs{comparison[1]}.png')))
+                    plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_non_consecutive_{comparison[0]}vs{comparison[1]}.png'),
                                 bbox_extra_artists=(lgd,), bbox_inches='tight')
                     componentes = pca.components_
                     num_components = 2
@@ -549,12 +555,13 @@ class Expression(object):
                         # To present weights in per cent
                         # highest_weights = [float(weight)*100 for n, weight in list(components_weights) if n in indexes_highest_weight]
                         highest_weights = [float(components_weights[n]) for n in indexes_highest_weight]
-                        print(highest_weights)
                         df = pd.DataFrame(codons_highest_weight)
                         highest_weights_df = pd.DataFrame(highest_weights)
                         final_df = pd.concat([df.T, highest_weights_df.T])
-                        final_df.to_excel(os.path.join(working_path_PCA, f'Major_influence_codons_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
-                                          index=False)
+                        final_df.to_excel(os.path.join(working_path_PCA,
+							f'Major_influence_codons_non_consecutive_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
+                            index=False)
+
     def __samples_information(self):
         """Open, read and save information from samples
         File:

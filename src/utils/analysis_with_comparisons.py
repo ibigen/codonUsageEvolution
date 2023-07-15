@@ -23,16 +23,25 @@ class Comparison(object):
         self.final_times = []
         self.differentially_expressed_genes, self.counts_to_degs, self.differences_abs, self.differences = OrderedDict(), OrderedDict(), OrderedDict(), OrderedDict()  # need to be ordered
 
-        if self.consecutive:
-            self.times = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24', '24vs27']
-            self.time_points = [(27, 3), (3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21), (21, 24), (24, 27)]
-        else:
-            self.times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21', '3vs24', '3vs27']
-            self.time_points = [(3, 6), (3, 9), (3, 12), (3, 15), (3, 18), (3, 21), (3, 24), (3, 27)]
         if socket.gethostname() == "cs-nb0008":  # test computer name
-
-            self.base_path = "/home/projects/ua/master/codon_usage"
+            #self.times = ["A9_384Bulk_Plate1_S9", "A20_384Bulk_Plate2_S20", "E20_384Bulk_Plate1_S116", "F11_384Bulk_Plate2_S131",\
+            #        "L19_384Bulk_Plate2_S283", "A18_384Bulk_Plate1_S18"]
+            if self.consecutive:
+                self.times = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24', '24vs27']
+                #self.time_points = [(27, 3), (3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21), (21, 24), (24, 27)]
+            else:
+                self.times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21', '3vs24', '3vs27']
+                #self.time_points = [(3, 6), (3, 9), (3, 12), (3, 15), (3, 18), (3, 21), (3, 24), (3, 27)]
+            self.time_points = [(3, 6), (12, 15)]
+            self.base_path = "/home/projects/ua/master_2/2022/master/francisca/TeseDeMestrado"
         else:
+            if self.consecutive:
+                self.times = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24', '24vs27']
+                self.time_points = [(27, 3), (3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21), (21, 24), (24, 27)]
+            else:
+                self.times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21', '3vs24', '3vs27']
+                self.time_points = [(3, 6), (3, 9), (3, 12), (3, 15), (3, 18), (3, 21), (3, 24), (3, 27)]
+            
             if liver:
                 self.base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
             else:
@@ -220,4 +229,3 @@ class Comparison(object):
 
         plt.savefig(os.path.join(self.working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png'))
         return df
-
