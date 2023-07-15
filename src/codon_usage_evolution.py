@@ -261,7 +261,7 @@ if __name__ == '__main__':
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender,
                        b_make_averages_for_same_time_points)
-    consecutive = True
+    consecutive = False
     comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive,
                             b_make_averages_for_same_time_points)
     if not b_make_averages_for_same_time_points:

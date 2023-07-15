@@ -516,8 +516,6 @@ class Expression(object):
                         components_weights = componentes[i]
                         indexes_highest_weight = np.argsort(components_weights)[::-1][:num_codons_highest_weight]
                         codons_highest_weight = list(RSCU_dataframe.index[indexes_highest_weight])
-                        #To present weights in per cent
-                        # highest_weights = [float(weight)*100 for n, weight in list(components_weights) if n in indexes_highest_weight]
                         highest_weights = [float(components_weights[n]) for n in indexes_highest_weight]
                         df = pd.DataFrame(codons_highest_weight)
                         highest_weights_df = pd.DataFrame(highest_weights)
