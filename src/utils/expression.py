@@ -10,9 +10,8 @@ from matplotlib.colors import TwoSlopeNorm
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
 from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
-from sklearn.cluster import KMeans
 from sklearn.decomposition import FastICA
+from scipy.stats import chi2_contingency
 
 
 class Tissue(object):
@@ -168,7 +167,6 @@ class Expression(object):
         dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
-        # print(dataframe_counts_expression)
         rscu = self.calculate_RSCU(dataframe_counts_expression)
         rscu_dataframe = pd.DataFrame(rscu, index=['RSCU'])
         final_dataframe = pd.concat([dataframe_counts_expression, rscu_dataframe], axis=0)
@@ -441,16 +439,17 @@ class Expression(object):
         return rscu
 
     def PCA_analysis(self, counts, samples, working_path, **kwargs):
-        
+
         ## define working path
         working_path_PCA = os.path.join(working_path, 'DEGs')
         self.utils.make_path(working_path_PCA)
-        
+
         diff_expressed_genes = kwargs['genes']
         comparisons = kwargs['comparisons']
         consecutive = kwargs['consecutive']
         self.gender = kwargs['gender']
         times = [self.sample.dt_sample[sample].age for sample in samples]
+        explained_variances = OrderedDict()
 
         for n, comparison in enumerate(comparisons):
             comparison_counts = []
@@ -487,12 +486,22 @@ class Expression(object):
                 RSCU_dataframe['Codon'] = [str(key).upper().replace('U', 'T') for key in Constants.TOTAL_CODONS]
                 RSCU_dataframe.set_index('Codon', inplace=True)
                 times_dataframe = [int(self.sample.dt_sample[sample].age) for sample in RSCU_dataframe.columns]
-                
+
                 ## save file, to REMOVE
-                print("Create RSCU_dataframe csv: {}".format(os.path.join(working_path_PCA, f'PCA_Clustering_{comparison[0]}vs{comparison[1]}.csv')))
-                RSCU_dataframe.to_csv(os.path.join(working_path_PCA, f'PCA_Clustering_{comparison[0]}vs{comparison[1]}.csv'), index=True)
+                if consecutive:
+                    print("Create RSCU_dataframe csv: {}".format(
+                        os.path.join(working_path_PCA, f'ICA_Clustering_DATA_{comparison[0]}vs{comparison[1]}.csv')))
+                    RSCU_dataframe.to_csv(
+                        os.path.join(working_path_PCA, f'ICA_Clustering_DATA_{comparison[0]}vs{comparison[1]}.csv'),
+                        index=True)
+                else:
+                    print("Create RSCU_dataframe csv: {}".format(
+                        os.path.join(working_path_PCA, f'PCA_Clustering_DATA_{comparison[0]}vs{comparison[1]}.csv')))
+                    RSCU_dataframe.to_csv(
+                        os.path.join(working_path_PCA, f'PCA_Clustering_DATA_{comparison[0]}vs{comparison[1]}.csv'),
+                        index=True)
                 ## END save file, to REMOVE
-                
+
                 if consecutive:
                     RSCU_matrix = RSCU_dataframe.to_numpy()
                     ica = FastICA(n_components=2, whiten='unit-variance')
@@ -504,12 +513,15 @@ class Expression(object):
                         c = colors[i]
                         ax.scatter(ica_result[indices, 0], ica_result[indices, 1], color=c, label=f'Time {tp}')
                     lgd = ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-                    print("Create image consecutive: {}".format(os.path.join(working_path_PCA, f'PCA_Clustering_consecutive_{comparison[0]}vs{comparison[1]}.png')))
+                    print("Create image consecutive: {}".format(os.path.join(working_path_PCA,
+                                                                             f'ICA_Clustering_consecutive_{comparison[0]}vs{comparison[1]}.png')))
                     plt.subplots_adjust(right=0.7)
-                    plt.title(f'PCA analysis consecutive {comparison[0]}vs{comparison[1]}')
-                    plt.savefig(os.path.join(working_path_PCA, f'PCA_Clustering_consecutive_{comparison[0]}vs{comparison[1]}.png'),
+                    plt.title(f'ICA analysis consecutive {comparison[0]}vs{comparison[1]}')
+                    plt.savefig(os.path.join(working_path_PCA,
+                                             f'ICA_Clustering_consecutive_{comparison[0]}vs{comparison[1]}.png'),
                                 bbox_extra_artists=(lgd,), bbox_inches='tight')
                     componentes = ica.components_
+                    #explained_variance = ica.explained_variance_
                     num_components = 2
                     num_codons_highest_weight = 10
                     for i in range(num_components):
@@ -522,8 +534,8 @@ class Expression(object):
                         final_df = pd.concat([df.T, highest_weights_df.T])
 
                         final_df.to_excel(os.path.join(working_path_PCA,
-                                                 f'Major_influence_codons_consecutive_{comparison[0]}vs{comparison[1]}_ICA.xlsx'),
-                                    index=False)
+                                                       f'Major_influence_codons_consecutive_{comparison[0]}vs{comparison[1]}_ICA.xlsx'),
+                                          index=False)
                 else:
                     # PCA analysis
                     print("Stat PCA analysis")
@@ -540,10 +552,17 @@ class Expression(object):
 
                     plt.title(f'PCA analysis non consecutive {comparison[0]}vs{comparison[1]}')
                     print("Create image not consecutive: {}".format(
-                        os.path.join(working_path_PCA, f'PCA_analysis_non_consecutive_{comparison[0]}vs{comparison[1]}.png')))
-                    plt.savefig(os.path.join(working_path_PCA, f'PCA_analysis_non_consecutive_{comparison[0]}vs{comparison[1]}.png'),
+                        os.path.join(working_path_PCA,
+                                     f'PCA_analysis_non_consecutive_{comparison[0]}vs{comparison[1]}.png')))
+                    plt.savefig(os.path.join(working_path_PCA,
+                                             f'PCA_analysis_non_consecutive_{comparison[0]}vs{comparison[1]}.png'),
                                 bbox_extra_artists=(lgd,), bbox_inches='tight')
                     componentes = pca.components_
+                    explained_variance = pca.explained_variance_ratio_
+                    if f'{comparison[0]}vs{comparison[1]}' not in explained_variances:
+                        explained_variances[f'{comparison[0]}vs{comparison[1]}'] = list(explained_variance)
+                    print(
+                        f'explained variance to comparison {comparison[0]}vs{comparison[1]}: C1-{explained_variance[0]}, C2-{explained_variance[1]}')
                     num_components = 2
                     num_codons_highest_weight = 10
                     for i in range(num_components):
@@ -557,8 +576,54 @@ class Expression(object):
                         highest_weights_df = pd.DataFrame(highest_weights)
                         final_df = pd.concat([df.T, highest_weights_df.T])
                         final_df.to_excel(os.path.join(working_path_PCA,
-							f'Major_influence_codons_non_consecutive_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
+                                                       f'Major_influence_codons_non_consecutive_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
+                                         index=False)
+        if len(explained_variances) != 0:
+            print(explained_variances)
+            dataframe = pd.DataFrame(explained_variances)
+            dataframe.to_excel(os.path.join(working_path_PCA,
+                                        f'Explained_variances.xlsx'),
                             index=False)
+
+    def test_X2(self, counts, samples, comparisons):
+        totals = OrderedDict()
+        time = [int(self.sample.dt_sample[sample].age) for sample in samples]
+        for i, dataframe in enumerate(counts):
+            line = dataframe.iloc[-2]
+            totals[str(time[i])] = line
+        totals_dataframe = pd.DataFrame(totals)
+
+
+        list_of_result_dataframes = []
+
+        time_points_to_compare = comparisons
+
+        for time_point_pair in time_points_to_compare:
+            time_point_1, time_point_2 = time_point_pair
+
+            codon_counts_to_compare = totals_dataframe[[str(time_point_1), str(time_point_2)]]
+
+            results = []
+            for aminoacid_codons_group in codon_counts_to_compare.index:
+                contingency_table = codon_counts_to_compare.loc[[aminoacid_codons_group]].values
+                chi2, p_value, dof, expected = chi2_contingency(contingency_table)
+                results.append((aminoacid_codons_group, chi2, p_value))
+
+            result_dataframe = pd.DataFrame(results, columns=['Codon', 'Qui-quadrado', 'Valor p'])
+
+            list_of_result_dataframes.append(result_dataframe)
+
+        for i, time_point_pair in enumerate(time_points_to_compare):
+            time_point_1, time_point_2 = time_point_pair
+            result_dataframe = list_of_result_dataframes[i]
+            print(f'Resultados para a comparação entre {time_point_1} e {time_point_2}:')
+            print(result_dataframe)
+            print()
+
+
+
+
+
 
     def __samples_information(self):
         """Open, read and save information from samples

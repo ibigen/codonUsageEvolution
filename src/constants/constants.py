@@ -1,7 +1,8 @@
 """ Has all values that are constants """
-
+from collections import OrderedDict
 
 class Constants(object):
+	ordered_codons = OrderedDict()
 	codons_per_aminoacid = {'AAA': 'Lys', 'AAG': 'Lys', 'AAC': 'Asn', 'AAU': 'Asn',
 							'ACA': 'Thr', 'ACC': 'Thr', 'ACG': 'Thr', 'ACU': 'Thr',
 							'AGA': 'Arg', 'AGG': 'Arg', 'CGA': 'Arg', 'CGC': 'Arg',
@@ -21,6 +22,12 @@ class Constants(object):
 	# to order them by amino acid
 
 	TOTAL_CODONS = [str(key).upper().replace('U', 'T') for key in codons_per_aminoacid]
+
+	for key, value in codons_per_aminoacid.items():
+		if value not in ordered_codons:
+			ordered_codons[value] = [str(key).upper().replace('U', 'T')]
+		else:
+			ordered_codons[value].append(str(key).upper().replace('U', 'T'))
 
 
 	GENOME_KEY = "genome"

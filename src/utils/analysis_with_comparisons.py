@@ -205,12 +205,9 @@ class Comparison(object):
         dataframe_dif.to_csv(os.path.join(self.working_path, f"Differences_between_time_points_{self.comparison}.csv"))
 
         ### start making chart
-        dataframe_abs = pd.DataFrame(self.differences_abs)
-
         dataframe_dif['Codon'] = [f'{str(key).upper().replace("U", "T")}_{value}' for key, value in
                                   Constants.codons_per_aminoacid.items()]
         columns = [time for time in self.counts_to_degs.keys()]
-        # columns = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15']
         df = pd.melt(dataframe_dif, id_vars='Codon', value_vars=columns, value_name='Difference')
         df.rename(columns={"variable": "ID"}, inplace=True)
         col_order = [x for x in list(dataframe_dif.columns) if x != 'Codon']
