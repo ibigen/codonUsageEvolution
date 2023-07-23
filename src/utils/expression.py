@@ -593,33 +593,59 @@ class Expression(object):
             totals[str(time[i])] = line
         totals_dataframe = pd.DataFrame(totals)
 
+        aminoacidos = []
+        codons = []
 
-        list_of_result_dataframes = []
+        # Iterar sobre o dicionário e combinar as informações de aminoácidos e códons
+        for aminoacido, lista_codons in Constants.ordered_codons.items():
+            aminoacidos.extend([aminoacido] * len(lista_codons))
+            codons.extend(lista_codons)
 
-        time_points_to_compare = comparisons
+        # Criar o DataFrame com as informações combinadas
+        aminoacid_codons_groups = pd.DataFrame({'Aminoacid': aminoacidos, 'Codon': codons})
 
-        for time_point_pair in time_points_to_compare:
-            time_point_1, time_point_2 = time_point_pair
+        # Realizar um merge entre o DataFrame de contagens de códons e o DataFrame de grupos de códons por aminoácido
+        merged_dataframe = pd.merge(totals_dataframe,  aminoacid_codons_groups, left_index=True, right_on='Codon')
+        dataframe = merged_dataframe.groupby('Aminoacid')
 
-            codon_counts_to_compare = totals_dataframe[[str(time_point_1), str(time_point_2)]]
+        # Time points que você deseja comparar (por exemplo, 3 e 6)
+        for comparison in comparisons:
+            time_point_1 = str(comparison[0])
+            time_point_2 = str(comparison[1])
 
-            results = []
-            for aminoacid_codons_group in codon_counts_to_compare.index:
-                contingency_table = codon_counts_to_compare.loc[[aminoacid_codons_group]].values
-                chi2, p_value, dof, expected = chi2_contingency(contingency_table)
-                results.append((aminoacid_codons_group, chi2, p_value))
+            # Lista para armazenar os resultados
+            results_list = []
 
-            result_dataframe = pd.DataFrame(results, columns=['Codon', 'Qui-quadrado', 'Valor p'])
+            # Iterar pelos grupos de aminoácidos
+            for aminoacid, codon_group in dataframe:
+                if len(codon_group) > 1:
+                    # Filtrar os códons que codificam o aminoácido atual
+                    codons_to_compare = codon_group['Codon'].tolist()
 
-            list_of_result_dataframes.append(result_dataframe)
+                    # Filtrar as colunas dos time points que você deseja comparar
+                    time_points_to_compare = [str(time_point_1), str(time_point_2)]
+                    codon_counts_to_compare = codon_group[['Codon'] + time_points_to_compare]
 
-        for i, time_point_pair in enumerate(time_points_to_compare):
-            time_point_1, time_point_2 = time_point_pair
-            result_dataframe = list_of_result_dataframes[i]
-            print(f'Resultados para a comparação entre {time_point_1} e {time_point_2}:')
-            print(result_dataframe)
-            print()
+                    # Loop para realizar o teste qui-quadrado para cada códon no grupo
+                    results = []
+                    for codon in codons_to_compare:
+                        # Filtrar as contagens de códons para o códon atual
+                        codon_counts_sample_1 = codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
+                            str(time_point_1)].values
+                        codon_counts_sample_2 = codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
+                            str(time_point_2)].values
 
+                        # Criar a tabela de contingência
+                        contingency_table = [codon_counts_sample_1, codon_counts_sample_2]
+
+                        # Realizar o teste qui-quadrado
+                        chi2, p_value, dof, expected = chi2_contingency(contingency_table)
+                        results.append((aminoacid, codon, chi2, p_value))
+
+                    # Criar o DataFrame com os resultados para o grupo de aminoácidos atual
+                    result_dataframe = pd.DataFrame(results, columns=['Aminoacid', 'Codon', 'Chi2', 'p value'])
+
+                    print(result_dataframe)
 
 
 
