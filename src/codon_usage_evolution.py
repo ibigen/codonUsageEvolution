@@ -269,7 +269,7 @@ if __name__ == '__main__':
                                 genes=comparison.differentially_expressed_genes, comparisons=comparison.time_points,
                                 consecutive=consecutive, gender=gender)
     else:
-        expression.test_X2(counts, list(dict_samples_out.keys()), comparison.time_points)
+        expression.test_X2(counts, list(dict_samples_out.keys()), comparison.time_points, working_path)
 
     # FEMALE
     gender = Tissue.GENDER_FEMALE

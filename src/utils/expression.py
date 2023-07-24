@@ -585,7 +585,7 @@ class Expression(object):
                                         f'Explained_variances.xlsx'),
                             index=False)
 
-    def test_X2(self, counts, samples, comparisons):
+    def test_X2(self, counts, samples, comparisons, working_path):
         totals = OrderedDict()
         time = [int(self.sample.dt_sample[sample].age) for sample in samples]
         print("time: ", time)
@@ -593,6 +593,7 @@ class Expression(object):
             line = dataframe.iloc[-2]
             totals[str(time[i])] = line
         totals_dataframe = pd.DataFrame(totals)
+        totals_dataframe.to_csv(os.path.join(working_path, 'Totals_dataframe.csv'))
 
         aminoacidos = []
         codons = []
