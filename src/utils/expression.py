@@ -588,6 +588,7 @@ class Expression(object):
     def test_X2(self, counts, samples, comparisons):
         totals = OrderedDict()
         time = [int(self.sample.dt_sample[sample].age) for sample in samples]
+        print("time: ", time)
         for i, dataframe in enumerate(counts):
             line = dataframe.iloc[-2]
             totals[str(time[i])] = line
@@ -613,11 +614,9 @@ class Expression(object):
             time_point_1 = str(comparison[0])
             time_point_2 = str(comparison[1])
 
-            # Lista para armazenar os resultados
-            results_list = []
-
             # Iterar pelos grupos de aminoácidos
             for aminoacid, codon_group in dataframe:
+                print("##################aminoacid: ", aminoacid)
                 if len(codon_group) > 1:
                     # Filtrar os códons que codificam o aminoácido atual
                     codons_to_compare = codon_group['Codon'].tolist()
@@ -625,9 +624,10 @@ class Expression(object):
                     # Filtrar as colunas dos time points que você deseja comparar
                     time_points_to_compare = [str(time_point_1), str(time_point_2)]
                     codon_counts_to_compare = codon_group[['Codon'] + time_points_to_compare]
+                    print(codon_counts_to_compare)
 
                     # Loop para realizar o teste qui-quadrado para cada códon no grupo
-                    results = []
+                    contingency_table = []
                     for codon in codons_to_compare:
                         # Filtrar as contagens de códons para o códon atual
                         codon_counts_sample_1 = codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
@@ -635,20 +635,16 @@ class Expression(object):
                         codon_counts_sample_2 = codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
                             str(time_point_2)].values
 
+                        print("Cdond: ", codon, " t1 ", codon_counts_sample_1, " t2 ", codon_counts_sample_2)
                         # Criar a tabela de contingência
-                        contingency_table = [codon_counts_sample_1, codon_counts_sample_2]
-
-                        # Realizar o teste qui-quadrado
-                        chi2, p_value, dof, expected = chi2_contingency(contingency_table)
-                        results.append((aminoacid, codon, chi2, p_value))
-
-                    # Criar o DataFrame com os resultados para o grupo de aminoácidos atual
-                    result_dataframe = pd.DataFrame(results, columns=['Aminoacid', 'Codon', 'Chi2', 'p value'])
-
-                    print(result_dataframe)
+                        if len(contingency_table) == 0: contingency_table = np.array([[codon_counts_sample_1[0], codon_counts_sample_2[0]]])
+                        else: contingency_table = np.append(contingency_table, [[codon_counts_sample_1[0], codon_counts_sample_2[0]]], 0)
 
 
-
+                    # Realizar o teste qui-quadrado
+                    print(contingency_table)
+                    chi2, p_value, dof, expected = chi2_contingency(contingency_table)
+                    print(" chi2: ", chi2, "   p_value: ", p_value)
 
 
     def __samples_information(self):
