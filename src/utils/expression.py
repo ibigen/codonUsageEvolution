@@ -690,18 +690,22 @@ class Expression(object):
             if f'{comparison[0]}vs{comparison[1]}' in genes.keys():
                 wanted_indexes = genes[f'{comparison[0]}vs{comparison[1]}']
                 new_counts = [dataframe.loc[dataframe.index.isin(wanted_indexes)] for dataframe in comparison_counts]
+                counts_with_totals = []
                 for dataframe in new_counts:
                     dataframe_copy = dataframe.copy()
                     totals = dataframe_copy.sum(axis=0)
                     dataframe_copy.loc['Total'] = totals
+                    counts_with_totals.append(dataframe_copy)
 
                 totals_dict = OrderedDict()
-                for time in comparison:
+                for t, time in enumerate(comparison):
                     print("time: ", time)
-                    for i, dataframe in enumerate(new_counts):
-                        line = dataframe.iloc[-1]
-                        totals_dict[str(time)] = line
+                    for i, dataframe in enumerate(counts_with_totals):
+                        if i == t:
+                            line = dataframe.iloc[-1]
+                            totals_dict[str(time)] = line
                 totals_dataframe = pd.DataFrame(totals_dict)
+                print(totals_dataframe)
                 totals_dataframe.to_csv(
                     os.path.join(working_path, f'Totals_dataframe_{comparison[0]}vs{comparison[1]}.csv'))
                 aminoacidos = []

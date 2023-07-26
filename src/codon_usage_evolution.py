@@ -163,7 +163,7 @@ if __name__ == '__main__':
     utils = Utils()
     b_ecoli = False
     b_make_averages_for_same_time_points = True
-    liver = False
+    liver = True
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
