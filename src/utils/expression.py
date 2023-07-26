@@ -521,7 +521,7 @@ class Expression(object):
                                              f'ICA_Clustering_consecutive_{comparison[0]}vs{comparison[1]}.png'),
                                 bbox_extra_artists=(lgd,), bbox_inches='tight')
                     componentes = ica.components_
-                    #explained_variance = ica.explained_variance_
+                    # explained_variance = ica.explained_variance_
                     num_components = 2
                     num_codons_highest_weight = 10
                     for i in range(num_components):
@@ -577,18 +577,19 @@ class Expression(object):
                         final_df = pd.concat([df.T, highest_weights_df.T])
                         final_df.to_excel(os.path.join(working_path_PCA,
                                                        f'Major_influence_codons_non_consecutive_{comparison[0]}vs{comparison[1]}_PCA.xlsx'),
-                                         index=False)
+                                          index=False)
         if len(explained_variances) != 0:
             dataframe = pd.DataFrame(explained_variances)
             dataframe.to_excel(os.path.join(working_path_PCA,
-                                        f'Explained_variances.xlsx'),
-                            index=False)
+                                            f'Explained_variances.xlsx'),
+                               index=False)
 
     def test_X2(self, counts, samples, comparisons, working_path, liver, consecutive):
         path = os.path.join(working_path, 'Chi2')
         totals = OrderedDict()
         time = [int(self.sample.dt_sample[sample].age) for sample in samples]
         n_comparisons = len(comparisons)
+        alpha = 0.05 * n_comparisons
         print("time: ", time)
         for i, dataframe in enumerate(counts):
             line = dataframe.iloc[-2]
@@ -596,28 +597,25 @@ class Expression(object):
         totals_dataframe = pd.DataFrame(totals)
         totals_dataframe.to_csv(os.path.join(working_path, 'Totals_dataframe.csv'))
 
-        aminoacidos = []
+        aminoacids = []
         codons = []
 
-        # Iterar sobre o dicionário e combinar as informações de aminoácidos e códons
         for aminoacido, lista_codons in Constants.ordered_codons.items():
-            aminoacidos.extend([aminoacido] * len(lista_codons))
+            aminoacids.extend([aminoacido] * len(lista_codons))
             codons.extend(lista_codons)
 
-        # Criar o DataFrame com as informações combinadas
-        aminoacid_codons_groups = pd.DataFrame({'Aminoacid': aminoacidos, 'Codon': codons})
+        aminoacid_codons_groups = pd.DataFrame({'Aminoacid': aminoacids, 'Codon': codons})
 
-        # Realizar um merge entre o DataFrame de contagens de códons e o DataFrame de grupos de códons por aminoácido
-        merged_dataframe = pd.merge(totals_dataframe,  aminoacid_codons_groups, left_index=True, right_on='Codon')
+        merged_dataframe = pd.merge(totals_dataframe, aminoacid_codons_groups, left_index=True, right_on='Codon')
         dataframe = merged_dataframe.groupby('Aminoacid')
-
-        # Time points que você deseja comparar (por exemplo, 3 e 6)
+        df_final = None
+        print('Chi2 test to each comparison')
         for comparison in comparisons:
             time_point_1 = str(comparison[0])
             time_point_2 = str(comparison[1])
             results = []
             for aminoacid, codon_group in dataframe:
-                print("##################aminoacid: ", aminoacid)
+                print("################## aminoacid: ", aminoacid)
                 if len(codon_group) > 1:
                     codons_to_compare = codon_group['Codon'].tolist()
 
@@ -625,6 +623,7 @@ class Expression(object):
                     codon_counts_to_compare = codon_group[['Codon'] + time_points_to_compare]
 
                     contingency_table = []
+
                     for codon in codons_to_compare:
                         codon_counts_sample_1 = codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
                             str(time_point_1)].values
@@ -632,51 +631,62 @@ class Expression(object):
                             str(time_point_2)].values
 
                         # Contigency table
-                        if len(contingency_table) == 0: contingency_table = np.array([[codon_counts_sample_1[0], codon_counts_sample_2[0]]])
-                        else: contingency_table = np.append(contingency_table, [[codon_counts_sample_1[0], codon_counts_sample_2[0]]], 0)
-
-
+                        if len(contingency_table) == 0:
+                            contingency_table = np.array([[codon_counts_sample_1[0], codon_counts_sample_2[0]]])
+                        else:
+                            contingency_table = np.append(contingency_table,
+                                                          [[codon_counts_sample_1[0], codon_counts_sample_2[0]]], 0)
                     # Chi2 test
                     chi2, p_value, dof, expected = chi2_contingency(contingency_table)
-                    alpha = 0.05*n_comparisons
                     if p_value > alpha:
                         results.append((aminoacid, chi2, p_value, 'Non significant'))
                     else:
                         results.append((aminoacid, chi2, p_value, 'Significant'))
                     print(" chi2: ", chi2, "   p_value: ", p_value)
-            results_dataframe = pd.DataFrame(results, columns=['Aminoacid', 'Chi2', 'p_value', 'Significance'])
-            if liver:
-                if consecutive: results_dataframe.to_csv(os.path.join(path, f'Chi2_test_liver_consecutive_{comparison[0]}vs{comparison[1]}.csv'), index=False)
+            results_dataframe = pd.DataFrame(results,
+                                             columns=[f'Aminoacid_{comparison[0]}vs{comparison[1]}', 'Chi2', 'p_value',
+                                                      f'Significance: {alpha}'])
+            df_final = pd.concat([df_final, results_dataframe], axis=1)
 
-                else: results_dataframe.to_csv(os.path.join(path, f'Chi2_test_liver_non_consecutive_{comparison[0]}vs{comparison[1]}.csv'), index=False)
+        if liver:
+            if consecutive:
+                print(
+                    "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_liver_consecutive.csv')))
+                df_final.to_csv(os.path.join(path, f'Chi2_test_liver_consecutive.csv'), index=False)
 
             else:
-                if consecutive:
-                    results_dataframe.to_csv(
-                        os.path.join(path, f'Chi2_test_brain_consecutive_{comparison[0]}vs{comparison[1]}.csv'),
-                        index=False)
+                print(
+                    "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_liver_non_consecutive.csv')))
+                df_final.to_csv(os.path.join(path, f'Chi2_test_liver_non_consecutive.csv'), index=False)
 
-                else:
-                    results_dataframe.to_csv(
-                        os.path.join(path, f'Chi2_test_brain_non_consecutive_{comparison[0]}vs{comparison[1]}.csv'),
-                        index=False)
+        else:
+            if consecutive:
+                print(
+                    "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_brain_consecutive.csv')))
+                df_final.to_csv(os.path.join(path, f'Chi2_test_brain_consecutive.csv'), index=False)
+
+            else:
+                print(
+                    "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_brain_non_consecutive.csv')))
+                df_final.to_csv(os.path.join(path, f'Chi2_test_brain_non_consecutive.csv'), index=False)
 
     def teste_X2_with_diff_expressed_genes(self, counts, samples, comparisons, working_path, liver, consecutive, genes):
 
         path = os.path.join(working_path, 'Chi2')
         times = [int(self.sample.dt_sample[sample].age) for sample in samples]
         n_comparisons = 0
+        print('Chi2 test to each comparison with DEGS')
         for comparison in comparisons:
             if f'{comparison[0]}vs{comparison[1]}' in genes.keys():
                 n_comparisons += 1
-
+        df_final = None
+        alpha = 0.05 * n_comparisons
         for n, comparison in enumerate(comparisons):
             counts_comparison = []
             comparison_counts = []
             for m, time in enumerate(times):
                 if time in comparisons[n]:
                     comparison_counts.append(counts[m])
-            print(n, 'dataframe:', counts_comparison)
             if f'{comparison[0]}vs{comparison[1]}' in genes.keys():
                 wanted_indexes = genes[f'{comparison[0]}vs{comparison[1]}']
                 new_counts = [dataframe.loc[dataframe.index.isin(wanted_indexes)] for dataframe in comparison_counts]
@@ -692,17 +702,14 @@ class Expression(object):
                         line = dataframe.iloc[-1]
                         totals_dict[str(time)] = line
                 totals_dataframe = pd.DataFrame(totals_dict)
-                totals_dataframe.to_csv(os.path.join(working_path, f'Totals_dataframe_{comparison[0]}vs{comparison[1]}.csv'))
-                print(totals_dataframe)
+                totals_dataframe.to_csv(
+                    os.path.join(working_path, f'Totals_dataframe_{comparison[0]}vs{comparison[1]}.csv'))
                 aminoacidos = []
                 codons = []
-                # Iterar sobre o dicionário e combinar as informações de aminoácidos e códons
                 for aminoacido, lista_codons in Constants.ordered_codons.items():
                     aminoacidos.extend([aminoacido] * len(lista_codons))
                     codons.extend(lista_codons)
-                # Criar o DataFrame com as informações combinadas
                 aminoacid_codons_groups = pd.DataFrame({'Aminoacid': aminoacidos, 'Codon': codons})
-                # Realizar um merge entre o DataFrame de contagens de códons e o DataFrame de grupos de códons por aminoácido
                 merged_dataframe = pd.merge(totals_dataframe, aminoacid_codons_groups, left_index=True,
                                             right_on='Codon')
                 dataframe = merged_dataframe.groupby('Aminoacid')
@@ -718,11 +725,11 @@ class Expression(object):
                         contingency_table = []
                         for codon in codons_to_compare:
                             codon_counts_sample_1 = \
-                            codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
-                                str(time_point_1)].values
+                                codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
+                                    str(time_point_1)].values
                             codon_counts_sample_2 = \
-                            codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
-                                str(time_point_2)].values
+                                codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
+                                    str(time_point_2)].values
                             # Contigency table
                             if len(contingency_table) == 0:
                                 contingency_table = np.array(
@@ -732,41 +739,47 @@ class Expression(object):
                                     [codon_counts_sample_1[0], codon_counts_sample_2[0]]], 0)
                         # Chi2 test
                         contingency_table += 0.5
-                        alpha = 0.05*n_comparisons
-                        print(n_comparisons, '/n', alpha)
+                        print(contingency_table)
                         chi2, p_value, dof, expected = chi2_contingency(contingency_table)
                         if p_value > alpha:
                             results.append((aminoacid, chi2, p_value, 'Non significant'))
-                        else: results.append((aminoacid, chi2, p_value, 'Significant'))
-                        print(" chi2: ", chi2, "   p_value: ", p_value)
-                results_dataframe = pd.DataFrame(results, columns=['Aminoacid', 'Chi2', 'p_value', 'Significance'])
-                if liver:
-                    if consecutive:
-                        results_dataframe.to_csv(os.path.join(path,
-                                                              f'Chi2_test_liver_DEGS_consecutive_{comparison[0]}vs{comparison[1]}.csv'),
-                                                 index=False)
-                    else:
-                        results_dataframe.to_csv(os.path.join(path,
-                                                              f'Chi2_test_liver_DEGS_non_consecutive_{comparison[0]}vs{comparison[1]}.csv'),
+                        else:
+                            results.append((aminoacid, chi2, p_value, 'Significant'))
+                        #print(" chi2: ", chi2, "   p_value: ", p_value)
+                results_dataframe = pd.DataFrame(results,
+                                                 columns=[f'Aminoacid_{comparison[0]}vs{comparison[1]}', 'Chi2',
+                                                          'p_value',
+                                                          f'Significance: {alpha}'])
+                df_final = pd.concat([df_final, results_dataframe], axis=1)
+            print(df_final)
+            if liver:
+                if consecutive:
+                    print(
+                        "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_liver_DEGS_consecutive.csv')))
+                    df_final.to_csv(os.path.join(path,
+                                                              f'Chi2_test_liver_DEGS_consecutive.csv'),
                                                  index=False)
                 else:
-                    if consecutive:
-                        results_dataframe.to_csv(
+                    print(
+                        "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_liver_DEGS_non_consecutive.csv')))
+                    df_final.to_csv(os.path.join(path,
+                                                              f'Chi2_test_liver_DEGS_non_consecutive.csv'),
+                                                 index=False)
+            else:
+                if consecutive:
+                    print(
+                        "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_brain_DEGS_consecutive.csv')))
+                    df_final.to_csv(
                             os.path.join(path,
-                                         f'Chi2_test_brain_DEGS_consecutive_{comparison[0]}vs{comparison[1]}.csv'),
+                                         f'Chi2_test_brain_DEGS_consecutive.csv'),
                             index=False)
-                    else:
-                        results_dataframe.to_csv(
+                else:
+                    print(
+                        "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_brain_DEGS_non_consecutive.csv')))
+                    df_final.to_csv(
                             os.path.join(path,
-                                         f'Chi2_test_brain_DEGS_non_consecutive_{comparison[0]}vs{comparison[1]}.csv'),
+                                         f'Chi2_test_brain_DEGS_non_consecutive.csv'),
                             index=False)
-
-
-
-
-
-
-
 
     def __samples_information(self):
         """Open, read and save information from samples
