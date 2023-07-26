@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sb
+from scipy.stats import chi2_contingency
 
 
 
@@ -226,3 +227,73 @@ class Comparison(object):
 
         plt.savefig(os.path.join(self.working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png'))
         return df
+
+    def test_X2(self, counts, samples, comparisons, working_path, liver):
+        path = os.path.join(working_path, 'Chi2')
+        totals = OrderedDict()
+        time = [int(self.sample.dt_sample[sample].age) for sample in samples]
+        print("time: ", time)
+        for i, dataframe in enumerate(counts):
+            line = dataframe.iloc[-2]
+            totals[str(time[i])] = line
+        totals_dataframe = pd.DataFrame(totals)
+        totals_dataframe.to_csv(os.path.join(working_path, 'Totals_dataframe.csv'))
+
+        aminoacidos = []
+        codons = []
+
+        # Iterar sobre o dicionário e combinar as informações de aminoácidos e códons
+        for aminoacido, lista_codons in Constants.ordered_codons.items():
+            aminoacidos.extend([aminoacido] * len(lista_codons))
+            codons.extend(lista_codons)
+
+        # Criar o DataFrame com as informações combinadas
+        aminoacid_codons_groups = pd.DataFrame({'Aminoacid': aminoacidos, 'Codon': codons})
+
+        # Realizar um merge entre o DataFrame de contagens de códons e o DataFrame de grupos de códons por aminoácido
+        merged_dataframe = pd.merge(totals_dataframe,  aminoacid_codons_groups, left_index=True, right_on='Codon')
+        dataframe = merged_dataframe.groupby('Aminoacid')
+
+        # Time points que você deseja comparar (por exemplo, 3 e 6)
+        for comparison in comparisons:
+            time_point_1 = str(comparison[0])
+            time_point_2 = str(comparison[1])
+            results = []
+            # Iterar pelos grupos de aminoácidos
+            for aminoacid, codon_group in dataframe:
+                print("##################aminoacid: ", aminoacid)
+                if len(codon_group) > 1:
+                    # Filtrar os códons que codificam o aminoácido atual
+                    codons_to_compare = codon_group['Codon'].tolist()
+
+                    # Filtrar as colunas dos time points que você deseja comparar
+                    time_points_to_compare = [str(time_point_1), str(time_point_2)]
+                    codon_counts_to_compare = codon_group[['Codon'] + time_points_to_compare]
+                    #print(codon_counts_to_compare)
+
+                    # Loop para realizar o teste qui-quadrado para cada códon no grupo
+                    contingency_table = []
+                    for codon in codons_to_compare:
+                        # Filtrar as contagens de códons para o códon atual
+                        codon_counts_sample_1 = codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
+                            str(time_point_1)].values
+                        codon_counts_sample_2 = codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
+                            str(time_point_2)].values
+
+                        #print("Codond: ", codon, " t1 ", codon_counts_sample_1, " t2 ", codon_counts_sample_2)
+                        # Criar a tabela de contingência
+                        if len(contingency_table) == 0: contingency_table = np.array([[codon_counts_sample_1[0], codon_counts_sample_2[0]]])
+                        else: contingency_table = np.append(contingency_table, [[codon_counts_sample_1[0], codon_counts_sample_2[0]]], 0)
+
+
+                    # Realizar o teste qui-quadrado
+                    #print(contingency_table)
+                    chi2, p_value, dof, expected = chi2_contingency(contingency_table)
+                    results.append((aminoacid, chi2, p_value))
+                    print(" chi2: ", chi2, "   p_value: ", p_value)
+            results_dataframe = pd.DataFrame(results, columns=['Aminoacid', 'Chi2', 'p_value'])
+            if liver:
+                results_dataframe.to_csv(os.path.join(path, f'Chi2_test_liver_{comparison[0]}vs{comparison[1]}.csv'), index=False)
+            else:
+                results_dataframe.to_csv(os.path.join(path, f'Chi2_test_brain_{comparison[0]}vs{comparison[1]}.csv'),
+                                         index=False)
