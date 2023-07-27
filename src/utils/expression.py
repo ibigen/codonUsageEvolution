@@ -589,7 +589,7 @@ class Expression(object):
         totals = OrderedDict()
         time = [int(self.sample.dt_sample[sample].age) for sample in samples]
         n_comparisons = len(comparisons)
-        alpha = 0.05 * n_comparisons
+        alpha = 0.05/ (18 * n_comparisons)
         print("time: ", time)
         for i, dataframe in enumerate(counts):
             line = dataframe.iloc[-2]
@@ -680,7 +680,7 @@ class Expression(object):
             if f'{comparison[0]}vs{comparison[1]}' in genes.keys():
                 n_comparisons += 1
         df_final = None
-        alpha = 0.05 * n_comparisons
+        alpha = 0.05 / (18 * n_comparisons)
         for n, comparison in enumerate(comparisons):
             counts_comparison = []
             comparison_counts = []
@@ -749,13 +749,12 @@ class Expression(object):
                             results.append((aminoacid, chi2, p_value, 'Non significant'))
                         else:
                             results.append((aminoacid, chi2, p_value, 'Significant'))
-                        #print(" chi2: ", chi2, "   p_value: ", p_value)
+                        print(" chi2: ", chi2, "   p_value: ", p_value)
                 results_dataframe = pd.DataFrame(results,
                                                  columns=[f'Aminoacid_{comparison[0]}vs{comparison[1]}', 'Chi2',
                                                           'p_value',
                                                           f'Significance: {alpha}'])
                 df_final = pd.concat([df_final, results_dataframe], axis=1)
-            print(df_final)
             if liver:
                 if consecutive:
                     print(

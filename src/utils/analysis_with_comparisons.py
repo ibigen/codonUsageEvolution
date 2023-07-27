@@ -167,6 +167,7 @@ class Comparison(object):
                     final_dataframes.append((pd.concat([comparison_copy_0, rscu_dataframes[m][0]], axis=0),
                                              pd.concat([comparison_copy_1, rscu_dataframes[m][1]], axis=0)))
                     self.counts_to_degs[self.final_times[m]] = final_dataframes[m]
+            print(self.counts_to_degs)
             self.plot_differences()
 
 
