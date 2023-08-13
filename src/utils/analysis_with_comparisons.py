@@ -4,15 +4,15 @@ import os
 from collections import OrderedDict
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 import seaborn as sb
-from scipy.stats import chi2_contingency
+
 
 
 
 class Comparison(object):
-    def __init__(self, counts, samples, gender, liver, consecutive, average):
-        self.average = average
+    def __init__(self, counts, samples, gender, liver, consecutive, b_make_averages_for_same_time_points):
+        self.average = b_make_averages_for_same_time_points
         self.working_path = None
         self.time_points = []
         self.consecutive = consecutive
@@ -25,14 +25,10 @@ class Comparison(object):
         self.differentially_expressed_genes, self.counts_to_degs, self.differences_abs, self.differences = OrderedDict(), OrderedDict(), OrderedDict(), OrderedDict()  # need to be ordered
 
         if socket.gethostname() == "cs-nb0008":  # test computer name
-            #self.times = ["A9_384Bulk_Plate1_S9", "A20_384Bulk_Plate2_S20", "E20_384Bulk_Plate1_S116", "F11_384Bulk_Plate2_S131",\
-            #        "L19_384Bulk_Plate2_S283", "A18_384Bulk_Plate1_S18"]
             if self.consecutive:
                 self.times = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24', '24vs27']
-                #self.time_points = [(27, 3), (3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21), (21, 24), (24, 27)]
             else:
                 self.times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21', '3vs24', '3vs27']
-                #self.time_points = [(3, 6), (3, 9), (3, 12), (3, 15), (3, 18), (3, 21), (3, 24), (3, 27)]
             self.time_points = [(3, 6), (12, 15)]
             self.base_path = "/home/projects/ua/master_2/2022/master/francisca/TeseDeMestrado"
         else:
@@ -42,11 +38,7 @@ class Comparison(object):
             else:
                 self.times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21', '3vs24', '3vs27']
                 self.time_points = [(3, 6), (3, 9), (3, 12), (3, 15), (3, 18), (3, 21), (3, 24), (3, 27)]
-            
-            if liver:
-                self.base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
-            else:
-                self.base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
+            self.base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
 
         self.get_genes()
 
@@ -93,13 +85,12 @@ class Comparison(object):
                 rscu[codon] = len(codons) * ((counts[codon]['Total']) / sum(total))
 
                 # nº de codões*(codão/soma(codões por aminoacido))
-
+        print('rscu', rscu)
         return rscu
 
     def compare_timepoints(self):
         if self.consecutive:
             self.comparison = 'consecutive_comparisons'
-            print(self.comparison)
             self.final_counts = []
             totals = []
             rscu = []
@@ -114,7 +105,6 @@ class Comparison(object):
                                          self.counts[n].loc[self.counts[n].index.isin(indices_desejados)]))
                 else:
                     indexes_to_remove.append(n)
-
 
             for m, comparison in enumerate(self.final_counts):
                 if m in indexes_to_remove:
@@ -167,9 +157,7 @@ class Comparison(object):
                     final_dataframes.append((pd.concat([comparison_copy_0, rscu_dataframes[m][0]], axis=0),
                                              pd.concat([comparison_copy_1, rscu_dataframes[m][1]], axis=0)))
                     self.counts_to_degs[self.final_times[m]] = final_dataframes[m]
-            print(self.counts_to_degs)
             self.plot_differences()
-
 
     def plot_differences(self):
         self.working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'average_time_points', f'{self.gender}', 'DEGs')
@@ -214,7 +202,6 @@ class Comparison(object):
         df.rename(columns={"variable": "ID"}, inplace=True)
         col_order = [x for x in list(dataframe_dif.columns) if x != 'Codon']
 
-
         def my_bar_plot(x, y, **kwargs):
             colors = ['red' if val < 0 else 'green' for val in x]
             plt.barh(y=y, width=np.abs(x), color=colors)
@@ -229,72 +216,4 @@ class Comparison(object):
         plt.savefig(os.path.join(self.working_path, f'Barplot_to_differences_RSCU_DEGs_{self.comparison}.png'))
         return df
 
-    def test_X2(self, counts, samples, comparisons, working_path, liver):
-        path = os.path.join(working_path, 'Chi2')
-        totals = OrderedDict()
-        time = [int(self.sample.dt_sample[sample].age) for sample in samples]
-        print("time: ", time)
-        for i, dataframe in enumerate(counts):
-            line = dataframe.iloc[-2]
-            totals[str(time[i])] = line
-        totals_dataframe = pd.DataFrame(totals)
-        totals_dataframe.to_csv(os.path.join(working_path, 'Totals_dataframe.csv'))
 
-        aminoacidos = []
-        codons = []
-
-        # Iterar sobre o dicionário e combinar as informações de aminoácidos e códons
-        for aminoacido, lista_codons in Constants.ordered_codons.items():
-            aminoacidos.extend([aminoacido] * len(lista_codons))
-            codons.extend(lista_codons)
-
-        # Criar o DataFrame com as informações combinadas
-        aminoacid_codons_groups = pd.DataFrame({'Aminoacid': aminoacidos, 'Codon': codons})
-
-        # Realizar um merge entre o DataFrame de contagens de códons e o DataFrame de grupos de códons por aminoácido
-        merged_dataframe = pd.merge(totals_dataframe,  aminoacid_codons_groups, left_index=True, right_on='Codon')
-        dataframe = merged_dataframe.groupby('Aminoacid')
-
-        # Time points que você deseja comparar (por exemplo, 3 e 6)
-        for comparison in comparisons:
-            time_point_1 = str(comparison[0])
-            time_point_2 = str(comparison[1])
-            results = []
-            # Iterar pelos grupos de aminoácidos
-            for aminoacid, codon_group in dataframe:
-                print("##################aminoacid: ", aminoacid)
-                if len(codon_group) > 1:
-                    # Filtrar os códons que codificam o aminoácido atual
-                    codons_to_compare = codon_group['Codon'].tolist()
-
-                    # Filtrar as colunas dos time points que você deseja comparar
-                    time_points_to_compare = [str(time_point_1), str(time_point_2)]
-                    codon_counts_to_compare = codon_group[['Codon'] + time_points_to_compare]
-                    #print(codon_counts_to_compare)
-
-                    # Loop para realizar o teste qui-quadrado para cada códon no grupo
-                    contingency_table = []
-                    for codon in codons_to_compare:
-                        # Filtrar as contagens de códons para o códon atual
-                        codon_counts_sample_1 = codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
-                            str(time_point_1)].values
-                        codon_counts_sample_2 = codon_counts_to_compare[codon_counts_to_compare['Codon'] == codon][
-                            str(time_point_2)].values
-
-                        #print("Codond: ", codon, " t1 ", codon_counts_sample_1, " t2 ", codon_counts_sample_2)
-                        # Criar a tabela de contingência
-                        if len(contingency_table) == 0: contingency_table = np.array([[codon_counts_sample_1[0], codon_counts_sample_2[0]]])
-                        else: contingency_table = np.append(contingency_table, [[codon_counts_sample_1[0], codon_counts_sample_2[0]]], 0)
-
-
-                    # Realizar o teste qui-quadrado
-                    #print(contingency_table)
-                    chi2, p_value, dof, expected = chi2_contingency(contingency_table)
-                    results.append((aminoacid, chi2, p_value))
-                    print(" chi2: ", chi2, "   p_value: ", p_value)
-            results_dataframe = pd.DataFrame(results, columns=['Aminoacid', 'Chi2', 'p_value'])
-            if liver:
-                results_dataframe.to_csv(os.path.join(path, f'Chi2_test_liver_{comparison[0]}vs{comparison[1]}.csv'), index=False)
-            else:
-                results_dataframe.to_csv(os.path.join(path, f'Chi2_test_brain_{comparison[0]}vs{comparison[1]}.csv'),
-                                         index=False)

@@ -9,10 +9,9 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
 from matplotlib.cm import ScalarMappable
 import seaborn as sb
-from sklearn.decomposition import PCA
-from sklearn.decomposition import FastICA
 from scipy.stats import chi2_contingency
-
+#from sklearn.decomposition import PCA
+#from sklearn.decomposition import FastICA
 
 class Tissue(object):
     GENDER_BOTH = "BOTH"
@@ -20,9 +19,9 @@ class Tissue(object):
     GENDER_FEMALE = "FEMALE"
 
     def __init__(self, *args):
+        print(args)
         self.tissue, self.age, self.sex = args
         self.dt_gene = {}
-        self.count_codon_expression = {}
 
     def add_value(self, gene, value):
 
@@ -98,7 +97,7 @@ class Expression(object):
         :param sample_info            info to the samples
         :param sample_expression   file with expression values
         """
-        self.most_dif_expressed = {}
+        #self.most_dif_expressed = {}
         self.sample = Sample()
 
         # set the names of the files
@@ -137,34 +136,34 @@ class Expression(object):
         return self.sample.get_number_gene(sample_name)
 
     # def most_differentially_expressed_genes(self, sample_name1, sample_name2):
-    # dif_expression = sorted(
-    # [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
-    # for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
-    # dif_expression_dict = {}
+    #   dif_expression = sorted(
+    #   [abs(self.sample.dt_sample[sample_name2].dt_gene[key] - self.sample.dt_sample[sample_name1].dt_gene[key])
+    #   for key in self.sample.dt_sample[sample_name1].dt_gene.keys()], reverse=True)
+    #       dif_expression_dict = {}
 
-    # for dif in dif_expression:
-    # for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
-    # if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] -
-    # self.sample.dt_sample[sample_name1].dt_gene[key]):
-    # dif_expression_dict[key] = dif
-    # self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
-    # return self.most_dif_expressed
+    #       for dif in dif_expression:
+    #           for key in self.sample.dt_sample[sample_name1].dt_gene.keys():
+    #               if dif == abs(self.sample.dt_sample[sample_name2].dt_gene[key] -
+    #                   self.sample.dt_sample[sample_name1].dt_gene[key]):
+    #                   dif_expression_dict[key] = dif
+    #                   self.most_dif_expressed = dict(itertools.islice(dif_expression_dict.items(), 100))
+    #   return self.most_dif_expressed
 
     def counts_with_expression(self, counts, average):
         """
-                :param average: dataframe with the average of counts
-                :codons_in_genes {}return counts by gender making average with the same time points
+                :param average: dataframe with the b_make_averages_for_same_time_points of counts
+                :codons_in_genes {}return counts by gender making b_make_averages_for_same_time_points with the same time points
                 :out   dataframe with counts calculated with expression appended to RSCU values to each codon """
 
         try:
-            most_expressed_counts = {gene: {codon: average[gene] * counts[gene][codon]
+            counts_with_expression_dict = {gene: {codon: average[gene] * counts[gene][codon]
                                             for codon in list(counts[gene].keys())} for gene in counts.keys() if
                                      gene != 'genome' and gene in average.keys()}
         except KeyError as e:
             print(str(e))
             sys.exit("Error")
 
-        dataframe_counts_expression = pd.DataFrame.from_dict(data=most_expressed_counts, orient='index')
+        dataframe_counts_expression = pd.DataFrame.from_dict(data=counts_with_expression_dict, orient='index')
         totals = dataframe_counts_expression.sum(axis=0).T
         dataframe_counts_expression.loc['Total'] = totals
         rscu = self.calculate_RSCU(dataframe_counts_expression)
@@ -176,10 +175,9 @@ class Expression(object):
     def get_counts(self, gender, codons_in_genes, b_make_averages_for_same_time_points):
         """ 
         :param gender
-        :codons_in_genes {}return counts by gender making average with the same time points 
+        :codons_in_genes {}return counts by gender making b_make_averages_for_same_time_points with the same time points
         :out   dict_samples_out { sample_name : [sample_name, sample_name same time point, sample_name same time point 2],
                                 sample_name1 : [sample_name1, sample_name same time point, sample_name same time point 2], } """
-
         list_samples = self.get_list_samples(gender)
         dict_samples_out = OrderedDict()  ## Key, first sample of each time point, []
         return_counts = []
@@ -199,7 +197,7 @@ class Expression(object):
                     else:
                         dict_samples_out[fist_sample_name].append(sample)
 
-                    ## create an array for average
+                    ## create an array for b_make_averages_for_same_time_points
                     for key, value in self.sample.dt_sample[sample].dt_gene.items():
                         if key not in same_age:
                             same_age[key] = [value]
@@ -438,7 +436,7 @@ class Expression(object):
 
         return rscu
 
-    def PCA_analysis(self, counts, samples, working_path, **kwargs):
+    ''' def PCA_analysis(self, counts, samples, working_path, **kwargs):
 
         ## define working path
         working_path_PCA = os.path.join(working_path, 'DEGs')
@@ -582,7 +580,7 @@ class Expression(object):
             dataframe = pd.DataFrame(explained_variances)
             dataframe.to_excel(os.path.join(working_path_PCA,
                                             f'Explained_variances.xlsx'),
-                               index=False)
+                               index=False)'''
 
     def test_X2(self, counts, samples, comparisons, working_path, liver, consecutive):
         path = os.path.join(working_path, 'Chi2')
@@ -595,7 +593,7 @@ class Expression(object):
             line = dataframe.iloc[-2]
             totals[str(time[i])] = line
         totals_dataframe = pd.DataFrame(totals)
-        totals_dataframe.to_csv(os.path.join(working_path, 'Totals_dataframe.csv'))
+        #totals_dataframe.to_csv(os.path.join(working_path, 'Totals_dataframe.csv'))
 
         aminoacids = []
         codons = []
@@ -670,7 +668,7 @@ class Expression(object):
                     "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_brain_non_consecutive.csv')))
                 df_final.to_csv(os.path.join(path, f'Chi2_test_brain_non_consecutive.csv'), index=False)
 
-    def teste_X2_with_diff_expressed_genes(self, counts, samples, comparisons, working_path, liver, consecutive, genes):
+    def test_X2_with_diff_expressed_genes(self, counts, samples, comparisons, working_path, liver, consecutive, genes):
 
         path = os.path.join(working_path, 'Chi2')
         times = [int(self.sample.dt_sample[sample].age) for sample in samples]
@@ -705,9 +703,7 @@ class Expression(object):
                             line = dataframe.iloc[-1]
                             totals_dict[str(time)] = line
                 totals_dataframe = pd.DataFrame(totals_dict)
-                print(totals_dataframe)
-                totals_dataframe.to_csv(
-                    os.path.join(working_path, f'Totals_dataframe_{comparison[0]}vs{comparison[1]}.csv'))
+                #totals_dataframe.to_csv(os.path.join(working_path, f'Totals_dataframe_{comparison[0]}vs{comparison[1]}.csv'))
                 aminoacidos = []
                 codons = []
                 for aminoacido, lista_codons in Constants.ordered_codons.items():

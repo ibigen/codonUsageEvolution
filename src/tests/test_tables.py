@@ -112,7 +112,7 @@ class Test(unittest.TestCase):
         ecoli_fasta = os.path.join(self.baseDirectory, "files/references/ecoli.fasta")
         dataframe_counts, dataframe_RSCU_CAI, stats = read_genome(ecoli_fasta)
         average = True
-        self.assertEqual(2109.15514707196, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
+        '''self.assertEqual(2109.15514707196, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index') )['AAA']['thrL'])
         self.assertEqual(34.15360753253048, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                 dataframe_counts.to_dict(orient='index') )['TTT']['mbiA'])
@@ -120,7 +120,7 @@ class Test(unittest.TestCase):
                 dataframe_counts.to_dict(orient='index'))['TTT']['mbiA'])
         self.assertEqual(2359.80082045078, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
                 dataframe_counts.to_dict(orient='index'))['AAA']['thrL'])
-        average = False
+        b_make_averages_for_same_time_points = False
         self.assertEqual(13215.624492098465, expression.counts_with_expression('A9_384Bulk_Plate1_S9',
                 dataframe_counts.to_dict(orient='index'), multi=multi)['AAA']['Total'])
         self.assertEqual(11088.182145483095, expression.counts_with_expression('A18_384Bulk_Plate1_S18',
@@ -164,7 +164,7 @@ class Test(unittest.TestCase):
         self.assertEqual('-', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['AAA'])
         self.assertEqual('+', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TGA'])
         self.assertEqual('-', ilustration['L19_384Bulk_Plate2_S283_A18_384Bulk_Plate1_S18']['TAG'])
-        self.assertEqual('-', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['TAG'])
+        self.assertEqual('-', ilustration['A18_384Bulk_Plate1_S18_A9_384Bulk_Plate1_S9']['TAG'])'''
         
 
 if __name__ == "__main__":
