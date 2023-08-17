@@ -6,11 +6,12 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sb
+from utils.utils import Utils
 
-
-
+utils = Utils()
 
 class Comparison(object):
+
     def __init__(self, counts, samples, gender, liver, consecutive, b_make_averages_for_same_time_points):
         self.average = b_make_averages_for_same_time_points
         self.working_path = None
@@ -85,7 +86,6 @@ class Comparison(object):
                 rscu[codon] = len(codons) * ((counts[codon]['Total']) / sum(total))
 
                 # nº de codões*(codão/soma(codões por aminoacido))
-        print('rscu', rscu)
         return rscu
 
     def compare_timepoints(self):
@@ -160,6 +160,7 @@ class Comparison(object):
             self.plot_differences()
 
     def plot_differences(self):
+        #utils.make_path(os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'average_time_points', f'{self.gender}', 'DEGs'))
         self.working_path = os.path.join(self.base_path, 'mouse', 'liver' if self.liver else 'brain', 'average_time_points', f'{self.gender}', 'DEGs')
         for key in self.counts_to_degs:
             for dataframe in self.counts_to_degs[key]:

@@ -30,6 +30,7 @@ class Constants(object):
 			ordered_codons[value].append(str(key).upper().replace('U', 'T'))
 
 
+
 	GENOME_KEY = "genome"
 	GENE_CAI = "GENE CAI"
 	GENOME_CAI = "GENOME CAI"

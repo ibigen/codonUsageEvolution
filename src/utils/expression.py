@@ -13,13 +13,14 @@ from scipy.stats import chi2_contingency
 #from sklearn.decomposition import PCA
 #from sklearn.decomposition import FastICA
 
+utils = Utils()
+
 class Tissue(object):
     GENDER_BOTH = "BOTH"
     GENDER_MALE = "MALE"
     GENDER_FEMALE = "FEMALE"
 
     def __init__(self, *args):
-        print(args)
         self.tissue, self.age, self.sex = args
         self.dt_gene = {}
 
@@ -89,7 +90,7 @@ class Sample(object):
 
 
 class Expression(object):
-    utils = Utils()
+
     constants = Constants()
 
     def __init__(self, sample_info, sample_expression):
@@ -105,8 +106,8 @@ class Expression(object):
         self.file_expression = sample_expression
 
         # test if files exists
-        self.utils.test_exist_file(self.file_information)
-        self.utils.test_exist_file(self.file_expression)
+        utils.test_exist_file(self.file_information)
+        utils.test_exist_file(self.file_expression)
 
         # read files
         self.__samples_information()
@@ -217,13 +218,13 @@ class Expression(object):
                 dict_samples_out[sample] = [sample]
                 return_counts.append(
                     self.counts_with_expression(codons_in_genes, self.sample.dt_sample[sample].dt_gene))
-
         ### dictionary with expression X codons
         return return_counts, dict_samples_out
 
     def compare_timepoints(self, counts, samples, working_path):
         data = 'RSCU'
         differences_abs, differences = OrderedDict(), OrderedDict()  # need to be ordered
+
         for n, dataframe in enumerate(counts):
             key_to_process = f'{self.sample.dt_sample[samples[n - 1]].age}_{self.sample.dt_sample[samples[n]].age}'
             repeat = 1
@@ -250,9 +251,9 @@ class Expression(object):
         ### save differences
         dataframe = pd.DataFrame(differences)
         print(
-            "File with differences: " + str(os.path.join(working_path, "Differences_between_time_points.csv")))
+            "File with differences: " + str(os.path.join(working_path, "Differences_between_samples.csv")))
 
-        dataframe.to_csv(os.path.join(working_path, f"Differences_between_time_points.csv"))
+        dataframe.to_csv(os.path.join(working_path, f"Differences_between_samples.csv"))
 
         ### start making chart
         dataframe_abs = pd.DataFrame(differences_abs)
@@ -273,9 +274,6 @@ class Expression(object):
                 elif value < min_:
                     min_ = value
 
-        norm = TwoSlopeNorm(vcenter=max_ - (max_ / 2), vmin=min_, vmax=max_)
-        cmap = plt.get_cmap('brg')
-
         def my_bar_plot(x, y, **kwargs):
             colors = ['red' if val < 0 else 'green' for val in x]
             plt.barh(y=y, width=np.abs(x), color=colors)
@@ -283,13 +281,8 @@ class Expression(object):
         g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2,
                          col_order=list(dataframe.columns), sharey=True)
         g.map(my_bar_plot, 'Difference', 'Codon')
-        # g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
-        # shrink=0.2)
-
-        # plt.title(f'Difference between Time points:{[self.sample.dt_sample[sample].age for sample in samples]} ')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_differences_{data}.png')))
 
-        # plt.title(f'Barplot_to_differences_{data}.png')
         plt.savefig(os.path.join(working_path, f'Barplot_to_differences_{data}.png'))
         return df
 
@@ -322,12 +315,12 @@ class Expression(object):
         final_dataframe = pd.DataFrame(data_values, columns=columns, index=[key for key in patterns.keys()])
         return final_dataframe
 
-    def ilustrate_patterns(self, patterns_lst):
+    def ilustrate_patterns(self, patterns_df):
         direction = {}
 
-        for sample in patterns_lst:
+        for sample in patterns_df:
 
-            for codon in patterns_lst[sample]:
+            for codon in patterns_df[sample]:
                 if codon == 'Increase':
                     if sample not in direction:
                         direction[sample] = ['+']
@@ -344,8 +337,8 @@ class Expression(object):
 
         return dataframe_direction
 
-    def plot_reference(self, counts, working_path):
-        DATA = counts.drop(columns=['GENE CAI'])
+    def plot_reference(self, RSCU_reference, working_path):
+        DATA = RSCU_reference.drop(columns=['GENE CAI'])
         DATA = DATA.drop(columns=['GENOME CAI'])
         data = DATA.T
         codons = Constants.TOTAL_CODONS[:-3]
@@ -368,16 +361,17 @@ class Expression(object):
         plt.savefig(os.path.join(working_path, f'Barplot_to_counts_reference.png'))
         return DATA
 
-    def plot_counts(self, lst_counts, samples, working_path, b_make_averages_for_same_time_points):
+    def plot_counts(self, counts, samples, working_path, b_make_averages_for_same_time_points):
         data = 'RSCU'
-        time_points = []
         if b_make_averages_for_same_time_points:
             time_points = [f'{self.sample.dt_sample[sample].age}' for sample in samples]
+            print(time_points)
         else:
             time_points = samples
+            print(time_points)
 
         dic_codons = OrderedDict()
-        for n, dataframe in enumerate(lst_counts):
+        for n, dataframe in enumerate(counts):
             dic_codons[time_points[n]] = {}
             for codon in dataframe:
                 if codon not in dic_codons[time_points[n]]:
@@ -583,6 +577,7 @@ class Expression(object):
                                index=False)'''
 
     def test_X2(self, counts, samples, comparisons, working_path, liver, consecutive):
+        utils.make_path(os.path.join(working_path, 'Chi2'))
         path = os.path.join(working_path, 'Chi2')
         totals = OrderedDict()
         time = [int(self.sample.dt_sample[sample].age) for sample in samples]
@@ -739,7 +734,6 @@ class Expression(object):
                                     [codon_counts_sample_1[0], codon_counts_sample_2[0]]], 0)
                         # Chi2 test
                         contingency_table += 0.5
-                        print(contingency_table)
                         chi2, p_value, dof, expected = chi2_contingency(contingency_table)
                         if p_value > alpha:
                             results.append((aminoacid, chi2, p_value, 'Non significant'))

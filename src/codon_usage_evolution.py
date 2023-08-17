@@ -48,7 +48,6 @@ def read_genome(file_name):
         dic_CAI, dic_genome_CAI = {}, {}
         codon_count_total = [0] * len(constants.TOTAL_CODONS)
         print("Calculating RSCU and CAI for '{}' genes".format(len(dt_gene_name)))
-
         index_codons = dict(zip(constants.TOTAL_CODONS, range(0, len(constants.TOTAL_CODONS))))
 
         for index, gene_name in enumerate(dt_gene_name):
@@ -62,7 +61,7 @@ def read_genome(file_name):
             codon_count = [0] * len(constants.TOTAL_CODONS)
             for i in range(0, len(record_dict[key].seq) + 1, 3):
                 codon = str(record_dict[key].seq)[i:i + 3].upper().replace('U', 'T')
-                if codon in index_codons: 
+                if codon in index_codons:
                     codon_count[index_codons[codon]] += 1
                     codon_count_total[index_codons[codon]] += 1
 
@@ -140,12 +139,14 @@ def save_final_results(expression, sample_names, counts, working_path):
 
     print('Searching for patterns')
     patterns = expression.compare_counts(counts, sample_names)
-    save_table(patterns, os.path.join(working_path, f'Patterns_between_all_samples.csv'))
+    save_table(patterns, os.path.join(working_path, f'Patterns_between_samples.csv'))
 
     print("Illustrating patterns")
     table_direction = expression.ilustrate_patterns(patterns)
-
     save_table(table_direction, os.path.join(working_path, f'Table_directions.csv'))
+
+    hist = expression.plot_counts(counts, sample_names, working_path, b_make_averages_for_same_time_points)
+
 
 if __name__ == '__main__':
 
@@ -226,15 +227,16 @@ if __name__ == '__main__':
     print("Loading expression and samples")
 
     expression = Expression(information_file, expression_file)
-    # print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
+    print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
 
     # analysis the different samples
     print("Calculating counts with expression values")
-    consecutive = False
+    consecutive = True
     # BOTH
     gender = Tissue.GENDER_BOTH
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
                                                      b_make_averages_for_same_time_points)
+    print(dict_samples_out)
 
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
@@ -245,27 +247,28 @@ if __name__ == '__main__':
 
     comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive,
                             b_make_averages_for_same_time_points)
-    if not b_make_averages_for_same_time_points:
+    '''if not b_make_averages_for_same_time_points:
         expression.PCA_analysis(counts, list(dict_samples_out.keys()), working_path_gender,
                                 genes=comparison.differentially_expressed_genes, comparisons=comparison.time_points,
-                                consecutive=consecutive, gender=gender)
-    else:
-        expression.test_X2(counts, list(dict_samples_out.keys()), comparison.time_points, working_path, liver, consecutive)
+                                consecutive=consecutive, gender=gender)'''
+    if b_make_averages_for_same_time_points:
+        expression.compare_timepoints(counts, list(dict_samples_out.keys()), working_path_gender)
+        expression.test_X2(counts, list(dict_samples_out.keys()), comparison.time_points, working_path, liver,
+                           consecutive)
         expression.test_X2_with_diff_expressed_genes(counts, list(dict_samples_out.keys()), comparison.time_points,
                                                      working_path, liver,
-                                                     genes=comparison.differentially_expressed_genes, consecutive=consecutive)
+                                                     genes=comparison.differentially_expressed_genes,
+                                                     consecutive=consecutive)
 
     # FEMALE
     gender = Tissue.GENDER_FEMALE
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
                                                      b_make_averages_for_same_time_points)
-    print(counts)
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender)
-
 
     # MALE
     gender = Tissue.GENDER_MALE
@@ -276,6 +279,5 @@ if __name__ == '__main__':
     for n, sample in enumerate(list(dict_samples_out.keys())):
         save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender)
-
 
     print("Finished")
