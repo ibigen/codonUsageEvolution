@@ -93,7 +93,7 @@ class Expression(object):
 
     constants = Constants()
 
-    def __init__(self, sample_info, sample_expression):
+    def __init__(self, file_information, file_expression):
         """
         :param sample_info            info to the samples
         :param sample_expression   file with expression values
@@ -102,8 +102,8 @@ class Expression(object):
         self.sample = Sample()
 
         # set the names of the files
-        self.file_information = sample_info
-        self.file_expression = sample_expression
+        self.file_information = file_information
+        self.file_expression = file_expression
 
         # test if files exists
         utils.test_exist_file(self.file_information)

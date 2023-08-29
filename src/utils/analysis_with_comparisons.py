@@ -13,7 +13,7 @@ utils = Utils()
 class Comparison(object):
 
     def __init__(self, counts, samples, gender, liver, consecutive, b_make_averages_for_same_time_points):
-        self.average = b_make_averages_for_same_time_points
+        self.b_make_averages_for_same_time_points = b_make_averages_for_same_time_points
         self.working_path = None
         self.time_points = []
         self.consecutive = consecutive
@@ -66,7 +66,7 @@ class Comparison(object):
                                 self.differentially_expressed_genes[time] = [line]
                             else:
                                 self.differentially_expressed_genes[time].append(line)
-        if self.average:
+        if self.b_make_averages_for_same_time_points:
             self.compare_timepoints()
 
     def calculate_RSCU(self, counts):
