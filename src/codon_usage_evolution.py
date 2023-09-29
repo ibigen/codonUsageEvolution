@@ -45,7 +45,7 @@ def read_genome(file_name):
         # i can interact directly with record_dict
         data = {}  # { gene : { condon1: 2, codon2 : 4, codon3 : 5 } }
         initial_dic_RSCU = {}
-        dic_CAI, dic_genome_CAI = {}, {}
+        dic_CAI, dic_genome_CAI, dic_nc, dic_genome_nc = {}, {}, {}, {}
         codon_count_total = [0] * len(constants.TOTAL_CODONS)
         print("Calculating RSCU and CAI for '{}' genes".format(len(dt_gene_name)))
         index_codons = dict(zip(constants.TOTAL_CODONS, range(0, len(constants.TOTAL_CODONS))))
@@ -74,6 +74,7 @@ def read_genome(file_name):
             # CAI
             dic_CAI[gene_name] = float(
                 CAI(record_dict[key].seq, RSCUs=initial_dic_RSCU[gene_name]))  # {gene1: CAI1} {GENE2: CAI2}
+            dic_nc[gene_name] = 2/dic_CAI[gene_name]
         print("Calculating counts of all codons")
         # Count of all codons
         data[Constants.GENOME_KEY] = codon_count_total
@@ -122,7 +123,6 @@ def read_genome(file_name):
         # CAI
         dataframe_RSCU[Constants.GENE_CAI] = dic_CAI.values()
         dataframe_RSCU[Constants.GENOME_CAI] = dic_genome_CAI.values()
-        print(counts_stats)
 
         return dataframe_counts, dataframe_RSCU, counts_stats
 
@@ -154,7 +154,7 @@ if __name__ == '__main__':
     utils = Utils()
     b_ecoli = False
     b_make_averages_for_same_time_points = True
-    liver = True
+    liver = False
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name
@@ -167,7 +167,7 @@ if __name__ == '__main__':
     else:
         base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
         name = "GCF_000001635.27_GRCm39_cds_from_genomic.fna.gz"  # mouse genome
-        # name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
+        #name = "GCF_000005845.2_ASM584v2_cds_from_genomic.fna.gz"  # ecoli genome
         # name = "ecoli.fasta"  # to create tables for test
 
     ### base path
@@ -236,13 +236,12 @@ if __name__ == '__main__':
     gender = Tissue.GENDER_BOTH
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
                                                      b_make_averages_for_same_time_points)
-    print(dict_samples_out)
 
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
 
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{expression.sample.dt_sample[sample].age}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender)
 
     comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive,
@@ -254,21 +253,38 @@ if __name__ == '__main__':
     if b_make_averages_for_same_time_points:
         expression.compare_timepoints(counts, list(dict_samples_out.keys()), working_path_gender)
         expression.test_X2(counts, list(dict_samples_out.keys()), comparison.time_points, working_path, liver,
-                           consecutive)
+                           consecutive, gender)
         expression.test_X2_with_diff_expressed_genes(counts, list(dict_samples_out.keys()), comparison.time_points,
                                                      working_path, liver,
                                                      genes=comparison.differentially_expressed_genes,
-                                                     consecutive=consecutive)
+                                                     consecutive=consecutive, gender=gender)
 
     # FEMALE
     gender = Tissue.GENDER_FEMALE
+
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
                                                      b_make_averages_for_same_time_points)
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{expression.sample.dt_sample[sample].age}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender)
+
+    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive,
+                            b_make_averages_for_same_time_points)
+
+    if b_make_averages_for_same_time_points:
+        expression.compare_timepoints(counts, list(dict_samples_out.keys()), working_path_gender)
+        expression.test_X2(counts, list(dict_samples_out.keys()), comparison.time_points, working_path, liver,
+                           consecutive, gender)
+
+
+        expression.test_X2_with_diff_expressed_genes(counts, list(dict_samples_out.keys()), comparison.time_points,
+                                                     working_path, liver,
+                                                     genes=comparison.differentially_expressed_genes,
+                                                     consecutive=consecutive, gender=gender)
+
+
 
     # MALE
     gender = Tissue.GENDER_MALE
@@ -277,7 +293,17 @@ if __name__ == '__main__':
     working_path_gender = os.path.join(working_path, f'{gender}')
     utils.make_path(working_path_gender)
     for n, sample in enumerate(list(dict_samples_out.keys())):
-        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{sample}.csv'))
+        save_table(counts[n], os.path.join(working_path_gender, f'Counts_expression_{gender}_{expression.sample.dt_sample[sample].age}_{sample}.csv'))
     save_final_results(expression, list(dict_samples_out.keys()), counts, working_path_gender)
 
+    comparison = Comparison(counts, list(dict_samples_out.keys()), gender, liver, consecutive,
+                            b_make_averages_for_same_time_points)
+    if b_make_averages_for_same_time_points:
+        expression.compare_timepoints(counts, list(dict_samples_out.keys()), working_path_gender)
+        expression.test_X2(counts, list(dict_samples_out.keys()), comparison.time_points, working_path, liver,
+                           consecutive, gender)
+        expression.test_X2_with_diff_expressed_genes(counts, list(dict_samples_out.keys()), comparison.time_points,
+                                                     working_path, liver,
+                                                     genes=comparison.differentially_expressed_genes,
+                                                     consecutive=consecutive, gender=gender)
     print("Finished")

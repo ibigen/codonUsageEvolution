@@ -34,11 +34,21 @@ class Comparison(object):
             self.base_path = "/home/projects/ua/master_2/2022/master/francisca/TeseDeMestrado"
         else:
             if self.consecutive:
-                self.times = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24', '24vs27']
-                self.time_points = [(27, 3), (3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21), (21, 24), (24, 27)]
+                    if str(self.gender) == "FEMALE":
+                        self.times = ['3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21']
+                        self.time_points = [(3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21)]
+                    else:
+                        self.times = ['3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24',
+                                      '24vs27']
+                        self.time_points = [(3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21), (21, 24),
+                                            (24, 27)]
             else:
-                self.times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21', '3vs24', '3vs27']
-                self.time_points = [(3, 6), (3, 9), (3, 12), (3, 15), (3, 18), (3, 21), (3, 24), (3, 27)]
+                if str(self.gender) == "FEMALE":
+                    self.times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21']
+                    self.time_points = [(3, 6), (3, 9), (3, 12), (3, 15), (3, 18), (3, 21)]
+                else:
+                    self.times = ['3vs6', '3vs9', '3vs12', '3vs15', '3vs18', '3vs21', '3vs24', '3vs27']
+                    self.time_points = [(3, 6), (3, 9), (3, 12), (3, 15), (3, 18), (3, 21), (3, 24), (3, 27)]
             self.base_path = r"C:\Users\Francisca\Desktop\TeseDeMestrado"
 
         self.get_genes()
@@ -84,7 +94,6 @@ class Comparison(object):
 
             for n, codon in enumerate(codons_T):
                 rscu[codon] = len(codons) * ((counts[codon]['Total']) / sum(total))
-
                 # nº de codões*(codão/soma(codões por aminoacido))
         return rscu
 
@@ -98,30 +107,25 @@ class Comparison(object):
             final_dataframes = []
             indexes_to_remove = []
             for n, time in enumerate(self.times):
-                if time in self.differentially_expressed_genes.keys():
+                if time in self.differentially_expressed_genes:
                     self.final_times.append(time)
                     indices_desejados = self.differentially_expressed_genes[time]
                     self.final_counts.append((self.counts[n - 1].loc[self.counts[n - 1].index.isin(indices_desejados)],
                                          self.counts[n].loc[self.counts[n].index.isin(indices_desejados)]))
                 else:
                     indexes_to_remove.append(n)
-
             for m, comparison in enumerate(self.final_counts):
-                if m in indexes_to_remove:
-                    continue
-                else:
-                    totals.append((comparison[0].sum(axis=0).T, comparison[1].sum(axis=0).T))
-                    comparison_copy_0 = comparison[0].copy()  # Cópia do DataFrame comparison[0]
-                    comparison_copy_1 = comparison[1].copy()  # Cópia do DataFrame comparison[1]
-                    comparison_copy_0.loc['Total'] = totals[m][0]
-                    comparison_copy_1.loc['Total'] = totals[m][1]
-                    rscu.append((self.calculate_RSCU(comparison_copy_0), self.calculate_RSCU(comparison_copy_1)))
-                    rscu_dataframes.append(
-                        (pd.DataFrame(rscu[m][0], index=['RSCU']), pd.DataFrame(rscu[m][1], index=['RSCU'])))
-                    final_dataframes.append((pd.concat([comparison_copy_0, rscu_dataframes[m][0]], axis=0),
-                                             pd.concat([comparison_copy_1, rscu_dataframes[m][1]], axis=0)))
-                    self.counts_to_degs[self.final_times[m]] = final_dataframes[m]
-
+                totals.append((comparison[0].sum(axis=0).T, comparison[1].sum(axis=0).T))
+                comparison_copy_0 = comparison[0].copy()  # Cópia do DataFrame comparison[0]
+                comparison_copy_1 = comparison[1].copy()  # Cópia do DataFrame comparison[1]
+                comparison_copy_0.loc['Total'] = totals[m][0]
+                comparison_copy_1.loc['Total'] = totals[m][1]
+                rscu.append((self.calculate_RSCU(comparison_copy_0), self.calculate_RSCU(comparison_copy_1)))
+                rscu_dataframes.append(
+                    (pd.DataFrame(rscu[m][0], index=['RSCU']), pd.DataFrame(rscu[m][1], index=['RSCU'])))
+                final_dataframes.append((pd.concat([comparison_copy_0, rscu_dataframes[m][0]], axis=0),
+                                         pd.concat([comparison_copy_1, rscu_dataframes[m][1]], axis=0)))
+                self.counts_to_degs[self.final_times[m]] = final_dataframes[len(final_dataframes)-1]
             self.plot_differences()
 
         else:
@@ -143,20 +147,18 @@ class Comparison(object):
                     indexes_to_remove.append(n - 1)
 
             for m, comparison in enumerate(self.final_counts):
-                if m in indexes_to_remove:
-                    continue
-                else:
-                    totals.append((comparison[0].sum(axis=0).T, comparison[1].sum(axis=0).T))
-                    comparison_copy_0 = comparison[0].copy()
-                    comparison_copy_1 = comparison[1].copy()
-                    comparison_copy_0.loc['Total'] = totals[m][0]
-                    comparison_copy_1.loc['Total'] = totals[m][1]
-                    rscu.append((self.calculate_RSCU(comparison_copy_0), self.calculate_RSCU(comparison_copy_1)))
-                    rscu_dataframes.append(
-                        (pd.DataFrame(rscu[m][0], index=['RSCU']), pd.DataFrame(rscu[m][1], index=['RSCU'])))
-                    final_dataframes.append((pd.concat([comparison_copy_0, rscu_dataframes[m][0]], axis=0),
+
+                totals.append((comparison[0].sum(axis=0).T, comparison[1].sum(axis=0).T))
+                comparison_copy_0 = comparison[0].copy()
+                comparison_copy_1 = comparison[1].copy()
+                comparison_copy_0.loc['Total'] = totals[m][0]
+                comparison_copy_1.loc['Total'] = totals[m][1]
+                rscu.append((self.calculate_RSCU(comparison_copy_0), self.calculate_RSCU(comparison_copy_1)))
+                rscu_dataframes.append(
+                    (pd.DataFrame(rscu[m][0], index=['RSCU']), pd.DataFrame(rscu[m][1], index=['RSCU'])))
+                final_dataframes.append((pd.concat([comparison_copy_0, rscu_dataframes[m][0]], axis=0),
                                              pd.concat([comparison_copy_1, rscu_dataframes[m][1]], axis=0)))
-                    self.counts_to_degs[self.final_times[m]] = final_dataframes[m]
+                self.counts_to_degs[self.final_times[m]] = final_dataframes[m]
             self.plot_differences()
 
     def plot_differences(self):
@@ -188,6 +190,7 @@ class Comparison(object):
 
                 ### save differences
         dataframe_dif = pd.DataFrame(self.differences)
+        print(dataframe_dif)
 
         print(
             "File with differences: " + str(
