@@ -7,6 +7,8 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sb
 from utils.utils import Utils
+from matplotlib.colors import TwoSlopeNorm
+from matplotlib.cm import ScalarMappable
 
 utils = Utils()
 
@@ -35,12 +37,12 @@ class Comparison(object):
         else:
             if self.consecutive:
                     if str(self.gender) == "FEMALE":
-                        self.times = ['3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21']
-                        self.time_points = [(3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21)]
+                        self.times = ['21vs3', '3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21']
+                        self.time_points = [(21, 3), (3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21)]
                     else:
-                        self.times = ['3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24',
+                        self.times = ['27vs3', '3vs6', '6vs9', '9vs12', '12vs15', '15vs18', '18vs21', '21vs24',
                                       '24vs27']
-                        self.time_points = [(3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21), (21, 24),
+                        self.time_points = [(27, 3), (3, 6), (6, 9), (9, 12), (12, 15), (15, 18), (18, 21), (21, 24),
                                             (24, 27)]
             else:
                 if str(self.gender) == "FEMALE":

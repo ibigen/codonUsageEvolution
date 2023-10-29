@@ -53,7 +53,7 @@ def read_genome(file_name):
         for index, gene_name in enumerate(dt_gene_name):
             key = dt_gene_name[gene_name][0]
 
-            if len(record_dict[key].seq) % 3 != 0:
+            if len(record_dict[key].seq) % 3 != 0 or len(record_dict[key].seq) < 100:
                 counts_stats.add_divisible_3()
                 continue
 
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = False
-    b_make_averages_for_same_time_points = True
+    b_make_averages_for_same_time_points = False
     liver = False
     test = False
     # set file name in and out
@@ -228,10 +228,11 @@ if __name__ == '__main__':
 
     expression = Expression(information_file, expression_file)
     print(expression.plot_reference(dataframe_RSCU_CAI, working_path))
+    print(expression.get_number_sample())
 
     # analysis the different samples
     print("Calculating counts with expression values")
-    consecutive = True
+    consecutive = False
     # BOTH
     gender = Tissue.GENDER_BOTH
     counts, dict_samples_out = expression.get_counts(gender, dataframe_count_codons_in_genes.to_dict(orient='index'),
@@ -283,7 +284,6 @@ if __name__ == '__main__':
                                                      working_path, liver,
                                                      genes=comparison.differentially_expressed_genes,
                                                      consecutive=consecutive, gender=gender)
-
 
 
     # MALE

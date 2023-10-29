@@ -356,7 +356,7 @@ class Expression(object):
         plt.xlabel('RSCU')
         plt.ylabel('Codon')
         plt.subplots_adjust(wspace=0.3)
-        plt.title(f'RSCU values for each codon in the reference genome')
+        plt.title(f'RSCU values for each codon in the reference transcriptome')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_reference.png')))
         plt.savefig(os.path.join(working_path, f'Barplot_to_counts_reference.png'))
         return DATA
@@ -381,12 +381,12 @@ class Expression(object):
         codons = Constants.TOTAL_CODONS
         data_values['Codon'] = codons
 
-        df = pd.melt(data_values, id_vars='Codon', value_vars=time_points, value_name='Counts')
+        df = pd.melt(data_values, id_vars='Codon', value_vars=time_points, value_name='RSCU values')
 
         max = 0
         min = 100000
 
-        for value in df['Counts']:
+        for value in df['RSCU values']:
             if type(value) == float:
                 if value > max:
                     max = value
@@ -402,7 +402,7 @@ class Expression(object):
         df.rename(columns={"variable": "ID"}, inplace=True)
         g = sb.FacetGrid(data=df, col='ID', height=9, aspect=0.2,
                          col_order=time_points, sharey=True)
-        g.map(my_bar_plot, 'Counts', 'Codon')
+        g.map(my_bar_plot, 'RSCU values', 'Codon')
         g.fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), orientation='vertical', ax=g.axes, fraction=0.1,
                        shrink=0.2)
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_{data}.png')))
@@ -582,7 +582,7 @@ class Expression(object):
         totals = OrderedDict()
         time = [int(self.sample.dt_sample[sample].age) for sample in samples]
         n_comparisons = len(comparisons)
-        alpha = 0.05/ (18 * n_comparisons)
+        alpha = 0.05/ (19 * n_comparisons)
         print(n_comparisons)
         print(alpha)
         print("time: ", time)
@@ -641,7 +641,7 @@ class Expression(object):
                                              columns=[f'Aminoacid_{comparison[0]}vs{comparison[1]}', 'Chi2', 'p_value',
                                                       f'Significance: {alpha}'])
             significant_aminoacids.append(results_dataframe[
-                results_dataframe[f'Significance: {0.05 / (18 * n_comparisons)}'] == 'Significant'])
+                results_dataframe[f'Significance: {0.05 / (19 * n_comparisons)}'] == 'Significant'])
             df_final = pd.concat([df_final, results_dataframe], axis=1)
 
 
@@ -655,15 +655,6 @@ class Expression(object):
                     "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_liver_consecutive.csv')))
                 df_final.to_csv(os.path.join(path, f'Chi2_test_liver_consecutive.csv'), index=False)
 
-            '''else:
-                for n, dataframe in enumerate(significant_aminoacids):
-                    dataframe.to_csv(os.path.join(path,
-                                                  f'Significant_aminoacids_to_{comparisons[n]}_non_consecutive.csv'),
-                                     index=False)
-                print(
-                    "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_liver_non_consecutive.csv')))
-                df_final.to_csv(os.path.join(path, f'Chi2_test_liver_non_consecutive.csv'), index=False)'''
-
         else:
             if consecutive:
                 for n, dataframe in enumerate(significant_aminoacids):
@@ -673,15 +664,6 @@ class Expression(object):
                 print(
                     "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_brain_consecutive.csv')))
                 df_final.to_csv(os.path.join(path, f'Chi2_test_brain_consecutive.csv'), index=False)
-
-            '''else:
-                for n, dataframe in enumerate(significant_aminoacids):
-                    dataframe.to_csv(os.path.join(path,
-                                                  f'Significant_aminoacids_to_{comparisons[n]}_non_consecutive.csv'),
-                                     index=False)
-                print(
-                    "File Chi2 test results: " + str(os.path.join(path, f'Chi2_test_brain_non_consecutive.csv')))
-                df_final.to_csv(os.path.join(path, f'Chi2_test_brain_non_consecutive.csv'), index=False)'''
 
     def test_X2_with_diff_expressed_genes(self, counts, samples, comparisons, working_path, liver, consecutive, genes, gender):
         path = os.path.join(working_path, gender, 'Chi2')
@@ -693,7 +675,7 @@ class Expression(object):
             if f'{comparison[0]}vs{comparison[1]}' in genes.keys():
                 n_comparisons += 1
         df_final = None
-        alpha = 0.05 / (18 * n_comparisons)
+        alpha = 0.05 / (19 * n_comparisons)
         print(n_comparisons)
         print(alpha)
         for n, comparison in enumerate(comparisons):
@@ -766,7 +748,7 @@ class Expression(object):
                                                           'p_value',
                                                           f'Significance: {alpha}'])
                 significant_aminoacids.append(results_dataframe[
-                    results_dataframe[f'Significance: {0.05 / (18 * n_comparisons)}'] == 'Significant'])
+                    results_dataframe[f'Significance: {0.05 / (19 * n_comparisons)}'] == 'Significant'])
                 df_final = pd.concat([df_final, results_dataframe], axis=1)
 
                 if liver:
