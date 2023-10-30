@@ -30,6 +30,7 @@ def read_genome(file_name):
         dt_gene_name = {}  ### {gene_name : [id, len(seq)], gene_name1 : [id1, len(seq)], ....]
         ### normalize gene IDs
         for key in record_dict:
+            print(record_dict[key])
             if record_dict[key].description.find("[gene=") > 0:
                 ### get gene name
                 gene_name = record_dict[key].description. \
@@ -153,8 +154,8 @@ if __name__ == '__main__':
     # several utilities
     utils = Utils()
     b_ecoli = False
-    b_make_averages_for_same_time_points = False
-    liver = False
+    b_make_averages_for_same_time_points = True
+    liver = True
     test = False
     # set file name in and out
     if socket.gethostname() == "cs-nb0008":  # test computer name

@@ -356,7 +356,7 @@ class Expression(object):
         plt.xlabel('RSCU')
         plt.ylabel('Codon')
         plt.subplots_adjust(wspace=0.3)
-        plt.title(f'RSCU values for each codon in the reference transcriptome')
+        plt.title(f'RSCU values for each codon in the reference gCUB')
         print("Create image: {}".format(os.path.join(working_path, f'Barplot_to_counts_reference.png')))
         plt.savefig(os.path.join(working_path, f'Barplot_to_counts_reference.png'))
         return DATA
